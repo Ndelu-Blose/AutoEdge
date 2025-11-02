@@ -1,0 +1,141 @@
+@model AutoEdge.Models.Entities.Assessment
+
+@{
+    ViewData["Title"] = "Assessment Completed";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-success text-white text-center">
+                    <h4 class="mb-0"><i class="fas fa-check-circle"></i> Assessment Completed</h4>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <div class="success-icon mb-3">
+                            <i class="fas fa-check-circle fa-5x text-success"></i>
+                        </div>
+                        <h3>@Model.AssessmentTitle</h3>
+                        <p class="text-muted">You have successfully completed this assessment.</p>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title"><i class="fas fa-chart-line"></i> Your Score</h5>
+                                    <h2 class="text-primary">@Model.Score.ToString("F1")%</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title"><i class="fas fa-flag-checkered"></i> Status</h5>
+                                    @if (Model.IsPassed)
+                                    {
+                                        <h2><span class="badge bg-success fs-6">Passed</span></h2>
+                                    }
+                                    else
+                                    {
+                                        <h2><span class="badge bg-danger fs-6">Failed</span></h2>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <h5><i class="fas fa-info-circle"></i> Assessment Details</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Completed Date:</strong><br>
+                                @Model.CompletedDate?.ToString("dddd, dd MMMM yyyy 'at' HH:mm")</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Time Limit:</strong><br>
+                                @Model.TimeLimitMinutes minutes</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (Model.IsPassed)
+                    {
+                        <div class="alert alert-success mt-4">
+                            <h5><i class="fas fa-trophy"></i> Congratulations!</h5>
+                            <p class="mb-0">You have passed the assessment! The recruitment team will review your results and contact you with the next steps in the hiring process.</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning mt-4">
+                            <h5><i class="fas fa-info-circle"></i> Assessment Result</h5>
+                            <p class="mb-0">Thank you for taking the assessment. While you didn't meet the passing criteria this time, we appreciate your interest in joining our team. We encourage you to apply for other positions that may be a better fit.</p>
+                        </div>
+                    }
+
+                    <div class="text-center mt-4">
+                        <a href="@Url.Action("VacantPositions")" class="btn btn-primary">
+                            <i class="fas fa-search"></i> View Other Positions
+                        </a>
+                        <a href="@Url.Action("ApplicationStatus", new { email = Model.Application?.Email })" class="btn btn-outline-secondary">
+                            <i class="fas fa-list"></i> View Application Status
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.success-icon {
+    animation: bounceIn 1s ease-out;
+}
+
+@@keyframes bounceIn {
+    0% {
+        transform: scale(0.3);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    70% {
+        transform: scale(0.9);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.card {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: none;
+}
+
+.card-header {
+    border-bottom: none;
+}
+
+.bg-light {
+    background-color: #f8f9fa !important;
+}
+
+.fs-6 {
+    font-size: 1.1rem !important;
+    padding: 0.5rem 1rem;
+}
+
+@@media (max-width: 768px) {
+    .success-icon i {
+        font-size: 3rem !important;
+    }
+    
+    .row .col-md-6 {
+        margin-bottom: 1rem;
+    }
+}
+</style>

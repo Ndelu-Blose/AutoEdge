@@ -1,0 +1,283 @@
+@model AutoEdge.Models.ViewModels.ManualDeliveryViewModel
+@{
+    ViewData["Title"] = "Schedule Manual Delivery";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-truck"></i> Schedule Manual Delivery</h2>
+        <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Support
+        </a>
+    </div>
+
+    <!-- Vehicle Information Card -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-car"></i> Vehicle Information</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <p><strong>Vehicle:</strong> @Model.VehicleInfo</p>
+                </div>
+                <div class="col-md-4">
+                    <p><strong>VIN:</strong> @Model.VIN</p>
+                </div>
+                <div class="col-md-4">
+                    <p><strong>Contract ID:</strong> #@Model.ContractId</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delivery Information -->
+    <div class="alert alert-info">
+        <h6><i class="fas fa-info-circle"></i> Manual Delivery Information</h6>
+        <p class="mb-0">
+            Manual delivery allows you to schedule a custom delivery for your vehicle. This service is typically used for 
+            special circumstances or when standard delivery options are not suitable. A delivery fee may apply based on 
+            distance and special requirements.
+        </p>
+    </div>
+
+    <!-- Delivery Scheduling Form -->
+    <div class="card">
+        <div class="card-header bg-warning text-dark">
+            <h5 class="mb-0"><i class="fas fa-calendar-alt"></i> Schedule Delivery</h5>
+        </div>
+        <div class="card-body">
+            <form asp-action="ManualDelivery" method="post">
+                <input asp-for="ContractId" type="hidden" />
+                <input asp-for="VehicleInfo" type="hidden" />
+                <input asp-for="VIN" type="hidden" />
+                <input asp-for="CustomerName" type="hidden" />
+                <input asp-for="CustomerEmail" type="hidden" />
+                <input asp-for="CustomerPhone" type="hidden" />
+
+                <!-- Delivery Date and Time -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label asp-for="DeliveryDate" class="form-label">Preferred Delivery Date & Time</label>
+                        <input asp-for="DeliveryDate" type="datetime-local" class="form-control" 
+                               min="@DateTime.Now.AddDays(1).ToString("yyyy-MM-ddTHH:mm")" required />
+                        <span asp-validation-for="DeliveryDate" class="text-danger"></span>
+                        <div class="form-text">Minimum 24 hours advance notice required</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="PreferredTimeSlot" class="form-label">Preferred Time Slot</label>
+                        <select asp-for="PreferredTimeSlot" class="form-select">
+                            <option value="">Select time slot...</option>
+                            @foreach (var slot in Model.AvailableTimeSlots)
+                            {
+                                <option value="@slot">@slot</option>
+                            }
+                        </select>
+                        <div class="form-text">Choose your preferred delivery window</div>
+                    </div>
+                </div>
+
+                <!-- Delivery Address -->
+                <h6 class="mb-3"><i class="fas fa-map-marker-alt"></i> Delivery Address</h6>
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <label asp-for="DeliveryAddress" class="form-label">Street Address</label>
+                        <input asp-for="DeliveryAddress" class="form-control" 
+                               placeholder="Enter complete street address including unit/apartment number" required />
+                        <span asp-validation-for="DeliveryAddress" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label asp-for="DeliveryCity" class="form-label">City</label>
+                        <input asp-for="DeliveryCity" class="form-control" placeholder="City" required />
+                        <span asp-validation-for="DeliveryCity" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="DeliveryProvince" class="form-label">Province</label>
+                        <select asp-for="DeliveryProvince" class="form-select" required>
+                            <option value="">Select province...</option>
+                            @foreach (var province in Model.SouthAfricanProvinces)
+                            {
+                                <option value="@province">@province</option>
+                            }
+                        </select>
+                        <span asp-validation-for="DeliveryProvince" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="DeliveryPostalCode" class="form-label">Postal Code</label>
+                        <input asp-for="DeliveryPostalCode" class="form-control" placeholder="Postal Code" required />
+                        <span asp-validation-for="DeliveryPostalCode" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <!-- Contact Information -->
+                <h6 class="mb-3"><i class="fas fa-user"></i> Contact Information</h6>
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label asp-for="ContactPersonName" class="form-label">Contact Person Name</label>
+                        <input asp-for="ContactPersonName" class="form-control" 
+                               placeholder="Person who will receive the delivery" required />
+                        <span asp-validation-for="ContactPersonName" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="ContactPersonPhone" class="form-label">Contact Phone</label>
+                        <input asp-for="ContactPersonPhone" class="form-control" type="tel" 
+                               placeholder="Phone number for delivery coordination" required />
+                        <span asp-validation-for="ContactPersonPhone" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="ContactPersonEmail" class="form-label">Contact Email</label>
+                        <input asp-for="ContactPersonEmail" class="form-control" type="email" 
+                               placeholder="Email for delivery updates" required />
+                        <span asp-validation-for="ContactPersonEmail" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <!-- Special Instructions -->
+                <div class="mb-3">
+                    <label asp-for="SpecialInstructions" class="form-label">Special Instructions</label>
+                    <textarea asp-for="SpecialInstructions" class="form-control" rows="3" 
+                              placeholder="Any special delivery instructions, access codes, parking information, etc."></textarea>
+                    <span asp-validation-for="SpecialInstructions" class="text-danger"></span>
+                    <div class="form-text">Include any important details for the delivery driver</div>
+                </div>
+
+                <!-- Delivery Options -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="form-check">
+                            <input asp-for="RequiresSignature" class="form-check-input" type="checkbox" checked>
+                            <label asp-for="RequiresSignature" class="form-check-label">
+                                Signature required upon delivery
+                            </label>
+                            <div class="form-text">Recommended for security purposes</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Delivery Terms -->
+                <div class="alert alert-warning">
+                    <h6><i class="fas fa-exclamation-triangle"></i> Delivery Terms & Conditions</h6>
+                    <ul class="mb-0">
+                        <li>Delivery fees will be calculated based on distance and may be charged separately</li>
+                        <li>Someone must be present at the delivery address to receive the vehicle</li>
+                        <li>Valid identification and signed delivery receipt are required</li>
+                        <li>Vehicle inspection should be completed upon delivery</li>
+                        <li>Delivery may be rescheduled due to weather or unforeseen circumstances</li>
+                        <li>Insurance coverage is active during delivery transit</li>
+                    </ul>
+                </div>
+
+                <!-- Confirmation -->
+                <div class="mb-4">
+                    <div class="form-check">
+                        <input asp-for="ConfirmDetails" class="form-check-input" type="checkbox" required>
+                        <label asp-for="ConfirmDetails" class="form-check-label">
+                            I confirm that all delivery details are correct and I agree to the delivery terms
+                        </label>
+                        <span asp-validation-for="ConfirmDetails" class="text-danger d-block"></span>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a href="@Url.Action("Index")" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-truck"></i> Schedule Delivery
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delivery Information Panel -->
+    <div class="card mt-4">
+        <div class="card-header bg-light">
+            <h6 class="mb-0"><i class="fas fa-question-circle"></i> Frequently Asked Questions</h6>
+        </div>
+        <div class="card-body">
+            <div class="accordion" id="deliveryFAQ">
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="faq1">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse1">
+                            How much does manual delivery cost?
+                        </button>
+                    </h2>
+                    <div id="collapse1" class="accordion-collapse collapse" data-bs-parent="#deliveryFAQ">
+                        <div class="accordion-body">
+                            Delivery fees are calculated based on distance from our dealership to your location. 
+                            You will be contacted with the exact fee before delivery is confirmed.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="faq2">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse2">
+                            How far in advance should I schedule?
+                        </button>
+                    </h2>
+                    <div id="collapse2" class="accordion-collapse collapse" data-bs-parent="#deliveryFAQ">
+                        <div class="accordion-body">
+                            We require a minimum of 24 hours advance notice. For best availability, 
+                            we recommend scheduling 3-5 business days in advance.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="faq3">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse3">
+                            What if I need to reschedule?
+                        </button>
+                    </h2>
+                    <div id="collapse3" class="accordion-collapse collapse" data-bs-parent="#deliveryFAQ">
+                        <div class="accordion-body">
+                            You can reschedule your delivery up to 4 hours before the scheduled time. 
+                            Contact our delivery team or use the tracking system to reschedule.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-populate contact information from customer data
+document.addEventListener('DOMContentLoaded', function() {
+    // Set default contact information
+    const contactName = document.getElementById('ContactPersonName');
+    const contactPhone = document.getElementById('ContactPersonPhone');
+    const contactEmail = document.getElementById('ContactPersonEmail');
+    
+    if (!contactName.value) contactName.value = '@Model.CustomerName';
+    if (!contactPhone.value) contactPhone.value = '@Model.CustomerPhone';
+    if (!contactEmail.value) contactEmail.value = '@Model.CustomerEmail';
+});
+
+// Validate delivery date
+document.getElementById('DeliveryDate').addEventListener('change', function() {
+    const selectedDate = new Date(this.value);
+    const minDate = new Date();
+    minDate.setDate(minDate.getDate() + 1);
+    
+    if (selectedDate < minDate) {
+        alert('Delivery date must be at least 24 hours from now.');
+        this.value = '';
+    }
+});
+
+// Phone number formatting
+document.getElementById('ContactPersonPhone').addEventListener('input', function() {
+    let value = this.value.replace(/\D/g, '');
+    if (value.length >= 10) {
+        value = value.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
+    }
+    this.value = value;
+});
+</script>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

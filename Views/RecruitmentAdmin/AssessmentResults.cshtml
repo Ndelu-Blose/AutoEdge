@@ -1,0 +1,284 @@
+@model IEnumerable<AutoEdge.Models.Entities.Assessment>
+@{
+    ViewData["Title"] = "Assessment Results";
+}
+
+<style>
+    .modern-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    .modern-table thead th {
+        background: linear-gradient(135deg, var(--primary-color) 0%, #34495e 100%);
+        color: white;
+        font-weight: 600;
+        padding: 1rem;
+        border: none;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .modern-table tbody tr {
+        background: white;
+        transition: all 0.2s ease;
+        border-bottom: 1px solid var(--border-color);
+    }
+    .modern-table tbody tr:hover {
+        background: #f8f9fa;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .modern-table tbody td {
+        padding: 1.25rem 1rem;
+        vertical-align: middle;
+        color: #333 !important;
+        font-size: 0.95rem;
+    }
+</style>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-clipboard-check"></i> Assessment Results
+                    </h4>
+                </div>
+                <div class="card-body">
+                    @if (Model != null && Model.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="modern-table">
+                                <thead>
+                                    <tr>
+                                        <th><i class="fas fa-user mr-2"></i>Candidate</th>
+                                        <th><i class="fas fa-clipboard-list mr-2"></i>Assessment</th>
+                                        <th><i class="fas fa-star mr-2"></i>Score</th>
+                                        <th><i class="fas fa-info-circle mr-2"></i>Status</th>
+                                        <th><i class="fas fa-calendar-check mr-2"></i>Completed Date</th>
+                                        <th><i class="fas fa-calendar-times mr-2"></i>Due Date</th>
+                                        <th><i class="fas fa-cogs mr-2"></i>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var assessment in Model.OrderByDescending(a => a.CompletedDate))
+                                    {
+                                        <tr>
+                                            <td style="font-weight: 500;">
+                                                @assessment.Application.FirstName @assessment.Application.LastName<br>
+                                                <small class="text-muted">@assessment.Application.Email</small>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-primary" style="padding: 0.35rem 0.75rem;">
+                                                    @assessment.AssessmentTitle
+                                                </span><br>
+                                                <small class="text-muted">@assessment.AssessmentType</small>
+                                            </td>
+                                            <td>
+                                                @if (assessment.IsCompleted)
+                                                {
+                                                    <div class="progress" style="height: 25px;">
+                                                        <div class="progress-bar @(assessment.Score >= 70 ? "bg-success" : "bg-danger")" 
+                                                             role="progressbar" style="width: @assessment.Score%">
+                                                            @assessment.Score%
+                                                        </div>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">Not completed</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (assessment.IsCompleted)
+                                                {
+                                                    @if (assessment.IsPassed)
+                                                    {
+                                                        <span class="badge bg-success" style="padding: 0.35rem 0.75rem;">
+                                                            <i class="fas fa-check mr-1"></i>Passed
+                                                        </span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-danger" style="padding: 0.35rem 0.75rem;">
+                                                            <i class="fas fa-times mr-1"></i>Failed
+                                                        </span>
+                                                    }
+                                                }
+                                                else if (assessment.DueDate < DateTime.Now)
+                                                {
+                                                    <span class="badge bg-warning text-dark" style="padding: 0.35rem 0.75rem;">
+                                                        <i class="fas fa-clock mr-1"></i>Overdue
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-info" style="padding: 0.35rem 0.75rem;">
+                                                        <i class="fas fa-hourglass-half mr-1"></i>Pending
+                                                    </span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (assessment.CompletedDate.HasValue)
+                                                {
+                                                    <i class="fas fa-calendar-alt text-muted mr-1"></i>
+                                                    @assessment.CompletedDate.Value.ToString("MMM dd, yyyy")<br>
+                                                    <i class="fas fa-clock text-muted mr-1"></i>
+                                                    @assessment.CompletedDate.Value.ToString("HH:mm")
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">Not completed</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <i class="fas fa-calendar-alt text-muted mr-1"></i>
+                                                @assessment.DueDate.ToString("MMM dd, yyyy")<br>
+                                                <i class="fas fa-clock text-muted mr-1"></i>
+                                                @assessment.DueDate.ToString("HH:mm")
+                                            </td>
+                                            <td>
+                                                <div class="d-flex gap-2">
+                                                    @if (assessment.IsCompleted)
+                                                    {
+                                                        <a asp-controller="RecruitmentAdmin" asp-action="ViewAssessmentDetails" asp-route-id="@assessment.AssessmentId" 
+                                                           class="btn btn-outline-info btn-sm" title="View Details">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                        <a asp-controller="RecruitmentAdmin" asp-action="DownloadAssessmentReport" asp-route-id="@assessment.AssessmentId" 
+                                                           class="btn btn-outline-secondary btn-sm" title="Download Report">
+                                                            <i class="fas fa-download"></i>
+                                                        </a>
+                                                    }
+                                                    <a asp-controller="RecruitmentAdmin" asp-action="ViewApplication" asp-route-id="@assessment.ApplicationId" 
+                                                       class="btn btn-outline-primary btn-sm" title="View Application">
+                                                        <i class="fas fa-user"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No assessment results</h5>
+                            <p class="text-muted">There are currently no assessment results to display.</p>
+                            <a asp-controller="RecruitmentAdmin" asp-action="Applications" class="btn btn-primary">
+                                <i class="fas fa-users"></i> View Applications
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-chart-pie"></i> Assessment Statistics
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <h4 class="text-success">@Model.Count(a => a.IsCompleted && a.IsPassed)</h4>
+                                <small class="text-muted">Passed</small>
+                            </div>
+                            <div class="col-6">
+                                <h4 class="text-danger">@Model.Count(a => a.IsCompleted && !a.IsPassed)</h4>
+                                <small class="text-muted">Failed</small>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <h4 class="text-info">@Model.Count(a => !a.IsCompleted && a.DueDate > DateTime.Now)</h4>
+                                <small class="text-muted">Pending</small>
+                            </div>
+                            <div class="col-6">
+                                <h4 class="text-warning">@Model.Count(a => !a.IsCompleted && a.DueDate <= DateTime.Now)</h4>
+                                <small class="text-muted">Overdue</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-chart-bar"></i> Average Scores
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        @{
+                            var completedAssessments = Model.Where(a => a.IsCompleted);
+                            var averageScore = completedAssessments.Any() ? completedAssessments.Average(a => a.Score) : 0;
+                        }
+                        <div class="text-center">
+                            <h2 class="text-primary">@averageScore.ToString("F1")%</h2>
+                            <small class="text-muted">Average Score</small>
+                        </div>
+                        <hr>
+                        <div class="text-center">
+                            <h4 class="text-success">@completedAssessments.Count(a => a.Score >= 70)</h4>
+                            <small class="text-muted">Above 70%</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-trophy"></i> Top Performers
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        @{
+                            var topPerformers = completedAssessments.OrderByDescending(a => a.Score).Take(3);
+                        }
+                        @if (topPerformers.Any())
+                        {
+                            <ul class="list-unstyled">
+                                @foreach (var assessment in topPerformers)
+                                {
+                                    <li class="mb-2">
+                                        <strong>@assessment.Application.FirstName @assessment.Application.LastName</strong><br>
+                                        <span class="badge bg-success" style="padding: 0.35rem 0.75rem;">@assessment.Score%</span>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        else
+                        {
+                            <p class="text-muted">No completed assessments yet.</p>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Add any JavaScript functionality here
+        });
+    </script>
+}
+

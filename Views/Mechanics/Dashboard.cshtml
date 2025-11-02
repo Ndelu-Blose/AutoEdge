@@ -1,0 +1,191 @@
+@model AutoEdge.Models.ViewModels.MechanicsDashboardVm
+@{
+    ViewData["Title"] = "My Dashboard";
+}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>My Dashboard</h2>
+    <div class="btn-group">
+        <a href="/Mechanics/ServiceChecklists" class="btn btn-info">
+            <i class="fas fa-clipboard-list me-2"></i>My Checklists
+        </a>
+        <a href="/Mechanics/ScanQRCode" class="btn btn-success">
+            <i class="fas fa-qrcode me-2"></i>Scan Customer QR Code
+        </a>
+    </div>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-md-3"><div class="card p-3"><div>Today's Jobs</div><div class="fs-3 fw-bold">@Model.Kpis.TodayCount</div></div></div>
+  <div class="col-md-3"><div class="card p-3"><div>Next 7 Days</div><div class="fs-3 fw-bold">@Model.Kpis.WeekCount</div></div></div>
+  <div class="col-md-3"><div class="card p-3"><div>Completed (Month)</div><div class="fs-3 fw-bold">@Model.Kpis.CompletedMonth</div></div></div>
+  <div class="col-md-3"><div class="card p-3"><div>In Progress Now</div><div class="fs-3 fw-bold">@Model.Kpis.InProgressNow</div></div></div>
+  </div>
+
+<h4>Today's Schedule</h4>
+<table class="table table-sm align-middle">
+  <thead><tr><th>Time</th><th>Ref</th><th>Service</th><th>Vehicle</th><th>Check-in</th><th>Status</th><th></th></tr></thead>
+  <tbody>
+  @foreach (var j in Model.Today)
+  {
+    var end = j.ScheduledStart.Add(TimeSpan.FromMinutes(j.DurationMin));
+    <tr class="@(j.ServiceBooking.IsCheckedIn ? "" : "table-warning")">
+      <td>@j.ScheduledStart.ToString("HH:mm") - @end.ToString("HH:mm")</td>
+      <td>@j.ServiceBooking.Reference</td>
+      <td>@j.ServiceBooking.ServiceType</td>
+      <td>@j.ServiceBooking.Make @j.ServiceBooking.Model (@j.ServiceBooking.Year)</td>
+      <td>
+        @if (j.ServiceBooking.IsCheckedIn)
+        {
+          <span class="badge bg-success">
+            <i class="fas fa-check-circle me-1"></i>Checked In
+          </span>
+        }
+        else
+        {
+          <span class="badge bg-warning">
+            <i class="fas fa-clock me-1"></i>Not Checked In
+          </span>
+        }
+      </td>
+      <td>@(j.IsCompleted ? "Completed" : "In Progress")</td>
+      <td>
+        <div class="d-flex gap-1 flex-wrap">
+          <form asp-action="SetCompleted" method="post" class="d-flex gap-1">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" value="@j.Id" />
+            <select name="completed" class="form-select form-select-sm">
+              <option value="false" selected="@(!j.IsCompleted)">In Progress</option>
+              <option value="true" selected="@(j.IsCompleted)">Completed</option>
+            </select>
+            <button class="btn btn-sm btn-primary">Update</button>
+          </form>
+          @if (!j.IsCompleted)
+          {
+            <button class="btn btn-sm btn-success" onclick="startChecklist(@j.Id)" 
+                    title="@(j.ServiceBooking.IsCheckedIn ? "Start service checklist" : "Customer must check in first")"
+                    @(j.ServiceBooking.IsCheckedIn ? "" : "disabled")>
+              <i class="fas fa-clipboard-list me-1"></i>Start Checklist
+            </button>
+          }
+        </div>
+      </td>
+    </tr>
+  }
+  </tbody>
+</table>
+
+<h4>Upcoming</h4>
+<table class="table table-sm align-middle">
+  <thead><tr><th>Date</th><th>Time</th><th>Ref</th><th>Service</th><th>Vehicle</th><th>Check-in</th><th>Actions</th></tr></thead>
+  <tbody>
+  @foreach (var j in Model.Upcoming)
+  {
+    var end2 = j.ScheduledStart.Add(TimeSpan.FromMinutes(j.DurationMin));
+    <tr class="@(j.ServiceBooking.IsCheckedIn ? "" : "table-warning")">
+      <td>@j.ScheduledDate.ToString("yyyy-MM-dd")</td>
+      <td>@j.ScheduledStart.ToString("HH:mm") - @end2.ToString("HH:mm")</td>
+      <td>@j.ServiceBooking.Reference</td>
+      <td>@j.ServiceBooking.ServiceType</td>
+      <td>@j.ServiceBooking.Make @j.ServiceBooking.Model (@j.ServiceBooking.Year)</td>
+      <td>
+        @if (j.ServiceBooking.IsCheckedIn)
+        {
+          <span class="badge bg-success">
+            <i class="fas fa-check-circle me-1"></i>Checked In
+          </span>
+        }
+        else
+        {
+          <span class="badge bg-warning">
+            <i class="fas fa-clock me-1"></i>Not Checked In
+          </span>
+        }
+      </td>
+      <td>
+        <button class="btn btn-sm btn-success" onclick="startChecklist(@j.Id)" 
+                title="@(j.ServiceBooking.IsCheckedIn ? "Start service checklist" : "Customer must check in first")"
+                @(j.ServiceBooking.IsCheckedIn ? "" : "disabled")>
+          <i class="fas fa-clipboard-list me-1"></i>Start Checklist
+        </button>
+      </td>
+    </tr>
+  }
+  </tbody>
+</table>
+
+<!-- Completed Services Section -->
+<h4>Completed Services (History)</h4>
+<table class="table table-sm align-middle">
+  <thead><tr><th>Date</th><th>Time</th><th>Ref</th><th>Service</th><th>Vehicle</th><th>Customer</th><th>Actions</th></tr></thead>
+  <tbody>
+  @if (ViewBag.CompletedJobs != null && ((IEnumerable<AutoEdge.Models.Entities.ServiceJob>)ViewBag.CompletedJobs).Any())
+  {
+    @foreach (var j in (IEnumerable<AutoEdge.Models.Entities.ServiceJob>)ViewBag.CompletedJobs)
+    {
+      var end3 = j.ScheduledStart.Add(TimeSpan.FromMinutes(j.DurationMin));
+      <tr class="table-success">
+        <td>@j.ScheduledDate.ToString("yyyy-MM-dd")</td>
+        <td>@j.ScheduledStart.ToString("HH:mm") - @end3.ToString("HH:mm")</td>
+        <td>@j.ServiceBooking.Reference</td>
+        <td>@j.ServiceBooking.ServiceType</td>
+        <td>@j.ServiceBooking.Make @j.ServiceBooking.Model (@j.ServiceBooking.Year)</td>
+        <td>@j.ServiceBooking.CustomerName</td>
+        <td>
+          <span class="badge bg-success">
+            <i class="fas fa-check-circle me-1"></i>Completed
+          </span>
+        </td>
+      </tr>
+    }
+  }
+  else
+  {
+    <tr>
+      <td colspan="7" class="text-center text-muted">
+        <i class="fas fa-history me-2"></i>No completed services yet
+      </td>
+    </tr>
+  }
+  </tbody>
+</table>
+
+<script>
+function startChecklist(serviceJobId) {
+    if (!confirm('Start a service checklist for this job? This will create a detailed checklist for documenting the service work.')) {
+        return;
+    }
+    
+    fetch('/Mechanics/StartChecklist', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+        },
+        body: `serviceJobId=${serviceJobId}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Service checklist created successfully!');
+            window.location.href = `/Mechanics/ServiceChecklist/${data.checklistId}`;
+        } else {
+            if (data.checklistId) {
+                alert('Checklist already exists. Redirecting to existing checklist...');
+                window.location.href = `/Mechanics/ServiceChecklist/${data.checklistId}`;
+            } else if (data.requiresCheckIn) {
+                alert('Cannot start checklist: ' + data.message + '\n\nPlease use the "Scan Customer QR Code" button to check in the customer first.');
+                // Optionally redirect to QR scanner
+                if (confirm('Would you like to go to the QR Code scanner to check in the customer?')) {
+                    window.location.href = '/Mechanics/ScanQRCode';
+                }
+            } else {
+                alert('Error creating checklist: ' + data.message);
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error creating service checklist.');
+    });
+}
+</script>

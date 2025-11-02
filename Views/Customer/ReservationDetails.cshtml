@@ -1,0 +1,335 @@
+@model AutoEdge.Models.Entities.Reservation
+@{
+    ViewData["Title"] = "Reservation Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-bookmark me-2"></i>My Reservation #@Model.ReservationNumber</h2>
+                <a href="@Url.Action("Reservations")" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>Back to My Reservations
+                </a>
+            </div>
+
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <div class="row">
+                <!-- Reservation Information -->
+                <div class="col-lg-8">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Reservation Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6 class="text-muted">Reservation Details</h6>
+                                    <p><strong>Reservation Number:</strong> @Model.ReservationNumber</p>
+                                    <p><strong>Status:</strong> 
+                                        @switch (Model.Status)
+                                        {
+                                            case "Active":
+                                                @if (Model.ExpiryDate < DateTime.UtcNow)
+                                                {
+                                                    <span class="badge bg-warning">Expired</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-success">@Model.Status</span>
+                                                }
+                                                break;
+                                            case "Confirmed":
+                                                <span class="badge bg-primary">@Model.Status</span>
+                                                break;
+                                            case "Expired":
+                                                <span class="badge bg-warning">@Model.Status</span>
+                                                break;
+                                            case "Cancelled":
+                                                <span class="badge bg-danger">@Model.Status</span>
+                                                break;
+                                            case "Completed":
+                                                <span class="badge bg-success">@Model.Status</span>
+                                                break;
+                                            default:
+                                                <span class="badge bg-light text-dark">@Model.Status</span>
+                                                break;
+                                        }
+                                    </p>
+                                    <p><strong>Created:</strong> @Model.CreatedDate.ToString("MMM dd, yyyy HH:mm")</p>
+                                    <p><strong>Expiry Date:</strong> 
+                                        @Model.ExpiryDate.ToString("MMM dd, yyyy HH:mm")
+                                        @if (Model.ExpiryDate < DateTime.UtcNow && Model.Status == "Active")
+                                        {
+                                            <span class="badge bg-danger ms-2">Expired</span>
+                                        }
+                                        else if (Model.Status == "Active")
+                                        {
+                                            <span class="badge bg-info ms-2">@((Model.ExpiryDate - DateTime.UtcNow).Days) days left</span>
+                                        }
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-muted">Financial Information</h6>
+                                    <p><strong>Deposit Amount:</strong> @Model.DepositAmount.ToString("C")</p>
+                                    @if (Model.RefundAmount.HasValue && Model.RefundAmount > 0)
+                                    {
+                                        <p><strong>Refund Amount:</strong> <span class="text-success">@Model.RefundAmount.Value.ToString("C")</span></p>
+                                    }
+                                    @if (!string.IsNullOrEmpty(Model.PaymentMethod))
+                                    {
+                                        <p><strong>Payment Method:</strong> @Model.PaymentMethod</p>
+                                    }
+                                    @if (!string.IsNullOrEmpty(Model.PaymentStatus))
+                                    {
+                                        <p><strong>Payment Status:</strong> 
+                                            <span class="badge @(Model.PaymentStatus == "Completed" ? "bg-success" : Model.PaymentStatus == "Failed" ? "bg-danger" : "bg-warning")">@Model.PaymentStatus</span>
+                                        </p>
+                                    }
+                                </div>
+                            </div>
+                            
+                            @if (!string.IsNullOrEmpty(Model.Notes))
+                            {
+                                <hr>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <h6 class="text-muted">Notes</h6>
+                                        <div class="bg-light p-3 rounded">
+                                            @Model.Notes
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Vehicle Information -->
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0"><i class="fas fa-car me-2"></i>Vehicle Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                @if (Model.Vehicle.VehicleImages.Any())
+                                {
+                                    <div class="col-md-4">
+                                        <img src="@Model.Vehicle.VehicleImages.FirstOrDefault()?.ImagePath" 
+                                             alt="@Model.Vehicle.Make @Model.Vehicle.Model" 
+                                             class="img-fluid rounded">
+                                    </div>
+                                }
+                                <div class="col-md-8">
+                                    <h4>@Model.Vehicle.Year @Model.Vehicle.Make @Model.Vehicle.Model</h4>
+                                    <p><strong>VIN:</strong> @Model.Vehicle.VIN</p>
+                                    <p><strong>Price:</strong> @Model.Vehicle.SellingPrice.ToString("C")</p>
+                                    <p><strong>Mileage:</strong> @Model.Vehicle.Mileage.ToString("N0") miles</p>
+                                    <p><strong>Status:</strong> 
+                                        <span class="badge @(Model.Vehicle.Status == "Available" ? "bg-success" : Model.Vehicle.Status == "Reserved" ? "bg-warning" : "bg-danger")">@Model.Vehicle.Status</span>
+                                    </p>
+                                    @if (!string.IsNullOrEmpty(Model.Vehicle.Features))
+                                    {
+                                        <p><strong>Features:</strong> @Model.Vehicle.Features</p>
+                                    }
+                                    <p><strong>Condition:</strong> @Model.Vehicle.Condition</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status Panel -->
+                <div class="col-lg-4">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Reservation Status</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="text-center mb-3">
+                                <div class="status-circle @(Model.Status.ToLower())">
+                                    @switch (Model.Status)
+                                    {
+                                        case "Active":
+                                            <i class="fas fa-clock"></i>
+                                            break;
+                                        case "Confirmed":
+                                            <i class="fas fa-check"></i>
+                                            break;
+                                        case "Expired":
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                            break;
+                                        case "Cancelled":
+                                            <i class="fas fa-times"></i>
+                                            break;
+                                        case "Completed":
+                                            <i class="fas fa-check-circle"></i>
+                                            break;
+                                        default:
+                                            <i class="fas fa-question"></i>
+                                            break;
+                                    }
+                                </div>
+                                <h4 class="mt-2">@Model.Status</h4>
+                                @if (Model.Status == "Active" && Model.ExpiryDate > DateTime.UtcNow)
+                                {
+                                    <p class="text-muted">@((Model.ExpiryDate - DateTime.UtcNow).Days) days remaining</p>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="card shadow-sm mt-3">
+                        <div class="card-header bg-secondary text-white">
+                            <h6 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <a href="@Url.Action("Details", "VehicleBrowse", new { id = Model.VehicleId })" 
+                                   class="btn btn-outline-info btn-sm">
+                                    <i class="fas fa-car me-1"></i>View Vehicle Details
+                                </a>
+                                @if (Model.Status == "Active")
+                                {
+                                    <button class="btn btn-outline-warning btn-sm" onclick="cancelReservation()">
+                                        <i class="fas fa-times me-1"></i>Cancel Reservation
+                                    </button>
+                                }
+                                @if (Model.Status == "Confirmed")
+                                {
+                                    <a href="@Url.Action("InitiatePurchase", "Purchase", new { reservationId = Model.Id })" 
+                                       class="btn btn-outline-success btn-sm">
+                                        <i class="fas fa-shopping-cart me-1"></i>Proceed to Purchase
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reservation Timeline -->
+                    <div class="card shadow-sm mt-3">
+                        <div class="card-header bg-dark text-white">
+                            <h6 class="mb-0"><i class="fas fa-clock me-2"></i>Timeline</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="timeline">
+                                <div class="timeline-item">
+                                    <div class="timeline-marker bg-success"></div>
+                                    <div class="timeline-content">
+                                        <h6 class="mb-1">Reservation Created</h6>
+                                        <small class="text-muted">@Model.CreatedDate.ToString("MMM dd, yyyy HH:mm")</small>
+                                    </div>
+                                </div>
+                                @if (Model.Status != "Active")
+                                {
+                                    <div class="timeline-item">
+                                        <div class="timeline-marker @(Model.Status == "Cancelled" ? "bg-danger" : "bg-primary")"></div>
+                                        <div class="timeline-content">
+                                            <h6 class="mb-1">Status: @Model.Status</h6>
+                                            <small class="text-muted">@Model.ModifiedDate.ToString("MMM dd, yyyy HH:mm")</small>
+                                        </div>
+                                    </div>
+                                }
+                                <div class="timeline-item">
+                                    <div class="timeline-marker @(Model.ExpiryDate < DateTime.UtcNow ? "bg-danger" : "bg-warning")"></div>
+                                    <div class="timeline-content">
+                                        <h6 class="mb-1">@(Model.ExpiryDate < DateTime.UtcNow ? "Expired" : "Expires")</h6>
+                                        <small class="text-muted">@Model.ExpiryDate.ToString("MMM dd, yyyy HH:mm")</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function cancelReservation() {
+    if (confirm('Are you sure you want to cancel this reservation? This action cannot be undone.')) {
+        // Implementation for cancellation would go here
+        alert('Reservation cancellation feature will be implemented.');
+    }
+}
+</script>
+
+<style>
+.timeline {
+    position: relative;
+    padding-left: 20px;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.timeline-item:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: -12px;
+    top: 20px;
+    width: 2px;
+    height: calc(100% + 10px);
+    background-color: #dee2e6;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -16px;
+    top: 4px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 2px #dee2e6;
+}
+
+.timeline-content h6 {
+    font-size: 0.875rem;
+    margin-bottom: 2px;
+}
+
+.status-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    font-size: 2rem;
+    color: white;
+}
+
+.status-circle.active {
+    background-color: #28a745;
+}
+
+.status-circle.confirmed {
+    background-color: #007bff;
+}
+
+.status-circle.expired {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.status-circle.cancelled {
+    background-color: #dc3545;
+}
+
+.status-circle.completed {
+    background-color: #28a745;
+}
+</style>

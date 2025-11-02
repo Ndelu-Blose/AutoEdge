@@ -1,0 +1,537 @@
+@{
+    ViewData["Title"] = "User Analytics Report";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2><i class="fas fa-users me-2"></i>User Analytics Report</h2>
+                    <p class="text-muted mb-0">User activity, engagement, and growth metrics</p>
+                </div>
+                <div>
+                    <a href="@Url.Action("Index")" class="btn btn-outline-secondary me-2">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Reports
+                    </a>
+                    <button class="btn btn-primary" onclick="window.print()">
+                        <i class="fas fa-print me-2"></i>Print Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filter Options</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" action="@Url.Action("Users")">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <label for="startDate" class="form-label">Start Date</label>
+                                <input type="date" class="form-control" id="startDate" name="startDate" value="@ViewBag.StartDate">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="endDate" class="form-label">End Date</label>
+                                <input type="date" class="form-control" id="endDate" name="endDate" value="@ViewBag.EndDate">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="userRole" class="form-label">User Role</label>
+                                <select class="form-select" id="userRole" name="userRole">
+                                    <option value="">All Roles</option>
+                                    <option value="Customer" selected="@(ViewBag.UserRole == "Customer")">Customer</option>
+                                    <option value="Driver" selected="@(ViewBag.UserRole == "Driver")">Driver</option>
+                                    <option value="Admin" selected="@(ViewBag.UserRole == "Admin")">Admin</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary me-2">
+                                    <i class="fas fa-search me-2"></i>Apply Filter
+                                </button>
+                                <a href="@Url.Action("Users")" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times me-2"></i>Clear
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">@ViewBag.TotalUsers</h4>
+                            <p class="mb-0">Total Users</p>
+                            <small class="text-light">@ViewBag.UserGrowth% growth</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">@ViewBag.ActiveUsers</h4>
+                            <p class="mb-0">Active Users</p>
+                            <small class="text-light">Last 30 days</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-user-check fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-info text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">@ViewBag.NewUsers</h4>
+                            <p class="mb-0">New Users</p>
+                            <small class="text-light">This month</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-user-plus fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-warning text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">@ViewBag.EngagementRate%</h4>
+                            <p class="mb-0">Engagement Rate</p>
+                            <small class="text-light">User activity</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-chart-line fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Distribution and Activity -->
+    <div class="row mb-4">
+        <div class="col-lg-6 mb-3">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>User Distribution by Role</h5>
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.UsersByRole != null)
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Role</th>
+                                        <th>Count</th>
+                                        <th>Percentage</th>
+                                        <th>Distribution</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var role in ViewBag.UsersByRole)
+                                    {
+                                        <tr>
+                                            <td><strong>@role.Role</strong></td>
+                                            <td><span class="badge bg-primary">@role.Count</span></td>
+                                            <td><span class="text-info fw-bold">@Math.Round((double)role.Percentage, 1)%</span></td>
+                                            <td>
+                                                <div class="progress" style="height: 20px;">
+                                                    <div class="progress-bar bg-info" role="progressbar" style="width: @role.Percentage%" aria-valuenow="@role.Percentage" aria-valuemin="0" aria-valuemax="100">
+                                                        @Math.Round((double)role.Percentage, 1)%
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center">No user role data available</p>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 mb-3">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Monthly User Registration</h5>
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.MonthlyRegistrations != null)
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Month</th>
+                                        <th>New Users</th>
+                                        <th>Growth</th>
+                                        <th>Trend</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var month in ViewBag.MonthlyRegistrations)
+                                    {
+                                        <tr>
+                                            <td>@month.Month</td>
+                                            <td><span class="badge bg-info">@month.Count</span></td>
+                                            <td>
+                                                @if (month.Growth >= 0)
+                                                {
+                                                    <span class="text-success">+@month.Growth%</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-danger">@month.Growth%</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (month.Growth >= 0)
+                                                {
+                                                    <i class="fas fa-arrow-up text-success"></i>
+                                                }
+                                                else
+                                                {
+                                                    <i class="fas fa-arrow-down text-danger"></i>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center">No monthly registration data available</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Active Users -->
+    @if (ViewBag.TopActiveUsers != null)
+    {
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-star me-2"></i>Most Active Users</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>User</th>
+                                        <th>Email</th>
+                                        <th>Role</th>
+                                        <th>Login Count</th>
+                                        <th>Last Activity</th>
+                                        <th>Purchases</th>
+                                        <th>Activity Score</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        var rank = 1;
+                                    }
+                                    @foreach (var user in ViewBag.TopActiveUsers)
+                                    {
+                                        <tr>
+                                            <td>
+                                                @if (rank <= 3)
+                                                {
+                                                    <span class="badge bg-warning text-dark">@rank</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary">@rank</span>
+                                                }
+                                            </td>
+                                            <td><strong>@user.Name</strong></td>
+                                            <td>@user.Email</td>
+                                            <td><span class="badge bg-info">@user.Role</span></td>
+                                            <td><span class="badge bg-primary">@user.LoginCount</span></td>
+                                            <td>@user.LastActivity.ToString("MMM dd, yyyy")</td>
+                                            <td><span class="badge bg-success">@user.PurchaseCount</span></td>
+                                            <td>
+                                                <div class="progress" style="height: 20px;">
+                                                    <div class="progress-bar bg-success" role="progressbar" style="width: @user.ActivityScore%" aria-valuenow="@user.ActivityScore" aria-valuemin="0" aria-valuemax="100">
+                                                        @Math.Round((double)user.ActivityScore, 1)%
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        rank++;
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- User Engagement Metrics -->
+    <div class="row mb-4">
+        <div class="col-lg-8 mb-3">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-area me-2"></i>User Engagement Metrics</h5>
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.EngagementMetrics != null)
+                    {
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="text-center p-3 border rounded mb-3">
+                                    <h4 class="text-primary">@ViewBag.EngagementMetrics.AverageSessionDuration</h4>
+                                    <p class="mb-0">Avg Session Duration</p>
+                                    <small class="text-muted">Minutes per session</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-center p-3 border rounded mb-3">
+                                    <h4 class="text-success">@ViewBag.EngagementMetrics.PageViewsPerSession</h4>
+                                    <p class="mb-0">Pages per Session</p>
+                                    <small class="text-muted">Average page views</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-center p-3 border rounded mb-3">
+                                    <h4 class="text-info">@ViewBag.EngagementMetrics.BounceRate%</h4>
+                                    <p class="mb-0">Bounce Rate</p>
+                                    <small class="text-muted">Single page visits</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="text-center p-3 border rounded mb-3">
+                                    <h4 class="text-warning">@ViewBag.EngagementMetrics.ReturnUserRate%</h4>
+                                    <p class="mb-0">Return User Rate</p>
+                                    <small class="text-muted">Users who return</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="text-center p-3 border rounded mb-3">
+                                    <h4 class="text-danger">@ViewBag.EngagementMetrics.ConversionRate%</h4>
+                                    <p class="mb-0">User Conversion Rate</p>
+                                    <small class="text-muted">Visitors to customers</small>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center">No engagement metrics available</p>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 mb-3">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-clock me-2"></i>User Activity Timeline</h5>
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.RecentActivity != null)
+                    {
+                        <div class="timeline">
+                            @foreach (var activity in ViewBag.RecentActivity)
+                            {
+                                <div class="timeline-item mb-3">
+                                    <div class="d-flex">
+                                        <div class="flex-shrink-0">
+                                            <div class="timeline-marker bg-primary"></div>
+                                        </div>
+                                        <div class="flex-grow-1 ms-3">
+                                            <h6 class="mb-1">@activity.Action</h6>
+                                            <p class="mb-1 text-muted">@activity.UserName</p>
+                                            <small class="text-muted">@activity.Timestamp.ToString("MMM dd, HH:mm")</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center">No recent activity available</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent User Registrations -->
+    @if (ViewBag.RecentUsers != null)
+    {
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-user-plus me-2"></i>Recent User Registrations</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Registration Date</th>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Role</th>
+                                        <th>Status</th>
+                                        <th>Last Login</th>
+                                        <th>Activity</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var user in ViewBag.RecentUsers)
+                                    {
+                                        <tr>
+                                            <td>@user.RegistrationDate.ToString("MMM dd, yyyy")</td>
+                                            <td><strong>@user.Name</strong></td>
+                                            <td>@user.Email</td>
+                                            <td><span class="badge bg-info">@user.Role</span></td>
+                                            <td>
+                                                @if (user.IsActive)
+                                                {
+                                                    <span class="badge bg-success">Active</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary">Inactive</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (user.LastLogin.HasValue)
+                                                {
+                                                    @user.LastLogin.Value.ToString("MMM dd, yyyy")
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">Never</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (user.LoginCount > 10)
+                                                {
+                                                    <span class="badge bg-success">High</span>
+                                                }
+                                                else if (user.LoginCount > 3)
+                                                {
+                                                    <span class="badge bg-warning">Medium</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-danger">Low</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+@@media print {
+    .btn, .card-header, .navbar, .sidebar {
+        display: none !important;
+    }
+    
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+    
+    .container-fluid {
+        padding: 0 !important;
+    }
+}
+
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.progress {
+    height: 8px;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #495057;
+}
+
+.badge {
+    font-size: 0.75em;
+}
+
+.timeline-marker {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-top: 4px;
+}
+
+.timeline-item {
+    position: relative;
+}
+
+.timeline-item:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 16px;
+    bottom: -12px;
+    width: 2px;
+    background-color: #dee2e6;
+}
+</style>

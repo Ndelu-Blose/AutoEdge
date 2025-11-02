@@ -1,0 +1,342 @@
+@model AutoEdge.Models.Entities.EmploymentOffer
+
+@{
+    ViewData["Title"] = "Employment Offer Review";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h3 class="card-title text-center mb-0">
+                        <i class="fas fa-gift mr-2"></i>
+                        🎉 Congratulations!
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <h4>Dear @Model.Application.FirstName @Model.Application.LastName,</h4>
+                        <p class="lead">
+                            Congratulations! We are pleased to offer you the position of <strong>@Model.JobTitle</strong> at AutoEdge.
+                        </p>
+                        <p>Your performance throughout the recruitment process has been outstanding.</p>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">Offer Details</h5>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td><strong>Job Title:</strong></td>
+                                            <td>@Model.JobTitle</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Department:</strong></td>
+                                            <td>@Model.Department</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Salary Offered:</strong></td>
+                                            <td>R@(Model.SalaryOffered.ToString("N0")) per month</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Start Date:</strong></td>
+                                            <td>@Model.StartDate.ToString("dd MMMM yyyy")</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Employment Type:</strong></td>
+                                            <td>@Model.EmploymentType</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Work Location:</strong></td>
+                                            <td>@Model.WorkLocation</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">Next Steps</h5>
+                                </div>
+                                <div class="card-body">
+                                    <ol class="list-group list-group-flush">
+                                        <li class="list-group-item d-flex align-items-center">
+                                            <i class="fas fa-file-contract text-primary mr-3"></i>
+                                            Review attached employment contract
+                                        </li>
+                                        <li class="list-group-item d-flex align-items-center">
+                                            <i class="fas fa-clipboard-list text-info mr-3"></i>
+                                            Complete pre-employment documentation
+                                        </li>
+                                        <li class="list-group-item d-flex align-items-center">
+                                            <i class="fas fa-calendar-check text-success mr-3"></i>
+                                            Schedule onboarding session
+                                        </li>
+                                    </ol>
+                                    
+                                    <div class="alert alert-warning mt-3">
+                                        <i class="fas fa-clock mr-2"></i>
+                                        <strong>Please confirm your acceptance by @Model.OfferExpiryDate.ToString("dddd, dd MMMM yyyy")</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Employment Contract Section -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5 class="card-title">
+                                <i class="fas fa-file-contract mr-2"></i>
+                                Employment Contract
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                Please review the complete employment contract below. This includes all terms and conditions, job responsibilities, working hours, salary details, leave entitlements, and company policies.
+                            </div>
+                            
+                            <!-- Contract Content -->
+                            <div class="contract-content" style="border: 1px solid #ddd; padding: 20px; background-color: #f9f9f9; max-height: 500px; overflow-y: auto;">
+                                <h4>EMPLOYMENT CONTRACT</h4>
+                                <h5>AutoEdge (Pty) Ltd</h5>
+                                
+                                <p><strong>Employee:</strong> @Model.Application.FirstName @Model.Application.LastName</p>
+                                <p><strong>Position:</strong> @Model.JobTitle</p>
+                                <p><strong>Department:</strong> @Model.Department</p>
+                                <p><strong>Start Date:</strong> @Model.StartDate.ToString("dd MMMM yyyy")</p>
+                                
+                                <h6>1. TERMS OF EMPLOYMENT</h6>
+                                <p>This is a @Model.EmploymentType.ToLower() position with AutoEdge (Pty) Ltd. Your employment will commence on @Model.StartDate.ToString("dd MMMM yyyy").</p>
+                                
+                                <h6>2. JOB RESPONSIBILITIES</h6>
+                                <p>As a @Model.JobTitle, you will be responsible for providing technical support and assistance to our customers and internal staff. Your duties will include but are not limited to:</p>
+                                <ul>
+                                    <li>Providing desktop support and troubleshooting</li>
+                                    <li>Installing and configuring software and hardware</li>
+                                    <li>Maintaining IT equipment and systems</li>
+                                    <li>Assisting users with technical issues</li>
+                                    <li>Documenting support requests and solutions</li>
+                                </ul>
+                                
+                                <h6>3. WORKING HOURS</h6>
+                                <p>Your working hours will be 08:00 to 17:00, Monday to Friday, with a one-hour lunch break.</p>
+                                
+                                <h6>4. REMUNERATION</h6>
+                                <p>Your monthly salary will be R@(Model.SalaryOffered.ToString("N0")), payable monthly in arrears.</p>
+                                
+                                <h6>5. LEAVE ENTITLEMENTS</h6>
+                                <p>You are entitled to 21 days annual leave per year, which must be taken in accordance with company policy.</p>
+                                
+                                <h6>6. NOTICE PERIOD</h6>
+                                <p>Either party may terminate this contract by giving 30 days written notice.</p>
+                                
+                                <h6>7. PROBATION PERIOD</h6>
+                                <p>You will be subject to a 3-month probation period during which your performance will be evaluated.</p>
+                                
+                                <h6>8. CONFIDENTIALITY</h6>
+                                <p>You agree to maintain strict confidentiality regarding all company information, processes, and customer data.</p>
+                                
+                                <h6>9. COMPANY POLICIES</h6>
+                                <p>You agree to comply with all company policies and procedures as outlined in the employee handbook.</p>
+                                
+                                <h6>10. BENEFITS</h6>
+                                <p>You will be eligible for company benefits including medical aid contribution, pension fund, and other benefits as per company policy.</p>
+                                
+                                <p><strong>By signing this contract, you acknowledge that you have read, understood, and agree to all the terms and conditions outlined above.</strong></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contract Acceptance Form -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5 class="card-title">
+                                <i class="fas fa-signature mr-2"></i>
+                                Contract Acceptance
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form asp-action="AcceptContract" method="post" id="acceptContractForm">
+                                <input type="hidden" name="token" value="@ViewContext.HttpContext.Request.Query["token"]" />
+                                <input type="hidden" name="hasReadContract" id="hasReadContractHidden" value="false" />
+                                <input type="hidden" name="acceptsTerms" id="acceptsTermsHidden" value="false" />
+                                
+                                <div class="form-group">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="hasReadContract" name="hasReadContract" required>
+                                        <label class="form-check-label" for="hasReadContract">
+                                            I have read and understood the employment contract
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="acceptsTerms" name="acceptsTerms" required>
+                                        <label class="form-check-label" for="acceptsTerms">
+                                            I accept the terms and conditions
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="signature">Digital Signature <span class="text-danger">*</span></label>
+                                    <div class="signature-pad-container">
+                                        <canvas id="signaturePad" width="400" height="200" style="border: 1px solid #ddd; border-radius: 4px;"></canvas>
+                                        <div class="mt-2">
+                                            <button type="button" id="clearSignature" class="btn btn-secondary btn-sm">
+                                                <i class="fas fa-eraser mr-1"></i>
+                                                Clear
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" id="signature" name="signature" required />
+                                    <small class="form-text text-muted">Please sign above to accept the contract</small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <div class="btn-group w-100" role="group">
+                                        <button type="submit" class="btn btn-success btn-lg" id="acceptButton">
+                                            <i class="fas fa-check mr-2"></i>
+                                            Accept Contract
+                                        </button>
+                                        <button type="button" class="btn btn-danger btn-lg" id="declineButton">
+                                            <i class="fas fa-times mr-2"></i>
+                                            Decline Offer
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer text-center">
+                    <p class="mb-0">
+                        <strong>Welcome to the AutoEdge team!</strong><br>
+                        Best regards,<br>
+                        AutoEdge HR Team
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Decline Modal -->
+<div class="modal fade" id="declineModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Decline Employment Offer</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <form asp-action="DeclineOffer" method="post">
+                <div class="modal-body">
+                    <input type="hidden" name="token" value="@ViewContext.HttpContext.Request.Query["token"]" />
+                    <p>We're sorry to hear that you're declining our offer. Please let us know the reason so we can improve our process.</p>
+                    <div class="form-group">
+                        <label for="rejectionReason">Reason for declining:</label>
+                        <textarea class="form-control" id="rejectionReason" name="rejectionReason" rows="4" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Submit Decline</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Initialize signature pad
+            const canvas = document.getElementById('signaturePad');
+            const signaturePad = new SignaturePad(canvas, {
+                backgroundColor: 'rgba(255, 255, 255, 0)',
+                penColor: 'rgb(0, 0, 0)'
+            });
+
+            // Clear signature
+            document.getElementById('clearSignature').addEventListener('click', function() {
+                signaturePad.clear();
+                document.getElementById('signature').value = '';
+            });
+
+            // Update signature input when signature changes
+            signaturePad.addEventListener('endStroke', function() {
+                if (!signaturePad.isEmpty()) {
+                    document.getElementById('signature').value = signaturePad.toDataURL();
+                } else {
+                    document.getElementById('signature').value = '';
+                }
+            });
+
+            // Decline button
+            document.getElementById('declineButton').addEventListener('click', function() {
+                $('#declineModal').modal('show');
+            });
+
+            // Update hidden fields when checkboxes change
+            document.getElementById('hasReadContract').addEventListener('change', function() {
+                document.getElementById('hasReadContractHidden').value = this.checked ? 'true' : 'false';
+            });
+
+            document.getElementById('acceptsTerms').addEventListener('change', function() {
+                document.getElementById('acceptsTermsHidden').value = this.checked ? 'true' : 'false';
+            });
+
+            // Form validation
+            document.getElementById('acceptContractForm').addEventListener('submit', function(e) {
+                const hasReadContract = document.getElementById('hasReadContract').checked;
+                const acceptsTerms = document.getElementById('acceptsTerms').checked;
+                const signature = document.getElementById('signature').value;
+
+                // Update hidden fields before submission
+                document.getElementById('hasReadContractHidden').value = hasReadContract ? 'true' : 'false';
+                document.getElementById('acceptsTermsHidden').value = acceptsTerms ? 'true' : 'false';
+
+                // Debug logging
+                console.log('Form submission validation:');
+                console.log('hasReadContract:', hasReadContract);
+                console.log('acceptsTerms:', acceptsTerms);
+                console.log('signaturePad.isEmpty():', signaturePad.isEmpty());
+                console.log('signature value length:', signature ? signature.length : 0);
+
+                // Ensure signature is captured before validation
+                if (!signaturePad.isEmpty() && !signature) {
+                    document.getElementById('signature').value = signaturePad.toDataURL();
+                    console.log('Signature captured and set to hidden field');
+                }
+
+                if (!hasReadContract || !acceptsTerms) {
+                    e.preventDefault();
+                    alert('Please check both agreement boxes.');
+                    return false;
+                }
+
+                if (signaturePad.isEmpty() || !signature) {
+                    e.preventDefault();
+                    alert('Please provide your digital signature.');
+                    return false;
+                }
+
+                console.log('Form validation passed, submitting...');
+            });
+        });
+    </script>
+}

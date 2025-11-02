@@ -1,0 +1,174 @@
+@{
+    ViewData["Title"] = "Scan QR Code";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-qrcode me-2"></i>
+                        Scan Delivery QR Code
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <p class="lead">Scan the customer's QR code to complete the delivery</p>
+                    </div>
+
+                    <!-- QR Code Scanner Section -->
+                    <div class="mb-4">
+                        <div id="qr-reader" style="width: 100%; max-width: 500px; margin: 0 auto;"></div>
+                    </div>
+
+                    <!-- Manual QR Code Input -->
+                    <div class="mb-4">
+                        <h5>Or Enter QR Code Manually:</h5>
+                        <div class="input-group">
+                            <input type="text" id="qrCodeInput" class="form-control" placeholder="Enter QR code here...">
+                            <button class="btn btn-primary" type="button" onclick="verifyManualQRCode()">
+                                <i class="fas fa-check me-1"></i>
+                                Verify
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Result Message -->
+                    <div id="resultMessage" class="alert" style="display: none;"></div>
+
+                    <!-- Action Buttons -->
+                    <div class="text-center">
+                        <button id="startScanBtn" class="btn btn-success me-2" onclick="startScanning()">
+                            <i class="fas fa-camera me-1"></i>
+                            Start Camera
+                        </button>
+                        <button id="stopScanBtn" class="btn btn-danger me-2" onclick="stopScanning()" style="display: none;">
+                            <i class="fas fa-stop me-1"></i>
+                            Stop Camera
+                        </button>
+                        <a href="@Url.Action("MyDeliveries", "Delivery")" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>
+                            Back to Deliveries
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Include QR Code Scanner Library -->
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+<script>
+    let html5QrcodeScanner;
+    let isScanning = false;
+
+    function startScanning() {
+        if (isScanning) return;
+
+        html5QrcodeScanner = new Html5QrcodeScanner(
+            "qr-reader",
+            { fps: 10, qrbox: { width: 250, height: 250 } },
+            false
+        );
+
+        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+        isScanning = true;
+        
+        document.getElementById('startScanBtn').style.display = 'none';
+        document.getElementById('stopScanBtn').style.display = 'inline-block';
+    }
+
+    function stopScanning() {
+        if (!isScanning) return;
+
+        html5QrcodeScanner.clear();
+        isScanning = false;
+        
+        document.getElementById('startScanBtn').style.display = 'inline-block';
+        document.getElementById('stopScanBtn').style.display = 'none';
+    }
+
+    function onScanSuccess(decodedText, decodedResult) {
+        // Stop scanning after successful scan
+        stopScanning();
+        
+        // Verify the scanned QR code
+        verifyQRCode(decodedText);
+    }
+
+    function onScanFailure(error) {
+        // Handle scan failure (optional)
+        console.log(`QR Code scan error: ${error}`);
+    }
+
+    function verifyManualQRCode() {
+        const qrCode = document.getElementById('qrCodeInput').value.trim();
+        if (!qrCode) {
+            showMessage('Please enter a QR code.', 'danger');
+            return;
+        }
+        verifyQRCode(qrCode);
+    }
+
+    function verifyQRCode(qrCode) {
+        // Show loading message
+        showMessage('Verifying QR code...', 'info');
+
+        // Send AJAX request to verify QR code
+        fetch('@Url.Action("VerifyQRCode", "Delivery")', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+            },
+            body: `qrCode=${encodeURIComponent(qrCode)}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showMessage(data.message, 'success');
+                // Clear the input field
+                document.getElementById('qrCodeInput').value = '';
+                
+                // Optionally redirect after a delay
+                setTimeout(() => {
+                    window.location.href = '@Url.Action("MyDeliveries", "Delivery")';
+                }, 3000);
+            } else {
+                showMessage(data.message, 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showMessage('An error occurred while verifying the QR code.', 'danger');
+        });
+    }
+
+    function showMessage(message, type) {
+        const messageDiv = document.getElementById('resultMessage');
+        messageDiv.className = `alert alert-${type}`;
+        messageDiv.textContent = message;
+        messageDiv.style.display = 'block';
+        
+        // Auto-hide success messages after 5 seconds
+        if (type === 'success') {
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 5000);
+        }
+    }
+
+    // Allow Enter key to submit manual QR code
+    document.getElementById('qrCodeInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            verifyManualQRCode();
+        }
+    });
+</script>
+
+@section Scripts {
+    @Html.AntiForgeryToken()
+}

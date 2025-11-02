@@ -1,0 +1,568 @@
+@{
+    ViewData["Title"] = "Customer Dashboard";
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-0">Welcome back, @User.Identity.Name!</h1>
+                    <p class="text-muted">Manage your vehicle inquiries and reservations</p>
+                </div>
+                <div>
+                    <a href="@Url.Action("Profile")" class="btn btn-outline-primary">
+                        <i class="fas fa-user"></i> Edit Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+            <div class="stats-card">
+                <div class="stats-icon" style="background-color: var(--accent-color);">
+                    <i class="fas fa-question-circle"></i>
+                </div>
+                <div class="stats-number">@ViewBag.TotalInquiries</div>
+                <div class="stats-label">Total Inquiries</div>
+                <a href="@Url.Action("Inquiries")" class="btn btn-sm btn-outline-primary mt-2">
+                    View All <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+        
+        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+            <div class="stats-card">
+                <div class="stats-icon" style="background-color: var(--warning-color);">
+                    <i class="fas fa-bookmark"></i>
+                </div>
+                <div class="stats-number">@ViewBag.ActiveReservations</div>
+                <div class="stats-label">Active Reservations</div>
+                <a href="@Url.Action("Reservations")" class="btn btn-sm btn-outline-warning mt-2">
+                    View All <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+        
+        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+            <div class="stats-card">
+                <div class="stats-icon" style="background-color: var(--danger-color);">
+                    <i class="fas fa-receipt"></i>
+                </div>
+                <div class="stats-number">@ViewBag.TotalPurchases</div>
+                <div class="stats-label">My Purchases</div>
+                <a href="@Url.Action("MyPurchases", "Purchase")" class="btn btn-sm btn-outline-danger mt-2">
+                    View All <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+        
+        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+            <div class="stats-card">
+                <div class="stats-icon" style="background-color: var(--primary-color);">
+                    <i class="fas fa-truck"></i>
+                </div>
+                <div class="stats-number">@ViewBag.PendingDeliveries</div>
+                <div class="stats-label">Pending Deliveries</div>
+                <a href="@Url.Action("MyDeliveries", "Delivery")" class="btn btn-sm btn-outline-primary mt-2">
+                    Track All <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+        
+        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+            <div class="stats-card">
+                <div class="stats-icon" style="background-color: var(--success-color);">
+                    <i class="fas fa-car"></i>
+                </div>
+                <div class="stats-number"><i class="fas fa-search"></i></div>
+                <div class="stats-label">Browse Vehicles</div>
+                <a href="@Url.Action("Index", "VehicleBrowse")" class="btn btn-sm btn-outline-success mt-2">
+                    Browse Now <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+        
+        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+            <div class="stats-card">
+                <div class="stats-icon" style="background-color: var(--accent-color);">
+                    <i class="fas fa-phone"></i>
+                </div>
+                <div class="stats-number"><i class="fas fa-headset"></i></div>
+                <div class="stats-label">Support</div>
+                <a href="tel:+27648248658" class="btn btn-sm btn-outline-primary mt-2">
+                    Call Now <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+        
+        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+            <div class="stats-card">
+                <div class="stats-icon" style="background-color: var(--warning-color);">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div class="stats-number"><i class="fas fa-briefcase"></i></div>
+                <div class="stats-label">Job Listings</div>
+                <a href="@Url.Action("VacantPositions", "RecruitmentApplicant")" class="btn btn-sm btn-outline-warning mt-2">
+                    View Jobs <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+        
+        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+            <div class="stats-card">
+                <div class="stats-icon" style="background-color: #6f42c1;">
+                    <i class="fas fa-tasks"></i>
+                </div>
+                <div class="stats-number"><i class="fas fa-clipboard-list"></i></div>
+                <div class="stats-label">Assessments</div>
+                <a href="@Url.Action("MyAssessments", "RecruitmentApplicant")" class="btn btn-sm mt-2" style="border-color: #6f42c1; color: #6f42c1;">
+                    View Assessments <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Recent Inquiries -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-question-circle me-2"></i>Recent Inquiries</h5>
+                    <a href="@Url.Action("Inquiries")" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.RecentInquiries != null && ((IEnumerable<AutoEdge.Models.Entities.Inquiry>)ViewBag.RecentInquiries).Any())
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var inquiry in (IEnumerable<AutoEdge.Models.Entities.Inquiry>)ViewBag.RecentInquiries)
+                            {
+                                <div class="list-group-item border-0 px-0">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">
+                                                <a href="@Url.Action("InquiryDetails", new { id = inquiry.Id })" class="text-decoration-none">
+                                                    @inquiry.Vehicle?.Year @inquiry.Vehicle?.Make @inquiry.Vehicle?.Model
+                                                </a>
+                                            </h6>
+                                            <p class="mb-1 text-muted small">@(inquiry.Message?.Length > 100 ? inquiry.Message.Substring(0, 100) + "..." : inquiry.Message)</p>
+                                            <small class="text-muted">
+                                                <i class="fas fa-clock me-1"></i>@inquiry.CreatedDate.ToString("MMM dd, yyyy")
+                                            </small>
+                                        </div>
+                                        <div class="ms-2">
+                                            <span class="badge bg-@(inquiry.Status == "Open" ? "primary" : inquiry.Status == "InProgress" ? "warning" : "success")">@inquiry.Status</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-question-circle fa-3x text-muted mb-3"></i>
+                            <h6>No inquiries yet</h6>
+                            <p class="text-muted">Start browsing vehicles to make your first inquiry.</p>
+                            <a href="@Url.Action("Index", "VehicleBrowse")" class="btn btn-primary">
+                                <i class="fas fa-search"></i> Browse Vehicles
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Reservations -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-bookmark me-2"></i>Recent Reservations</h5>
+                    <a href="@Url.Action("Reservations")" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.RecentReservations != null && ((IEnumerable<AutoEdge.Models.Entities.Reservation>)ViewBag.RecentReservations).Any())
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var reservation in (IEnumerable<AutoEdge.Models.Entities.Reservation>)ViewBag.RecentReservations)
+                            {
+                                <div class="list-group-item border-0 px-0">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">
+                                                <a href="@Url.Action("ReservationDetails", new { id = reservation.Id })" class="text-decoration-none">
+                                                    @reservation.Vehicle?.Year @reservation.Vehicle?.Make @reservation.Vehicle?.Model
+                                                </a>
+                                            </h6>
+                                            <p class="mb-1 text-muted small">
+                                                <i class="fas fa-calendar me-1"></i>Reserved: @reservation.ReservationDate.ToString("MMM dd, yyyy")
+                                                <br>
+                                                <i class="fas fa-clock me-1"></i>Expires: @reservation.ExpiryDate.ToString("MMM dd, yyyy")
+                                            </p>
+                                            @if (reservation.ExpiryDate < DateTime.Now && reservation.Status == "Active")
+                                            {
+                                                <small class="text-danger">
+                                                    <i class="fas fa-exclamation-triangle me-1"></i>Expired
+                                                </small>
+                                            }
+                                        </div>
+                                        <div class="ms-2">
+                                            <span class="badge bg-@(reservation.Status == "Active" ? "success" : reservation.Status == "Cancelled" ? "danger" : "secondary")">@reservation.Status</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-bookmark fa-3x text-muted mb-3"></i>
+                            <h6>No reservations yet</h6>
+                            <p class="text-muted">Reserve a vehicle to hold it for up to 7 days.</p>
+                            <a href="@Url.Action("Index", "VehicleBrowse")" class="btn btn-primary">
+                                <i class="fas fa-search"></i> Browse Vehicles
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Service Bookings Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-tools me-2"></i>Service Bookings</h5>
+                    <a href="@Url.Action("Create", "Bookings")" class="btn btn-sm btn-outline-primary">Book Service</a>
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.ServiceBookings != null && ((IEnumerable<AutoEdge.Models.Entities.ServiceBooking>)ViewBag.ServiceBookings).Any())
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var booking in (IEnumerable<AutoEdge.Models.Entities.ServiceBooking>)ViewBag.ServiceBookings)
+                            {
+                                <div class="list-group-item border-0 px-0">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">
+                                                <a href="@Url.Action("ServiceProgress", new { bookingId = booking.Id })" class="text-decoration-none">
+                                                    @booking.Make @booking.Model (@booking.Year) - @booking.ServiceType
+                                                </a>
+                                            </h6>
+                                            <p class="mb-1 text-muted small">
+                                                <i class="fas fa-calendar me-1"></i>Scheduled: @booking.PreferredDate.ToString("MMM dd, yyyy") @booking.PreferredStart.ToString("HH:mm")
+                                                <br>
+                                                <i class="fas fa-dollar-sign me-1"></i>Estimated: @booking.EstimatedCost.ToString("C")
+                                                <br>
+                                                <i class="fas fa-clock me-1"></i>Duration: @booking.EstimatedDurationMin minutes
+                                            </p>
+                                            @if (booking.ServiceJob?.ServiceChecklist != null)
+                                            {
+                                                var checklist = booking.ServiceJob.ServiceChecklist;
+                                                var progressWidth = checklist.ProgressPercentage >= 100 ? 100.0 : Math.Min(checklist.ProgressPercentage, 100);
+                                                <div class="mt-2">
+                                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                                        <small class="text-muted">Progress</small>
+                                                        <small class="text-muted">@checklist.ProgressPercentage.ToString("F1")%</small>
+                                                    </div>
+                                                    <div class="progress" style="height: 8px;">
+                                                        <div class="progress-bar @(checklist.ProgressPercentage >= 100 ? "bg-success" : checklist.ProgressPercentage > 0 ? "bg-primary" : "bg-secondary")" 
+                                                            style="width: @(progressWidth >= 100 ? "100" : progressWidth.ToString("F1"))% !important; min-width: @(progressWidth >= 100 ? "100" : progressWidth.ToString("F1"))% !important;"></div>
+                                                    </div>
+                                                    <small class="text-muted">@checklist.CompletedItemsCount of @checklist.TotalItemsCount tasks completed</small>
+                                                </div>
+                                            }
+                                        </div>
+                                        <div class="ms-2">
+                                            @if (booking.IsServiceStarted)
+                                            {
+                                                <span class="badge bg-primary">
+                                                    <i class="fas fa-tools me-1"></i>Service In Progress
+                                                </span>
+                                            }
+                                            else if (booking.IsCheckedIn)
+                                            {
+                                                <span class="badge bg-info">
+                                                    <i class="fas fa-clock me-1"></i>Waiting for Service
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-warning">
+                                                    <i class="fas fa-exclamation-triangle me-1"></i>Not Checked In
+                                                </span>
+                                            }
+                                            @if (booking.IsCheckedIn)
+                                            {
+                                                <br><small class="text-success mt-1"><i class="fas fa-check-circle me-1"></i>Checked In</small>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-tools fa-3x text-muted mb-3"></i>
+                            <h6>No service bookings yet</h6>
+                            <p class="text-muted">Book a service for your vehicle to keep it running smoothly.</p>
+                            <a href="@Url.Action("Create", "Bookings")" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Book Service
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delivery Scheduling Section -->
+    <div class="row mb-4">
+        <!-- Completed Purchases Needing Delivery -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header d-flex justify-content-between align-items-center bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-truck me-2"></i>Schedule Delivery</h5>
+                    <a href="@Url.Action("MyPurchases", "Purchase")" class="btn btn-sm btn-outline-dark">View All Purchases</a>
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.CompletedPurchases != null && ((IEnumerable<AutoEdge.Models.Entities.Purchase>)ViewBag.CompletedPurchases).Any())
+                    {
+                        <div class="alert alert-info mb-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Next Step:</strong> Schedule delivery for your completed purchases below.
+                        </div>
+                        <div class="list-group list-group-flush">
+                            @foreach (var purchase in (IEnumerable<AutoEdge.Models.Entities.Purchase>)ViewBag.CompletedPurchases)
+                            {
+                                var hasDelivery = purchase.Contracts?.Any(c => c.Deliveries?.Any() == true) == true;
+                                <div class="list-group-item border-0 px-0">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">
+                                                @purchase.Vehicle?.Year @purchase.Vehicle?.Make @purchase.Vehicle?.Model
+                                            </h6>
+                                            <p class="mb-1 text-muted small">
+                                                <i class="fas fa-calendar me-1"></i>Completed: @purchase.ModifiedDate.ToString("MMM dd, yyyy")
+                                                <br>
+                                                <i class="fas fa-dollar-sign me-1"></i>Total: @purchase.PurchasePrice.ToString("C")
+                                            </p>
+                                            @if (!hasDelivery)
+                                            {
+                                                <span class="badge bg-warning text-dark">
+                                                    <i class="fas fa-exclamation-triangle me-1"></i>Delivery Needed
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-success">
+                                                    <i class="fas fa-check me-1"></i>Delivery Scheduled
+                                                </span>
+                                            }
+                                        </div>
+                                        <div class="ms-2">
+                                            @if (!hasDelivery && purchase.Contracts?.Any() == true)
+                                            {
+                                                <a href="@Url.Action("Schedule", "Delivery", new { contractId = purchase.Contracts.First().Id })" class="btn btn-sm btn-warning">
+                                                    <i class="fas fa-truck"></i> Schedule
+                                                </a>
+                                            }
+                                            else if (hasDelivery)
+                            {
+                                var delivery = purchase.Contracts.First().Deliveries?.First();
+                                                <a href="@Url.Action("Track", "Delivery", new { id = delivery?.Id })" class="btn btn-sm btn-success">
+                                                    <i class="fas fa-map-marker-alt"></i> Track
+                                                </a>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-truck fa-3x text-muted mb-3"></i>
+                            <h6>No deliveries to schedule</h6>
+                            <p class="text-muted">Complete a purchase to schedule vehicle delivery.</p>
+                            <a href="@Url.Action("Index", "VehicleBrowse")" class="btn btn-primary">
+                                <i class="fas fa-search"></i> Browse Vehicles
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Deliveries -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-map-marker-alt me-2"></i>Recent Deliveries</h5>
+                    <a href="@Url.Action("MyDeliveries", "Delivery")" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.RecentDeliveries != null && ((IEnumerable<AutoEdge.Models.Entities.Delivery>)ViewBag.RecentDeliveries).Any())
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var delivery in (IEnumerable<AutoEdge.Models.Entities.Delivery>)ViewBag.RecentDeliveries)
+                            {
+                                <div class="list-group-item border-0 px-0">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">
+                                                @delivery.Contract?.Purchase?.Vehicle?.Year @delivery.Contract?.Purchase?.Vehicle?.Make @delivery.Contract?.Purchase?.Vehicle?.Model
+                                            </h6>
+                                            <p class="mb-1 text-muted small">
+                                                <i class="fas fa-truck me-1"></i>@delivery.DeliveryType
+                                                <br>
+                                                <i class="fas fa-calendar me-1"></i>Scheduled: @delivery.ScheduledDate.ToString("MMM dd, yyyy h:mm tt")
+                                                @if (delivery.CompletedDate.HasValue)
+                                                {
+                                                    <br />
+                                                    <span><i class="fas fa-check me-1"></i>Completed: @delivery.CompletedDate.Value.ToString("MMM dd, yyyy")</span>
+                                                }
+                                            </p>
+                                        </div>
+                                        <div class="ms-2 d-flex flex-column align-items-end">
+                                            @switch(delivery.Status)
+                                            {
+                                                case "Scheduled":
+                                                    <span class="badge bg-info mb-2">Scheduled</span>
+                                                    break;
+                                                case "InTransit":
+                                                    <span class="badge bg-warning mb-2">In Transit</span>
+                                                    break;
+                                                case "Delivered":
+                                                    <span class="badge bg-success mb-2">Delivered</span>
+                                                    break;
+                                                case "Failed":
+                                                    <span class="badge bg-danger mb-2">Failed</span>
+                                                    break;
+                                                case "Cancelled":
+                                                    <span class="badge bg-secondary mb-2">Cancelled</span>
+                                                    break;
+                                            }
+                                            <a href="@Url.Action("Track", "Delivery", new { id = delivery.Id })" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-map-marker-alt"></i> Track
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-map-marker-alt fa-3x text-muted mb-3"></i>
+                            <h6>No deliveries yet</h6>
+                            <p class="text-muted">Your delivery tracking information will appear here.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="@Url.Action("Index", "VehicleBrowse")" class="btn btn-outline-primary w-100 h-100 d-flex flex-column justify-content-center align-items-center py-3">
+                                <i class="fas fa-search fa-2x mb-2"></i>
+                                <span>Browse Vehicles</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="@Url.Action("Inquiries")" class="btn btn-outline-info w-100 h-100 d-flex flex-column justify-content-center align-items-center py-3">
+                                <i class="fas fa-question-circle fa-2x mb-2"></i>
+                                <span>My Inquiries</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="@Url.Action("Reservations")" class="btn btn-outline-warning w-100 h-100 d-flex flex-column justify-content-center align-items-center py-3">
+                                <i class="fas fa-bookmark fa-2x mb-2"></i>
+                                <span>My Reservations</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="@Url.Action("Documents")" class="btn btn-outline-success w-100 h-100 d-flex flex-column justify-content-center align-items-center py-3">
+                                <i class="fas fa-file-upload fa-2x mb-2"></i>
+                                <span>My Documents</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="@Url.Action("Profile")" class="btn btn-outline-secondary w-100 h-100 d-flex flex-column justify-content-center align-items-center py-3">
+                                <i class="fas fa-user fa-2x mb-2"></i>
+                                <span>My Profile</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="@Url.Action("VacantPositions", "RecruitmentApplicant")" class="btn btn-outline-info w-100 h-100 d-flex flex-column justify-content-center align-items-center py-3">
+                                <i class="fas fa-briefcase fa-2x mb-2"></i>
+                                <span>View Job Listings</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="@Url.Action("MyAssessments", "RecruitmentApplicant")" class="btn btn-outline-purple w-100 h-100 d-flex flex-column justify-content-center align-items-center py-3" style="border-color: #6f42c1; color: #6f42c1;">
+                                <i class="fas fa-clipboard-list fa-2x mb-2"></i>
+                                <span>My Assessments</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="@Url.Action("Create", "Bookings")" class="btn btn-outline-success w-100 h-100 d-flex flex-column justify-content-center align-items-center py-3">
+                                <i class="fas fa-wrench fa-2x mb-2"></i>
+                                <span>Service Bookings</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Section -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h5><i class="fas fa-question-circle me-2"></i>Need Help?</h5>
+                    <p class="mb-3">Our customer support team is here to assist you with any questions about vehicles, reservations, or your account.</p>
+                    <div class="row justify-content-center">
+                        <div class="col-md-4 mb-2">
+                            <a href="tel:+15551234567" class="btn btn-primary">
+                                <i class="fas fa-phone me-2"></i>Call: (2764) 824-8658
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <a href="mailto:support@autoedge.com" class="btn btn-outline-primary">
+                                <i class="fas fa-envelope me-2"></i>Email Support
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Custom styles are now handled by custom.css -->
+}

@@ -1,0 +1,504 @@
+@model AutoEdge.Models.Entities.Vehicle
+@{
+    ViewData["Title"] = "Edit Vehicle";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2>Edit Vehicle - @Model.Year @Model.Make @Model.Model</h2>
+                <div>
+                    <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-info">
+                        <i class="fas fa-eye"></i> View Details
+                    </a>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to List
+                    </a>
+                </div>
+            </div>
+            <hr />
+        </div>
+    </div>
+
+    <form asp-action="Edit" method="post" enctype="multipart/form-data" id="vehicleEditForm">
+        <input type="hidden" asp-for="Id" />
+    
+        <!-- Image paths will be handled through VehicleImages navigation property -->
+        
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+        
+        <div class="row">
+            <!-- Basic Information -->
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5><i class="fas fa-car"></i> Basic Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label asp-for="Make" class="form-label">Make <span class="text-danger">*</span></label>
+                            <input asp-for="Make" class="form-control" placeholder="e.g., Toyota, Honda, Ford" />
+                            <span asp-validation-for="Make" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Model" class="form-label">Model <span class="text-danger">*</span></label>
+                            <input asp-for="Model" class="form-control" placeholder="e.g., Camry, Civic, F-150" />
+                            <span asp-validation-for="Model" class="text-danger"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="Year" class="form-label">Year <span class="text-danger">*</span></label>
+                                    <input asp-for="Year" class="form-control" type="number" min="1900" max="@DateTime.Now.Year" />
+                                    <span asp-validation-for="Year" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                    <label asp-for="SellingPrice" class="form-label">Selling Price (R)</label>
+                    <input asp-for="SellingPrice" class="form-control" type="number" step="0.01" min="0" />
+                    <span asp-validation-for="SellingPrice" class="text-danger"></span>
+                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Mileage" class="form-label">Mileage</label>
+                            <input asp-for="Mileage" class="form-control" type="number" min="0" />
+                            <span asp-validation-for="Mileage" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="VIN" class="form-label">VIN <span class="text-danger">*</span></label>
+                            <input asp-for="VIN" class="form-control" placeholder="17-character Vehicle Identification Number" maxlength="17" />
+                            <span asp-validation-for="VIN" class="text-danger"></span>
+                            <div class="form-text">Vehicle Identification Number (17 characters)</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Status" class="form-label">Status <span class="text-danger">*</span></label>
+                            <select asp-for="Status" class="form-select">
+                                <option value="">Select Status</option>
+                                <option value="Available">Available</option>
+                                <option value="Reserved">Reserved</option>
+                                <option value="Sold">Sold</option>
+                                <option value="Maintenance">Maintenance</option>
+                            </select>
+                            <span asp-validation-for="Status" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Technical Specifications -->
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5><i class="fas fa-cogs"></i> Technical Specifications</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                    <label asp-for="EngineType" class="form-label">Engine Type</label>
+                    <input asp-for="EngineType" class="form-control" placeholder="e.g., 2.5L 4-Cylinder, V6 3.5L" />
+                    <span asp-validation-for="EngineType" class="text-danger"></span>
+                </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Transmission" class="form-label">Transmission</label>
+                            <select asp-for="Transmission" class="form-select">
+                                <option value="">Select Transmission</option>
+                                <option value="Manual">Manual</option>
+                                <option value="Automatic">Automatic</option>
+                                <option value="CVT">CVT (Continuously Variable)</option>
+                                <option value="Semi-Automatic">Semi-Automatic</option>
+                            </select>
+                            <span asp-validation-for="Transmission" class="text-danger"></span>
+                        </div>
+
+
+
+                        <div class="mb-3">
+                            <label asp-for="ExteriorColor" class="form-label">Exterior Color</label>
+                            <input asp-for="ExteriorColor" class="form-control" placeholder="e.g., White, Black, Silver" />
+                            <span asp-validation-for="ExteriorColor" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="InteriorColor" class="form-label">Interior Color</label>
+                            <input asp-for="InteriorColor" class="form-control" placeholder="e.g., Black, Beige, Gray" />
+                            <span asp-validation-for="InteriorColor" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Condition" class="form-label">Condition <span class="text-danger">*</span></label>
+                            <select asp-for="Condition" class="form-select">
+                                <option value="">Select Condition</option>
+                                <option value="New">New</option>
+                                <option value="Used">Used</option>
+                                <option value="Certified Pre-owned">Certified Pre-owned</option>
+                            </select>
+                            <span asp-validation-for="Condition" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Financial Information -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5><i class="fas fa-dollar-sign"></i> Financial Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="CostPrice" class="form-label">Cost Price (R)</label>
+                                    <input asp-for="CostPrice" class="form-control" type="number" step="0.01" min="0" />
+                                    <span asp-validation-for="CostPrice" class="text-danger"></span>
+                                    <div class="form-text">Purchase price of the vehicle</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="NegotiableRange" class="form-label">Negotiable Range (R)</label>
+                                    <input asp-for="NegotiableRange" class="form-control" type="number" step="0.01" min="0" />
+                                    <span asp-validation-for="NegotiableRange" class="text-danger"></span>
+                                    <div class="form-text">Maximum discount allowed</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Information -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5><i class="fas fa-info-circle"></i> Additional Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="Location" class="form-label">Location</label>
+                                    <input asp-for="Location" class="form-control" placeholder="e.g., Main Lot, Service Bay" />
+                                    <span asp-validation-for="Location" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="Source" class="form-label">Source</label>
+                                    <input asp-for="Source" class="form-control" placeholder="e.g., Trade-in, Auction, Direct Purchase" />
+                                    <span asp-validation-for="Source" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="PurchaseDate" class="form-label">Purchase Date</label>
+                                    <input asp-for="PurchaseDate" class="form-control" type="date" />
+                                    <span asp-validation-for="PurchaseDate" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="DateListed" class="form-label">Date Listed</label>
+                                    <input asp-for="DateListed" class="form-control" type="date" />
+                                    <span asp-validation-for="DateListed" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Description and Features -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5><i class="fas fa-file-alt"></i> Description & Features</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label asp-for="Features" class="form-label">Features</label>
+                            <textarea asp-for="Features" class="form-control" rows="4" 
+                                      placeholder="Provide details about the vehicle's features and specifications..."></textarea>
+                            <span asp-validation-for="Features" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Current Images -->
+        @if (Model.VehicleImages != null && Model.VehicleImages.Any())
+        {
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5><i class="fas fa-images"></i> Current Images</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3" id="currentImages">
+                                @{
+                                    var images = Model.VehicleImages.Select(vi => vi.ImagePath).ToArray();
+                                }
+                                @foreach (var image in images)
+                                {
+                                    <div class="col-md-3 col-sm-4 col-6 current-image-item" data-image="@image">
+                                        <div class="card position-relative">
+                                            <img src="@image" class="card-img-top" style="height: 150px; object-fit: cover;" alt="Vehicle Image">
+                                            <div class="card-body p-2">
+                                                <button type="button" class="btn btn-sm btn-danger w-100" onclick="removeImage('@image')">
+                                                    <i class="fas fa-trash"></i> Remove
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Add New Images -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5><i class="fas fa-plus"></i> Add New Images</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="imageFiles" class="form-label">Upload Additional Images</label>
+                            <input type="file" class="form-control" id="imageFiles" name="imageFiles" 
+                                   multiple accept="image/*" onchange="previewNewImages(this)" />
+                            <div class="form-text">Select multiple images (JPG, PNG, GIF). Maximum 10 images total, 5MB each.</div>
+                        </div>
+
+                        <!-- New Image Preview -->
+                        <div id="newImagePreview" class="row g-3" style="display: none;">
+                            <div class="col-12">
+                                <h6>New Images Preview:</h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-save"></i> Update Vehicle
+                                </button>
+                                <button type="button" class="btn btn-outline-warning btn-lg" onclick="resetChanges()">
+                                    <i class="fas fa-undo"></i> Reset Changes
+                                </button>
+                            </div>
+                            <div>
+                                <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-info btn-lg">
+                                    <i class="fas fa-eye"></i> View Details
+                                </a>
+                                <a asp-action="Index" class="btn btn-secondary btn-lg">
+                                    <i class="fas fa-times"></i> Cancel
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        let removedImages = [];
+        
+        function removeImage(imagePath) {
+            if (confirm('Are you sure you want to remove this image?')) {
+                // Add to removed images list
+                removedImages.push(imagePath);
+                
+                // Remove from UI
+                const imageItem = document.querySelector(`[data-image="${imagePath}"]`);
+                if (imageItem) {
+                    imageItem.remove();
+                }
+                
+                // Update hidden field
+                // Image removal handled through form submission
+            }
+        }
+        
+        // Image paths are now handled through VehicleImages navigation property
+        
+        function previewNewImages(input) {
+            const preview = document.getElementById('newImagePreview');
+            const files = input.files;
+            
+            // Clear previous previews
+            const existingPreviews = preview.querySelectorAll('.preview-item');
+            existingPreviews.forEach(item => item.remove());
+            
+            if (files.length > 0) {
+                preview.style.display = 'block';
+                
+                // Check total image count
+                const currentImageCount = document.querySelectorAll('.current-image-item').length;
+                const totalImages = currentImageCount + files.length;
+                
+                if (totalImages > 10) {
+                    alert(`Total images cannot exceed 10. You currently have ${currentImageCount} images.`);
+                    input.value = '';
+                    preview.style.display = 'none';
+                    return;
+                }
+                
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    
+                    // Check file size (5MB limit)
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert(`File ${file.name} is too large. Maximum size is 5MB.`);
+                        continue;
+                    }
+                    
+                    // Check file type
+                    if (!file.type.startsWith('image/')) {
+                        alert(`File ${file.name} is not an image.`);
+                        continue;
+                    }
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const col = document.createElement('div');
+                        col.className = 'col-md-3 col-sm-4 col-6 preview-item';
+                        col.innerHTML = `
+                            <div class="card">
+                                <img src="${e.target.result}" class="card-img-top" style="height: 150px; object-fit: cover;" alt="Preview">
+                                <div class="card-body p-2">
+                                    <small class="text-muted">${file.name}</small>
+                                </div>
+                            </div>
+                        `;
+                        preview.appendChild(col);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+        
+        function resetChanges() {
+            if (confirm('Are you sure you want to reset all changes? This will reload the page with original data.')) {
+                location.reload();
+            }
+        }
+        
+        // Form validation
+        document.getElementById('vehicleEditForm').addEventListener('submit', function(e) {
+            const requiredFields = ['Make', 'Model', 'Year', 'Price', 'Mileage', 'VIN', 'Status'];
+            let isValid = true;
+            
+            requiredFields.forEach(field => {
+                const input = document.querySelector(`[name="${field}"]`);
+                if (!input.value.trim()) {
+                    isValid = false;
+                    input.classList.add('is-invalid');
+                } else {
+                    input.classList.remove('is-invalid');
+                }
+            });
+            
+            // VIN validation (17 characters)
+            const vinInput = document.querySelector('[name="VIN"]');
+            if (vinInput.value.length !== 17) {
+                isValid = false;
+                vinInput.classList.add('is-invalid');
+                alert('VIN must be exactly 17 characters long.');
+            }
+            
+            if (!isValid) {
+                e.preventDefault();
+                alert('Please fill in all required fields correctly.');
+            }
+        });
+        
+        // Auto-format price input
+        document.querySelector('[name="Price"]').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/[^\d.]/g, '');
+            if (value) {
+                e.target.value = parseFloat(value).toFixed(2);
+            }
+        });
+        
+        // Auto-format mileage input
+        document.querySelector('[name="Mileage"]').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/[^\d]/g, '');
+            e.target.value = value;
+        });
+        
+        // VIN input formatting
+        document.querySelector('[name="VIN"]').addEventListener('input', function(e) {
+            e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        });
+    </script>
+    
+    <style>
+        .is-invalid {
+            border-color: #dc3545;
+        }
+        
+        .card-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .form-label {
+            font-weight: 500;
+        }
+        
+        .text-danger {
+            font-size: 0.875em;
+        }
+        
+        .preview-item .card,
+        .current-image-item .card {
+            transition: transform 0.2s;
+        }
+        
+        .preview-item .card:hover,
+        .current-image-item .card:hover {
+            transform: scale(1.05);
+        }
+        
+        .current-image-item {
+            position: relative;
+        }
+    </style>
+}

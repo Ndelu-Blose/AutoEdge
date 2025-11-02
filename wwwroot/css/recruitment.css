@@ -1,0 +1,384 @@
+/* Recruitment-Specific Modern Table Styling */
+
+/* ===== MODERN TABLE ENHANCEMENTS ===== */
+.recruitment-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 0;
+}
+
+.recruitment-table thead th {
+    background: linear-gradient(135deg, var(--primary-color) 0%, #34495e 100%);
+    color: white;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 1rem 1rem;
+    border: none;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    white-space: nowrap;
+}
+
+.recruitment-table thead th:first-child {
+    border-top-left-radius: var(--border-radius);
+}
+
+.recruitment-table thead th:last-child {
+    border-top-right-radius: var(--border-radius);
+}
+
+.recruitment-table tbody tr {
+    background-color: var(--card-background);
+    transition: all 0.15s ease;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.recruitment-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.recruitment-table tbody tr:hover {
+    background-color: #f8f9fa;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.recruitment-table tbody td {
+    padding: 1.25rem 1rem;
+    vertical-align: middle;
+    color: var(--text-color);
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+/* ===== BADGE STYLING ===== */
+.recruitment-badge {
+    display: inline-block;
+    padding: 0.35rem 0.75rem;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+}
+
+.badge-status-completed {
+    background-color: rgba(39, 174, 96, 0.15);
+    color: var(--success-color);
+    border: 1px solid rgba(39, 174, 96, 0.3);
+}
+
+.badge-status-pending {
+    background-color: rgba(243, 156, 18, 0.15);
+    color: var(--warning-color);
+    border: 1px solid rgba(243, 156, 18, 0.3);
+}
+
+.badge-status-expired {
+    background-color: rgba(231, 76, 60, 0.15);
+    color: var(--danger-color);
+    border: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+.badge-score-excellent {
+    background-color: rgba(39, 174, 96, 0.2);
+    color: var(--success-color);
+    font-weight: 700;
+}
+
+.badge-score-good {
+    background-color: rgba(52, 152, 219, 0.15);
+    color: var(--accent-color);
+}
+
+.badge-score-fair {
+    background-color: rgba(243, 156, 18, 0.15);
+    color: var(--warning-color);
+}
+
+.badge-score-poor {
+    background-color: rgba(231, 76, 60, 0.15);
+    color: var(--danger-color);
+}
+
+/* ===== ACTION BUTTONS ===== */
+.btn-action {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: var(--border-radius-sm);
+    transition: all 0.2s ease;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-action i {
+    font-size: 0.9rem;
+}
+
+.btn-action:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.btn-action:active {
+    transform: translateY(0);
+}
+
+/* ===== TEXT TRUNCATION ===== */
+.text-truncate-custom {
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+}
+
+.text-truncate-custom:hover {
+    overflow: visible;
+    white-space: normal;
+    word-break: break-word;
+    position: relative;
+    z-index: 5;
+    background: white;
+    padding: 0.5rem;
+    border-radius: var(--border-radius-sm);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* ===== SCORE INDICATORS ===== */
+.score-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+}
+
+.score-bar {
+    width: 60px;
+    height: 6px;
+    background-color: var(--border-color);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.score-bar-fill {
+    height: 100%;
+    transition: width 0.3s ease;
+    border-radius: 3px;
+}
+
+.score-bar-fill.excellent {
+    background-color: var(--success-color);
+}
+
+.score-bar-fill.good {
+    background-color: var(--accent-color);
+}
+
+.score-bar-fill.fair {
+    background-color: var(--warning-color);
+}
+
+.score-bar-fill.poor {
+    background-color: var(--danger-color);
+}
+
+/* ===== RESPONSIVE TABLE CARDS ===== */
+.recruitment-card-view {
+    display: none;
+}
+
+.recruitment-card {
+    background: var(--card-background);
+    border-radius: var(--border-radius);
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow);
+    transition: all 0.2s ease;
+    border: 1px solid var(--border-color);
+}
+
+.recruitment-card:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-2px);
+}
+
+.recruitment-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.recruitment-card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin: 0;
+}
+
+.recruitment-card-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    font-size: 0.9rem;
+}
+
+.recruitment-card-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.recruitment-card-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.recruitment-card-value {
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+.recruitment-card-actions {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+/* ===== RESPONSIVE BEHAVIOR ===== */
+@media (max-width: 768px) {
+    .recruitment-table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .recruitment-table {
+        min-width: 800px;
+    }
+
+    .recruitment-table thead th {
+        font-size: 0.8rem;
+        padding: 0.75rem 0.5rem;
+    }
+
+    .recruitment-table tbody td {
+        padding: 1rem 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .recruitment-card-view {
+        display: block;
+    }
+
+    .recruitment-table-view {
+        display: none;
+    }
+}
+
+@media (max-width: 576px) {
+    .recruitment-card-body {
+        grid-template-columns: 1fr;
+    }
+
+    .btn-action {
+        padding: 0.4rem 0.75rem;
+        font-size: 0.8rem;
+    }
+}
+
+/* ===== SORTING INDICATORS ===== */
+.table-sortable {
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    padding-right: 1.5rem;
+}
+
+.table-sortable:hover {
+    background-color: rgba(255,255,255,0.1);
+}
+
+.table-sortable::after {
+    content: '';
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 4px solid rgba(255,255,255,0.5);
+    transition: border-color 0.2s ease;
+}
+
+.table-sortable.sort-asc::after {
+    border-top: none;
+    border-bottom: 4px solid rgba(255,255,255,0.9);
+}
+
+.table-sortable.sort-desc::after {
+    border-bottom: none;
+    border-top: 4px solid rgba(255,255,255,0.9);
+}
+
+/* ===== EMPTY STATE ===== */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: var(--text-muted);
+    opacity: 0.3;
+    margin-bottom: 1rem;
+}
+
+.empty-state h4 {
+    color: var(--text-color);
+    margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+}
+
+/* ===== LOADING STATE ===== */
+.table-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 3rem;
+}
+
+.table-loading .spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--border-color);
+    border-top-color: var(--accent-color);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}

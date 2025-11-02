@@ -1,0 +1,42 @@
+@{
+    ViewData["Title"] = "Check-In Successful";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-success">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0"><i class="fas fa-check-circle me-2"></i>Check-In Successful!</h3>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-4">
+                        <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+                    </div>
+                    
+                    <h5>Service Booking Checked In</h5>
+                    <p class="text-muted">The customer has been successfully checked in for their service appointment.</p>
+                    
+                    <div class="alert alert-success">
+                        <h6><i class="fas fa-info-circle me-2"></i>What happens next?</h6>
+                        <ul class="list-unstyled mb-0 text-start">
+                            <li>✓ Customer is now checked in</li>
+                            <li>✓ Service team has been notified</li>
+                            <li>✓ Vehicle inspection can begin</li>
+                            <li>✓ Estimated service time: 1-3 hours</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="d-flex gap-2 justify-content-center">
+                        <a href="/QRCode/Scan" class="btn btn-primary">
+                            <i class="fas fa-qrcode me-2"></i>Scan Another QR Code
+                        </a>
+                        <a href="/Home" class="btn btn-outline-secondary">
+                            <i class="fas fa-home me-2"></i>Go to Home
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

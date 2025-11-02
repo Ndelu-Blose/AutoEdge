@@ -1,0 +1,100 @@
+@model AutoEdge.Services.CreateBookingRequest
+@{
+    ViewData["Title"] = "Create Service Booking";
+}
+<h2>Create Service Booking</h2>
+@Html.ValidationSummary(excludePropertyErrors: true, message: null, htmlAttributes: new { @class = "alert alert-danger" })
+<form asp-action="Create" method="post">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label asp-for="ServiceType" class="form-label"></label>
+                <select asp-for="ServiceType" class="form-select" asp-items="Html.GetEnumSelectList<AutoEdge.Models.Entities.ServiceType>()"></select>
+            </div>
+            <div class="mb-3">
+                <label asp-for="CustomerName" class="form-label"></label>
+                <input asp-for="CustomerName" class="form-control" readonly />
+                <small class="form-text text-muted">Your name (automatically filled from your account)</small>
+            </div>
+            <div class="mb-3">
+                <label asp-for="CustomerEmail" class="form-label"></label>
+                <input asp-for="CustomerEmail" class="form-control" readonly />
+                <small class="form-text text-muted">Your email (automatically filled from your account)</small>
+            </div>
+            <div class="mb-3">
+                <label asp-for="CustomerPhone" class="form-label"></label>
+                <input asp-for="CustomerPhone" class="form-control" readonly />
+                <small class="form-text text-muted">Your phone number (automatically filled from your account)</small>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Make" class="form-label"></label>
+                <input asp-for="Make" class="form-control" />
+            </div>
+            <div class="mb-3">
+                <label asp-for="Model" class="form-label"></label>
+                <input asp-for="Model" class="form-control" />
+            </div>
+            <div class="mb-3">
+                <label asp-for="Year" class="form-label"></label>
+                <input asp-for="Year" class="form-control" />
+            </div>
+            <div class="mb-3">
+                <label asp-for="VIN" class="form-label"></label>
+                <input asp-for="VIN" class="form-control" />
+            </div>
+            <div class="mb-3">
+                <label asp-for="Mileage" class="form-label"></label>
+                <input asp-for="Mileage" class="form-control" />
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label asp-for="PreferredDate" class="form-label">Preferred Date</label>
+                <input asp-for="PreferredDate" type="date" class="form-control" min="@DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")" />
+                <small class="form-text text-muted">Bookings must be scheduled for future dates only</small>
+            </div>
+            <div class="mb-3">
+                <label asp-for="PreferredStart" class="form-label">Preferred Start Time (8:00 AM - 5:00 PM)</label>
+                <input asp-for="PreferredStart" type="time" class="form-control" min="08:00" max="17:00" />
+                <small class="form-text text-muted">Service hours are 8:00 AM to 5:00 PM, Monday to Friday</small>
+            </div>
+            <div class="mb-3">
+                <label asp-for="DeliveryMethod" class="form-label">How would you like to get your vehicle serviced?</label>
+                <select asp-for="DeliveryMethod" id="deliveryMethod" class="form-select" asp-items="Html.GetEnumSelectList<AutoEdge.Models.Entities.ServiceDeliveryMethod>()">
+                    <option value="">Please select an option</option>
+                </select>
+                <small class="form-text text-muted">
+                    <strong>Pickup:</strong> We will collect your vehicle from your location<br/>
+                    <strong>Dropoff:</strong> You will bring your vehicle to our service center
+                </small>
+            </div>
+            <div class="mb-3" id="pickupAddressField" style="display: none;">
+                <label asp-for="PickupAddress" class="form-label">Pickup Address <span class="text-danger">*</span></label>
+                <textarea asp-for="PickupAddress" class="form-control" rows="2" placeholder="Enter your full address where we should collect your vehicle"></textarea>
+                <small class="form-text text-muted">Please provide your complete address for vehicle pickup</small>
+                <span asp-validation-for="PickupAddress" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Notes" class="form-label">Additional Notes (Optional)</label>
+                <textarea asp-for="Notes" class="form-control" rows="3" placeholder="Any specific requirements or issues you'd like us to know about?"></textarea>
+            </div>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit Booking</button>
+</form>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('#deliveryMethod').change(function() {
+                if ($(this).val() === '1') { // Pickup = 1
+                    $('#pickupAddressField').show();
+                    $('#pickupAddress').prop('required', true);
+                } else {
+                    $('#pickupAddressField').hide();
+                    $('#pickupAddress').prop('required', false);
+                }
+            });
+        });
+    </script>
+}

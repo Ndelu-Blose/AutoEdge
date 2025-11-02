@@ -1,0 +1,145 @@
+@model IEnumerable<AutoEdge.Models.Entities.VehiclePickup>
+@{
+    ViewData["Title"] = "My Pickup History";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">
+                        <i class="fas fa-truck"></i> My Pickup History
+                    </h3>
+                </div>
+                <div class="card-body">
+                    @if (Model.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Pickup ID</th>
+                                        <th>Vehicle</th>
+                                        <th>Pickup Location</th>
+                                        <th>Date & Time</th>
+                                        <th>Driver</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var pickup in Model)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <strong>#@pickup.VehiclePickupId</strong>
+                                                @if (pickup.ServiceBooking != null)
+                                                {
+                                                    <br><small class="text-muted">Booking: @pickup.ServiceBooking.Reference</small>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (pickup.ServiceBooking != null)
+                                                {
+                                                    <div>
+                                                        <strong>@pickup.ServiceBooking.Make @pickup.ServiceBooking.Model</strong>
+                                                        <br><small class="text-muted">@pickup.ServiceBooking.Year</small>
+                                                    </div>
+                                                }
+                                            </td>
+                                            <td>
+                                                <div class="text-truncate" style="max-width: 200px;" title="@pickup.PickupLocation">
+                                                    @pickup.PickupLocation
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <strong>@pickup.PickupDate.ToString("MMM dd, yyyy")</strong>
+                                                    <br><small class="text-muted">@pickup.PickupTime.ToString(@"hh\:mm")</small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                @if (pickup.Driver != null)
+                                                {
+                                                    <div>
+                                                        <strong>@pickup.Driver.Name</strong>
+                                                        <br><small class="text-muted">@pickup.Driver.Phone</small>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-warning">Unassigned</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @{
+                                                    var statusClass = pickup.PickupStatus switch
+                                                    {
+                                                        "Scheduled" => "bg-primary",
+                                                        "EnRoute" => "bg-info",
+                                                        "Collected" => "bg-success",
+                                                        "InService" => "bg-warning",
+                                                        "Completed" => "bg-success",
+                                                        "Delivered" => "bg-success",
+                                                        "Failed" => "bg-danger",
+                                                        _ => "bg-secondary"
+                                                    };
+                                                }
+                                                <span class="badge @statusClass">@pickup.PickupStatus</span>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a asp-action="Details" asp-route-id="@pickup.VehiclePickupId" 
+                                                       class="btn btn-sm btn-outline-primary" title="View Details">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    @if (pickup.PickupStatus == "Scheduled" && pickup.Driver != null)
+                                                    {
+                                                        <button type="button" class="btn btn-sm btn-outline-info" 
+                                                                onclick="contactDriver('@pickup.Driver.Phone', '@pickup.Driver.Name')" title="Contact Driver">
+                                                            <i class="fas fa-phone"></i>
+                                                        </button>
+                                                    }
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-truck fa-3x text-muted mb-3"></i>
+                            <h4 class="text-muted">No Pickup History</h4>
+                            <p class="text-muted">You haven't requested any vehicle pickups yet.</p>
+                            <a asp-controller="ServiceBooking" asp-action="Create" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Book a Service
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function contactDriver(phone, name) {
+            if (confirm(`Contact driver ${name} at ${phone}?`)) {
+                window.location.href = `tel:${phone}`;
+            }
+        }
+
+        // Auto-refresh every 60 seconds for status updates
+        setInterval(function() {
+            const pendingPickups = document.querySelectorAll('.badge.bg-primary, .badge.bg-info');
+            if (pendingPickups.length > 0) {
+                location.reload();
+            }
+        }, 60000);
+    </script>
+}

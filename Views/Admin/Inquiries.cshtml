@@ -1,0 +1,178 @@
+@model IEnumerable<AutoEdge.Models.Entities.Inquiry>
+@{
+    ViewData["Title"] = "Manage Inquiries";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-question-circle me-2"></i>Manage Customer Inquiries</h2>
+                <div class="d-flex gap-2">
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-filter me-1"></i>Filter by Status: @ViewBag.CurrentStatus
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="@Url.Action("Inquiries", new { status = "All" })">All</a></li>
+                            <li><a class="dropdown-item" href="@Url.Action("Inquiries", new { status = "Pending" })">Pending</a></li>
+                            <li><a class="dropdown-item" href="@Url.Action("Inquiries", new { status = "In Progress" })">In Progress</a></li>
+                            <li><a class="dropdown-item" href="@Url.Action("Inquiries", new { status = "Responded" })">Responded</a></li>
+                            <li><a class="dropdown-item" href="@Url.Action("Inquiries", new { status = "Closed" })">Closed</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>Inquiries List
+                        <span class="badge bg-light text-dark ms-2">@ViewBag.TotalInquiries Total</span>
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Customer</th>
+                                        <th>Vehicle</th>
+                                        <th>Message</th>
+                                        <th>Status</th>
+                                        <th>Assigned To</th>
+                                        <th>Created Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var inquiry in Model)
+                                    {
+                                        <tr>
+                                            <td><strong>#@inquiry.Id</strong></td>
+                                            <td>
+                                                <div>
+                                                    <strong>@inquiry.Customer.User.FirstName @inquiry.Customer.User.LastName</strong>
+                                                    <br>
+                                                    <small class="text-muted">@inquiry.Customer.User.Email</small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <strong>@inquiry.Vehicle.Year @inquiry.Vehicle.Make @inquiry.Vehicle.Model</strong>
+                                                    <br>
+                                                    <small class="text-muted">@inquiry.Vehicle.SellingPrice.ToString("C")</small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="text-truncate" style="max-width: 200px;" title="@inquiry.Message">
+                                                    @inquiry.Message
+                                                </div>
+                                            </td>
+                                            <td>
+                                                @switch (inquiry.Status)
+                                                {
+                                                    case "Pending":
+                                                        <span class="badge bg-warning">@inquiry.Status</span>
+                                                        break;
+                                                    case "In Progress":
+                                                        <span class="badge bg-info">@inquiry.Status</span>
+                                                        break;
+                                                    case "Responded":
+                                                        <span class="badge bg-success">@inquiry.Status</span>
+                                                        break;
+                                                    case "Closed":
+                                                        <span class="badge bg-secondary">@inquiry.Status</span>
+                                                        break;
+                                                    default:
+                                                        <span class="badge bg-light text-dark">@inquiry.Status</span>
+                                                        break;
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (inquiry.AssignedTo != null)
+                                                {
+                                                    <span>@inquiry.AssignedTo.FirstName @inquiry.AssignedTo.LastName</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">Unassigned</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <small>@inquiry.CreatedDate.ToString("MMM dd, yyyy")</small>
+                                                <br>
+                                                <small class="text-muted">@inquiry.CreatedDate.ToString("HH:mm")</small>
+                                            </td>
+                                            <td>
+                                                <a href="@Url.Action("InquiryDetails", new { id = inquiry.Id })" 
+                                                   class="btn btn-sm btn-outline-primary" title="View Details">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        @if (ViewBag.TotalPages > 1)
+                        {
+                            <div class="card-footer">
+                                <nav aria-label="Inquiries pagination">
+                                    <ul class="pagination justify-content-center mb-0">
+                                        @if (ViewBag.CurrentPage > 1)
+                                        {
+                                            <li class="page-item">
+                                                <a class="page-link" href="@Url.Action("Inquiries", new { status = ViewBag.CurrentStatus, page = ViewBag.CurrentPage - 1 })">
+                                                    <i class="fas fa-chevron-left"></i>
+                                                </a>
+                                            </li>
+                                        }
+
+                                        @for (int i = Math.Max(1, ViewBag.CurrentPage - 2); i <= Math.Min(ViewBag.TotalPages, ViewBag.CurrentPage + 2); i++)
+                                        {
+                                            <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                                                <a class="page-link" href="@Url.Action("Inquiries", new { status = ViewBag.CurrentStatus, page = i })">@i</a>
+                                            </li>
+                                        }
+
+                                        @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                                        {
+                                            <li class="page-item">
+                                                <a class="page-link" href="@Url.Action("Inquiries", new { status = ViewBag.CurrentStatus, page = ViewBag.CurrentPage + 1 })">
+                                                    <i class="fas fa-chevron-right"></i>
+                                                </a>
+                                            </li>
+                                        }
+                                    </ul>
+                                </nav>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No inquiries found</h5>
+                            <p class="text-muted">@(ViewBag.CurrentStatus == "All" ? "There are no customer inquiries yet." : $"No inquiries with status '{ViewBag.CurrentStatus}' found.")</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,338 @@
+@model dynamic
+@{
+    ViewData["Title"] = "Digital Contract Signing";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-file-signature"></i>
+                        Digital Contract Signing
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Secure Digital Signing:</strong> Please review the contract and provide your digital signature below.
+                    </div>
+                    
+                    <div class="contract-details mb-4">
+                        <h5>Contract Details</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Contract Number:</strong> @Model.ContractNumber</p>
+                                <p><strong>Vehicle:</strong> @Model.VehicleInfo</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Customer:</strong> @Model.CustomerName</p>
+                                <p><strong>Email:</strong> @Model.SignerEmail</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="contract-preview mb-4">
+                        <h5>Contract Preview</h5>
+                        <div class="border p-3 bg-light" style="height: 300px; overflow-y: auto;">
+                            <h6>VEHICLE PURCHASE AGREEMENT</h6>
+                            <p>This agreement is between AutoEdge and @Model.CustomerName for the purchase of @Model.VehicleInfo.</p>
+                            <p>Contract Number: @Model.ContractNumber</p>
+                            <p>Date: @DateTime.Now.ToString("MMMM dd, yyyy")</p>
+                            <br>
+                            <p><strong>Terms and Conditions:</strong></p>
+                            <ul>
+                                <li>The buyer agrees to purchase the vehicle as described in this contract</li>
+                                <li>Payment terms and schedule as agreed upon during negotiation</li>
+                                <li>Vehicle delivery will occur upon successful contract completion</li>
+                                <li>All applicable manufacturer and dealer warranties apply</li>
+                                <li>This contract is legally binding upon signature by all parties</li>
+                            </ul>
+                            <br>
+                            <p><strong>Digital Signature Required Below:</strong></p>
+                        </div>
+                    </div>
+                    
+                    <!-- Digital Signature Canvas -->
+                    <div class="signature-section mb-4">
+                        <h5>Digital Signature</h5>
+                        <div class="signature-pad-container">
+                            <div class="signature-instructions mb-2">
+                                <small class="text-muted">
+                                    <i class="fas fa-hand-pointer"></i>
+                                    Use your mouse, touchpad, or touch screen to sign in the box below
+                                </small>
+                            </div>
+                            <div class="signature-pad-wrapper border">
+                                <canvas id="signatureCanvas" width="600" height="200" style="border: 1px solid #ddd; background: white; cursor: crosshair;"></canvas>
+                            </div>
+                            <div class="signature-controls mt-2">
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearSignature()">
+                                    <i class="fas fa-eraser"></i> Clear
+                                </button>
+                                <button type="button" class="btn btn-outline-info btn-sm" onclick="undoLastStroke()">
+                                    <i class="fas fa-undo"></i> Undo
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Agreement Checkbox -->
+                    <div class="agreement-section mb-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="agreementCheck" required>
+                            <label class="form-check-label" for="agreementCheck">
+                                I have read, understood, and agree to all terms and conditions of this contract. 
+                                I acknowledge that my digital signature has the same legal effect as a handwritten signature.
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="signing-actions text-center">
+                        <button type="button" class="btn btn-success btn-lg me-3" onclick="signContract()" id="signBtn">
+                            <i class="fas fa-signature"></i>
+                            Sign Contract
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="window.history.back()">
+                            <i class="fas fa-arrow-left"></i>
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.signature-pad-container {
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+.signature-pad-wrapper {
+    display: inline-block;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+#signatureCanvas {
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+
+.signature-controls {
+    text-align: center;
+}
+
+@@media (max-width: 768px) {
+    #signatureCanvas {
+        width: 100%;
+        height: 150px;
+    }
+}
+</style>
+
+<script>
+// Signature pad functionality
+let canvas, ctx;
+let isDrawing = false;
+let strokes = [];
+let currentStroke = [];
+
+// Initialize canvas when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    canvas = document.getElementById('signatureCanvas');
+    ctx = canvas.getContext('2d');
+    
+    // Set up canvas for high DPI displays
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+    
+    // Set drawing styles
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    
+    // Mouse events
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseout', stopDrawing);
+    
+    // Touch events for mobile
+    canvas.addEventListener('touchstart', handleTouch);
+    canvas.addEventListener('touchmove', handleTouch);
+    canvas.addEventListener('touchend', stopDrawing);
+    
+    // Prevent scrolling when touching the canvas
+    canvas.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+    });
+    canvas.addEventListener('touchmove', function(e) {
+        e.preventDefault();
+    });
+});
+
+function getMousePos(e) {
+    const rect = canvas.getBoundingClientRect();
+    return {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+    };
+}
+
+function getTouchPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    return {
+        x: e.touches[0].clientX - rect.left,
+        y: e.touches[0].clientY - rect.top
+    };
+}
+
+function startDrawing(e) {
+    isDrawing = true;
+    currentStroke = [];
+    const pos = getMousePos(e);
+    currentStroke.push(pos);
+    ctx.beginPath();
+    ctx.moveTo(pos.x, pos.y);
+}
+
+function draw(e) {
+    if (!isDrawing) return;
+    
+    const pos = getMousePos(e);
+    currentStroke.push(pos);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+}
+
+function stopDrawing() {
+    if (isDrawing) {
+        isDrawing = false;
+        strokes.push([...currentStroke]);
+        currentStroke = [];
+    }
+}
+
+function handleTouch(e) {
+    e.preventDefault();
+    const touch = e.touches[0];
+    const mouseEvent = new MouseEvent(e.type === 'touchstart' ? 'mousedown' : 
+                                     e.type === 'touchmove' ? 'mousemove' : 'mouseup', {
+        clientX: touch.clientX,
+        clientY: touch.clientY
+    });
+    canvas.dispatchEvent(mouseEvent);
+}
+
+function clearSignature() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    strokes = [];
+    currentStroke = [];
+}
+
+function undoLastStroke() {
+    if (strokes.length > 0) {
+        strokes.pop();
+        redrawCanvas();
+    }
+}
+
+function redrawCanvas() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    strokes.forEach(stroke => {
+        if (stroke.length > 0) {
+            ctx.beginPath();
+            ctx.moveTo(stroke[0].x, stroke[0].y);
+            
+            for (let i = 1; i < stroke.length; i++) {
+                ctx.lineTo(stroke[i].x, stroke[i].y);
+            }
+            ctx.stroke();
+        }
+    });
+}
+
+function isCanvasEmpty() {
+    return strokes.length === 0;
+}
+
+function getSignatureData() {
+    return canvas.toDataURL('image/png');
+}
+
+function signContract() {
+    // Validate agreement checkbox
+    const agreementCheck = document.getElementById('agreementCheck');
+    if (!agreementCheck.checked) {
+        alert('Please check the agreement box to confirm you have read and agree to the terms.');
+        return;
+    }
+    
+    // Validate signature
+    if (isCanvasEmpty()) {
+        alert('Please provide your signature before signing the contract.');
+        return;
+    }
+    
+    if (confirm('Are you sure you want to sign this contract? This action cannot be undone.')) {
+        // Show loading state
+        const signBtn = document.getElementById('signBtn');
+        const originalText = signBtn.innerHTML;
+        signBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing...';
+        signBtn.disabled = true;
+        
+        // Get signature data
+        const signatureData = getSignatureData();
+        
+        // Submit signing request
+        fetch('@Url.Action("SaveSignature", "Contract")', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+            },
+            body: JSON.stringify({
+                contractId: @Model.ContractId,
+                signerName: '@Model.SignerName',
+                signerEmail: '@Model.SignerEmail',
+                signatureData: signatureData
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Contract signed successfully!');
+                if (data.redirectUrl) {
+                    window.location.href = data.redirectUrl;
+                } else {
+                    window.history.back();
+                }
+            } else {
+                alert('Error: ' + (data.message || 'Failed to sign contract'));
+                signBtn.innerHTML = originalText;
+                signBtn.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while signing the contract.');
+            signBtn.innerHTML = originalText;
+            signBtn.disabled = false;
+        });
+    }
+}
+</script>
+
+@section Scripts {
+    @Html.AntiForgeryToken()
+}

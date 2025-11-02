@@ -1,0 +1,340 @@
+@model AutoEdge.Models.Entities.Vehicle
+@{
+    ViewData["Title"] = "Vehicle Details";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2>Vehicle Details</h2>
+                <div>
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Edit Vehicle
+                    </a>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to List
+                    </a>
+                </div>
+            </div>
+            <hr />
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Vehicle Images -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-images"></i> Vehicle Images</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.VehicleImages != null && Model.VehicleImages.Any())
+                    {
+                        var images = Model.VehicleImages.Select(vi => vi.ImagePath).ToArray();
+                        if (images.Any())
+                        {
+                            <div id="vehicleCarousel" class="carousel slide" data-bs-ride="carousel">
+                                <div class="carousel-indicators">
+                                    @for (int i = 0; i < images.Length; i++)
+                                    {
+                                        <button type="button" data-bs-target="#vehicleCarousel" data-bs-slide-to="@i" 
+                                                class="@(i == 0 ? "active" : "")" aria-current="@(i == 0 ? "true" : "false")" 
+                                                aria-label="Slide @(i + 1)"></button>
+                                    }
+                                </div>
+                                <div class="carousel-inner">
+                                    @for (int i = 0; i < images.Length; i++)
+                                    {
+                                        <div class="carousel-item @(i == 0 ? "active" : "")">
+                                            <img src="@images[i]" class="d-block w-100" alt="@Model.Make @Model.Model" 
+                                                 style="height: 300px; object-fit: cover;" />
+                                        </div>
+                                    }
+                                </div>
+                                <button class="carousel-control-prev" type="button" data-bs-target="#vehicleCarousel" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Previous</span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#vehicleCarousel" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Next</span>
+                                </button>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-5">
+                                <i class="fas fa-car fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">No images available</p>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-car fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No images available</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Vehicle Information -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle"></i> Vehicle Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-sm-4"><strong>Status:</strong></div>
+                        <div class="col-sm-8">
+                            @switch (Model.Status)
+                            {
+                                case "Available":
+                                    <span class="badge bg-success fs-6">Available</span>
+                                    break;
+                                case "Reserved":
+                                    <span class="badge bg-warning fs-6">Reserved</span>
+                                    break;
+                                case "Sold":
+                                    <span class="badge bg-danger fs-6">Sold</span>
+                                    break;
+                                case "Maintenance":
+                                    <span class="badge bg-info fs-6">Maintenance</span>
+                                    break;
+                                default:
+                                    <span class="badge bg-secondary fs-6">@Model.Status</span>
+                                    break;
+                            }
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-sm-4"><strong>Make:</strong></div>
+                        <div class="col-sm-8">@Model.Make</div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-sm-4"><strong>Model:</strong></div>
+                        <div class="col-sm-8">@Model.Model</div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-sm-4"><strong>Year:</strong></div>
+                        <div class="col-sm-8">@Model.Year</div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-sm-4"><strong>Price:</strong></div>
+                        <div class="col-sm-8"><span class="h5 text-success">R @Model.SellingPrice.ToString("N0")</span></div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-sm-4"><strong>Mileage:</strong></div>
+                        <div class="col-sm-8">@Model.Mileage.ToString("N0") miles</div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-sm-4"><strong>VIN:</strong></div>
+                        <div class="col-sm-8"><code>@Model.VIN</code></div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-sm-4"><strong>Engine:</strong></div>
+                        <div class="col-sm-8">@Model.EngineType</div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-sm-4"><strong>Transmission:</strong></div>
+                        <div class="col-sm-8">@Model.Transmission</div>
+                    </div>
+
+
+
+                    <div class="row mb-3">
+                        <div class="col-sm-4"><strong>Color:</strong></div>
+                        <div class="col-sm-8">@Model.ExteriorColor</div>
+                    </div>
+
+
+
+
+
+                    <div class="row mb-3">
+                        <div class="col-sm-4"><strong>Added:</strong></div>
+                        <div class="col-sm-8">@Model.CreatedDate.ToString("MMM dd, yyyy")</div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-sm-4"><strong>Last Updated:</strong></div>
+                        <div class="col-sm-8">@Model.ModifiedDate.ToString("MMM dd, yyyy")</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Features Section -->
+    @if (!string.IsNullOrEmpty(Model.Features))
+    {
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-star"></i> Features</h5>
+                    </div>
+                    <div class="card-body">
+                        @{
+                            var features = Model.Features.Split(',').Select(f => f.Trim()).Where(f => !string.IsNullOrEmpty(f));
+                        }
+                        @if (features.Any())
+                        {
+                            <div class="row">
+                                @foreach (var feature in features)
+                                {
+                                    <div class="col-md-6 col-lg-4 mb-2">
+                                        <i class="fas fa-check text-success me-2"></i>@feature
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="mb-0">@Model.Features</p>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Action Buttons -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-cogs"></i> Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex flex-wrap gap-2">
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                            <i class="fas fa-edit"></i> Edit Vehicle
+                        </a>
+                        
+                        <form asp-action="ToggleStatus" asp-route-id="@Model.Id" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-exchange-alt"></i> Toggle Status
+                            </button>
+                        </form>
+                        
+                        <button type="button" class="btn btn-info" onclick="printVehicleDetails()">
+                            <i class="fas fa-print"></i> Print Details
+                        </button>
+                        
+                        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#shareModal">
+                            <i class="fas fa-share"></i> Share
+                        </button>
+                        
+                        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger" 
+                           onclick="return confirm('Are you sure you want to delete this vehicle?')">
+                            <i class="fas fa-trash"></i> Delete
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Share Modal -->
+<div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="shareModalLabel">Share Vehicle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Share this vehicle listing:</p>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" id="shareUrl" value="@Context.Request.Scheme://@Context.Request.Host@Context.Request.Path" readonly>
+                    <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard()">
+                        <i class="fas fa-copy"></i> Copy
+                    </button>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-primary" onclick="shareOnSocial('facebook')">
+                        <i class="fab fa-facebook"></i> Facebook
+                    </button>
+                    <button class="btn btn-info" onclick="shareOnSocial('twitter')">
+                        <i class="fab fa-twitter"></i> Twitter
+                    </button>
+                    <button class="btn btn-success" onclick="shareOnSocial('whatsapp')">
+                        <i class="fab fa-whatsapp"></i> WhatsApp
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function printVehicleDetails() {
+            window.print();
+        }
+
+        function copyToClipboard() {
+            const shareUrl = document.getElementById('shareUrl');
+            shareUrl.select();
+            shareUrl.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(shareUrl.value).then(function() {
+                alert('URL copied to clipboard!');
+            });
+        }
+
+        function shareOnSocial(platform) {
+            const url = encodeURIComponent(window.location.href);
+            const text = encodeURIComponent('@Model.Year @Model.Make @Model.Model - $@Model.SellingPrice.ToString("N0")');
+            
+            let shareUrl = '';
+            switch(platform) {
+                case 'facebook':
+                    shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+                    break;
+                case 'twitter':
+                    shareUrl = `https://twitter.com/intent/tweet?text=${text}&url=${url}`;
+                    break;
+                case 'whatsapp':
+                    shareUrl = `https://wa.me/?text=${text}%20${url}`;
+                    break;
+            }
+            
+            if (shareUrl) {
+                window.open(shareUrl, '_blank', 'width=600,height=400');
+            }
+        }
+    </script>
+
+}
+
+<style>
+    @@media print {
+        .btn, .modal, .card-header {
+            display: none !important;
+        }
+        .card {
+            border: none !important;
+            box-shadow: none !important;
+        }
+    }
+</style>

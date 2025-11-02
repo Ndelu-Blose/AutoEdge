@@ -1,0 +1,167 @@
+@model AutoEdge.Models.Entities.Assessment
+
+@{
+    ViewData["Title"] = "Assessment Expired";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-danger text-white text-center">
+                    <h4 class="mb-0"><i class="fas fa-clock"></i> Assessment Expired</h4>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <div class="expired-icon mb-3">
+                            <i class="fas fa-clock fa-5x text-danger"></i>
+                        </div>
+                        <h3>@Model.AssessmentTitle</h3>
+                        <p class="text-muted">This assessment has expired and is no longer available.</p>
+                    </div>
+
+                    <div class="alert alert-danger">
+                        <h5><i class="fas fa-exclamation-triangle"></i> Assessment Deadline Passed</h5>
+                        <p class="mb-0">The deadline for this assessment was <strong>@Model.DueDate.ToString("dddd, dd MMMM yyyy 'at' HH:mm")</strong>. Unfortunately, we cannot accept submissions after the deadline has passed.</p>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title"><i class="fas fa-calendar-times"></i> Due Date</h5>
+                                    <p class="mb-0">@Model.DueDate.ToString("MMM dd, yyyy")</p>
+                                    <small class="text-muted">@Model.DueDate.ToString("HH:mm")</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title"><i class="fas fa-hourglass-half"></i> Time Limit</h5>
+                                    <p class="mb-0">@Model.TimeLimitMinutes minutes</p>
+                                    <small class="text-muted">per assessment</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <h5><i class="fas fa-info-circle"></i> What happens next?</h5>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <ul class="list-unstyled">
+                                    <li class="mb-2"><i class="fas fa-arrow-right text-primary"></i> Your application will be reviewed based on the information you provided during the application process.</li>
+                                    <li class="mb-2"><i class="fas fa-arrow-right text-primary"></i> The recruitment team may contact you for alternative assessment methods or next steps.</li>
+                                    <li class="mb-2"><i class="fas fa-arrow-right text-primary"></i> You can still apply for other positions that may be available.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info mt-4">
+                        <h5><i class="fas fa-question-circle"></i> Need Help?</h5>
+                        <p class="mb-0">If you believe this is an error or if you experienced technical difficulties, please contact our recruitment team immediately. We're here to help!</p>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <a href="@Url.Action("VacantPositions")" class="btn btn-primary">
+                            <i class="fas fa-search"></i> View Other Positions
+                        </a>
+                        <a href="@Url.Action("ApplicationStatus", new { email = Model.Application?.Email })" class="btn btn-outline-secondary">
+                            <i class="fas fa-list"></i> View Application Status
+                        </a>
+                        <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#contactModal">
+                            <i class="fas fa-envelope"></i> Contact Support
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contact Support Modal -->
+<div class="modal fade" id="contactModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-envelope"></i> Contact Recruitment Support</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>If you experienced technical difficulties or believe there was an error with your assessment deadline, please contact us:</p>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-envelope"></i> Email</h6>
+                        <p>recruitment@autoedge.com</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-phone"></i> Phone</h6>
+                        <p>+1 (555) 123-4567</p>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <h6><i class="fas fa-clock"></i> Business Hours</h6>
+                    <p class="mb-0">Monday - Friday: 9:00 AM - 5:00 PM</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="mailto:recruitment@autoedge.com" class="btn btn-primary">
+                    <i class="fas fa-envelope"></i> Send Email
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.expired-icon {
+    animation: pulse 2s infinite;
+}
+
+@@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.card {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: none;
+}
+
+.card-header {
+    border-bottom: none;
+}
+
+.bg-light {
+    background-color: #f8f9fa !important;
+}
+
+.list-unstyled li {
+    padding-left: 1rem;
+}
+
+@@media (max-width: 768px) {
+    .expired-icon i {
+        font-size: 3rem !important;
+    }
+    
+    .row .col-md-6 {
+        margin-bottom: 1rem;
+    }
+    
+    .text-center .btn {
+        margin-bottom: 0.5rem;
+        width: 100%;
+    }
+}
+</style>

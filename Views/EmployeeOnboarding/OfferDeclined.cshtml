@@ -1,0 +1,144 @@
+@model AutoEdge.Models.Entities.EmploymentOffer
+
+@{
+    ViewData["Title"] = "Offer Declined";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-warning text-dark text-center">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-handshake fa-3x mb-3"></i>
+                        <br>
+                        Employment Offer Declined
+                    </h3>
+                </div>
+                <div class="card-body text-center">
+                    <div class="alert alert-info">
+                        <h4 class="alert-heading">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            Thank you for your response
+                        </h4>
+                        <p class="mb-0">
+                            We have received your decision to decline the employment offer for the position of 
+                            <strong>@Model.JobTitle</strong> at AutoEdge.
+                        </p>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-briefcase mr-2"></i>
+                                        Position Details
+                                    </h5>
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td><strong>Position:</strong></td>
+                                            <td>@Model.JobTitle</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Department:</strong></td>
+                                            <td>@Model.Department</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Salary:</strong></td>
+                                            <td>R@(Model.SalaryOffered.ToString("N0")) per month</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Start Date:</strong></td>
+                                            <td>@Model.StartDate.ToString("dd MMMM yyyy")</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-comment mr-2"></i>
+                                        Your Feedback
+                                    </h5>
+                                    @if (!string.IsNullOrEmpty(Model.RejectionReason))
+                                    {
+                                        <div class="alert alert-light">
+                                            <p class="mb-0">@Model.RejectionReason</p>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <p class="text-muted">No specific reason provided</p>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mt-4">
+                        <div class="card-body">
+                            <h5>What happens next?</h5>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="text-center">
+                                        <i class="fas fa-envelope fa-2x text-primary mb-2"></i>
+                                        <h6>Notification Sent</h6>
+                                        <p class="text-muted">Our HR team has been notified of your decision</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-center">
+                                        <i class="fas fa-database fa-2x text-info mb-2"></i>
+                                        <h6>Records Updated</h6>
+                                        <p class="text-muted">Your application status has been updated in our system</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-center">
+                                        <i class="fas fa-archive fa-2x text-secondary mb-2"></i>
+                                        <h6>Process Closed</h6>
+                                        <p class="text-muted">This employment offer process is now complete</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-success mt-4">
+                        <h5 class="alert-heading">
+                            <i class="fas fa-heart mr-2"></i>
+                            Thank you for your interest in AutoEdge
+                        </h5>
+                        <p class="mb-0">
+                            We appreciate the time you took to go through our recruitment process. 
+                            Your feedback helps us improve our hiring process and company culture.
+                        </p>
+                    </div>
+
+                    <div class="mt-4">
+                        <h5>Future Opportunities</h5>
+                        <p class="text-muted">
+                            We encourage you to keep an eye on our career opportunities. 
+                            We may have other positions that might be a better fit for you in the future.
+                        </p>
+                        <a href="#" class="btn btn-outline-primary">
+                            <i class="fas fa-search mr-2"></i>
+                            View Current Job Openings
+                        </a>
+                    </div>
+                </div>
+                <div class="card-footer text-center">
+                    <p class="mb-0">
+                        <strong>Best regards,</strong><br>
+                        AutoEdge HR Team<br>
+                        <small class="text-muted">We wish you all the best in your career journey</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

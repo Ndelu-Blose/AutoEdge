@@ -1,0 +1,338 @@
+@model AutoEdge.Models.Entities.Application
+@{
+    ViewData["Title"] = "Candidate Profile";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user"></i> Candidate Profile - @Model.FirstName @Model.LastName
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <!-- Personal Information -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-user"></i> Personal Information</h6>
+                            <p><strong>Name:</strong> @Model.FirstName @Model.LastName</p>
+                            <p><strong>Email:</strong> @Model.Email</p>
+                            <p><strong>Phone:</strong> @Model.PhoneNumber</p>
+                            <p><strong>Address:</strong> @Model.Address</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-briefcase"></i> Professional Information</h6>
+                            <p><strong>Years of Experience:</strong> @Model.YearsOfExperience years</p>
+                            <p><strong>Highest Qualification:</strong> @Model.HighestQualification</p>
+                            <p><strong>Applied Date:</strong> @Model.SubmittedDate.ToString("MMM dd, yyyy")</p>
+                            <p><strong>Application Status:</strong> <span class="badge bg-info text-white"><i class="fas fa-info-circle me-1"></i>@Model.Status</span></p>
+                        </div>
+                    </div>
+
+                    <!-- Application Summary -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6><i class="fas fa-chart-line"></i> Application Summary</h6>
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Match Score:</strong> 
+                                                <span class="badge @(Model.MatchScore >= 70 ? "bg-success text-white" : "bg-warning text-dark")">
+                                                    <i class="fas fa-chart-line me-1"></i>@Model.MatchScore%
+                                                </span>
+                                            </p>
+                                            <p><strong>Position Applied For:</strong> @Model.JobPosting.JobTitle</p>
+                                            <p><strong>Department:</strong> @Model.JobPosting.Department</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            @if (!string.IsNullOrEmpty(Model.ExtractedSkills))
+                                            {
+                                                <p><strong>Skills:</strong></p>
+                                                <div class="mb-2">
+                                                    @foreach (var skill in Model.ExtractedSkills.Split(',').Take(5))
+                                                    {
+                                                        <span class="badge bg-secondary text-white me-1">@skill.Trim()</span>
+                                                    }
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Why Suitable for Role -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6><i class="fas fa-quote-left"></i> Why Suitable for Role</h6>
+                            <div class="card">
+                                <div class="card-body">
+                                    <p class="text-justify">@Model.WhySuitableForRole</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Interview History -->
+                    @if (Model.Interviews.Any())
+                    {
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6><i class="fas fa-video"></i> Interview History</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Recruiter</th>
+                                                <th>Rating</th>
+                                                <th>Status</th>
+                                                <th>Notes</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var interview in Model.Interviews.OrderByDescending(i => i.ScheduledDateTime))
+                                            {
+                                                <tr>
+                                                    <td>@interview.ScheduledDateTime.ToString("MMM dd, yyyy")</td>
+                                                    <td>@interview.RecruiterName</td>
+                                                    <td>
+                                                        @if (interview.InterviewRating > 0)
+                                                        {
+                                                            @for (int i = 1; i <= 10; i++)
+                                                            {
+                                                                <i class="fas fa-star @(i <= interview.InterviewRating ? "text-warning" : "text-muted")"></i>
+                                                            }
+                                                            <span class="ml-1">(@interview.InterviewRating/10)</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="text-muted">Not rated</span>
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        @if (interview.IsCompleted)
+                                                        {
+                                                            <span class="badge bg-success text-white"><i class="fas fa-check me-1"></i>Completed</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="badge bg-warning text-dark"><i class="fas fa-clock me-1"></i>Pending</span>
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        @if (!string.IsNullOrEmpty(interview.InterviewNotes))
+                                                        {
+                                                            <small>@(interview.InterviewNotes.Length > 50 ? interview.InterviewNotes.Substring(0, 50) + "..." : interview.InterviewNotes)</small>
+                                                        }
+                                                        else
+                                                        {
+                                                            <small class="text-muted">No notes</small>
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Assessment Results -->
+                    @if (Model.Assessments.Any())
+                    {
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6><i class="fas fa-clipboard-check"></i> Assessment Results</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Assessment</th>
+                                                <th>Score</th>
+                                                <th>Status</th>
+                                                <th>Completed</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var assessment in Model.Assessments.OrderByDescending(a => a.CompletedDate))
+                                            {
+                                                <tr>
+                                                    <td>@assessment.AssessmentTitle</td>
+                                                    <td>
+                                                        @if (assessment.IsCompleted)
+                                                        {
+                                                            <div class="progress" style="height: 20px;">
+                                                                <div class="progress-bar @(assessment.Score >= 70 ? "bg-success" : "bg-danger")" 
+                                                                     role="progressbar" style="width: @assessment.Score%">
+                                                                    @assessment.Score%
+                                                                </div>
+                                                            </div>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="text-muted">Not completed</span>
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        @if (assessment.IsCompleted)
+                                                        {
+                                                            @if (assessment.IsPassed)
+                                                            {
+                                                                <span class="badge bg-success text-white"><i class="fas fa-check me-1"></i>Passed</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="badge bg-danger text-white"><i class="fas fa-times me-1"></i>Failed</span>
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="badge bg-info text-white"><i class="fas fa-hourglass-half me-1"></i>Pending</span>
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        @if (assessment.CompletedDate.HasValue)
+                                                        {
+                                                            @assessment.CompletedDate.Value.ToString("MMM dd, yyyy")
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="text-muted">Not completed</span>
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Admin Notes -->
+                    @if (!string.IsNullOrEmpty(Model.AdminNotes))
+                    {
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6><i class="fas fa-sticky-note"></i> Admin Notes</h6>
+                                <div class="card bg-warning">
+                                    <div class="card-body">
+                                        <p class="text-justify">@Model.AdminNotes</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-download"></i> Documents
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        @if (!string.IsNullOrEmpty(Model.ResumeFilePath))
+                        {
+                            <a href="@Model.ResumeFilePath" target="_blank" class="list-group-item list-group-item-action">
+                                <i class="fas fa-file-pdf text-danger"></i> Resume/CV
+                            </a>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.CoverLetterPath))
+                        {
+                            <a href="@Model.CoverLetterPath" target="_blank" class="list-group-item list-group-item-action">
+                                <i class="fas fa-file-pdf text-danger"></i> Cover Letter
+                            </a>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.IdDocumentPath))
+                        {
+                            <a href="@Model.IdDocumentPath" target="_blank" class="list-group-item list-group-item-action">
+                                <i class="fas fa-file-pdf text-danger"></i> ID Document
+                            </a>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.CertificatesPath))
+                        {
+                            <a href="@Model.CertificatesPath" target="_blank" class="list-group-item list-group-item-action">
+                                <i class="fas fa-file-pdf text-danger"></i> Certificates
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-chart-pie"></i> Overall Assessment
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="text-center">
+                        <h4 class="text-primary">@Model.MatchScore%</h4>
+                        <small class="text-muted">Overall Match Score</small>
+                    </div>
+                    <hr>
+                    @if (Model.Interviews.Any(i => i.IsCompleted))
+                    {
+                        var avgRating = Model.Interviews.Where(i => i.IsCompleted && i.InterviewRating > 0).Average(i => i.InterviewRating);
+                        <div class="text-center">
+                            <h4 class="text-success">@avgRating.ToString("F1")/10</h4>
+                            <small class="text-muted">Average Interview Rating</small>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center">
+                            <h4 class="text-muted">N/A</h4>
+                            <small class="text-muted">No interviews completed</small>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-tools"></i> Quick Actions
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        @if (Model.Interviews.Any())
+                        {
+                            var latestInterview = Model.Interviews.OrderByDescending(i => i.ScheduledDateTime).First();
+                            <a asp-action="InterviewDetails" asp-route-id="@latestInterview.InterviewId" class="btn btn-primary btn-sm">
+                                <i class="fas fa-video"></i> View Latest Interview
+                            </a>
+                        }
+                        <a asp-action="MyInterviews" class="btn btn-info btn-sm">
+                            <i class="fas fa-list"></i> All My Interviews
+                        </a>
+                        <a asp-controller="RecruitmentAdmin" asp-action="Applications" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Back to Applications
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Add any JavaScript functionality here
+        });
+    </script>
+}
+

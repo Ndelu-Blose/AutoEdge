@@ -1,0 +1,398 @@
+@model IEnumerable<AutoEdge.Models.Entities.Delivery>
+@{
+    ViewData["Title"] = "My Deliveries";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-truck"></i> My Deliveries</h2>
+        <a href="@Url.Action("MyPurchases", "Purchase")" class="btn btn-outline-primary">
+            <i class="fas fa-shopping-cart"></i> My Purchases
+        </a>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="row">
+            @foreach (var delivery in Model)
+            {
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">@delivery.TrackingNumber</h6>
+                            @switch(delivery.Status)
+                            {
+                                case "Scheduled":
+                                    <span class="badge bg-info">Scheduled</span>
+                                    break;
+                                case "InTransit":
+                                    <span class="badge bg-warning">In Transit</span>
+                                    break;
+                                case "Delivered":
+                                    <span class="badge bg-success">Delivered</span>
+                                    break;
+                                case "Failed":
+                                    <span class="badge bg-danger">Failed</span>
+                                    break;
+                                case "Cancelled":
+                                    <span class="badge bg-secondary">Cancelled</span>
+                                    break;
+                                default:
+                                    <span class="badge bg-secondary">@delivery.Status</span>
+                                    break;
+                            }
+                        </div>
+                        <div class="card-body">
+                            <h6 class="card-title text-primary">
+                                @delivery.Contract.Purchase.Vehicle.Year @delivery.Contract.Purchase.Vehicle.Make @delivery.Contract.Purchase.Vehicle.Model
+                            </h6>
+                            
+                            <div class="mb-2">
+                                <small class="text-muted">VIN:</small>
+                                <span class="small">@delivery.Contract.Purchase.Vehicle.VIN</span>
+                            </div>
+
+                            <div class="mb-2">
+                                <small class="text-muted">Delivery Type:</small>
+                                @switch(delivery.DeliveryType)
+                                {
+                                    case "DealerPickup":
+                                        <span class="badge bg-success">Dealer Pickup</span>
+                                        break;
+                                    case "HomeDelivery":
+                                        <span class="badge bg-warning">Home Delivery</span>
+                                        break;
+                                    case "ThirdPartyDelivery":
+                                        <span class="badge bg-info">Third Party</span>
+                                        break;
+                                }
+                            </div>
+
+                            <div class="mb-2">
+                                <small class="text-muted">Scheduled Date:</small><br>
+                                <span class="fw-bold">@delivery.ScheduledDate.ToString("MMM dd, yyyy")</span><br>
+                                <span class="small text-muted">@delivery.ScheduledDate.ToString("h:mm tt")</span>
+                            </div>
+
+                            @if (delivery.CompletedDate.HasValue)
+                            {
+                                <div class="mb-2">
+                                    <small class="text-muted">Completed:</small><br>
+                                    <span class="text-success fw-bold">@delivery.CompletedDate.Value.ToString("MMM dd, yyyy h:mm tt")</span>
+                                </div>
+                            }
+
+                            @if (!string.IsNullOrEmpty(delivery.DriverName))
+                            {
+                                <div class="mb-2">
+                                    <small class="text-muted">Driver:</small>
+                                    <span>@delivery.DriverName</span>
+                                    @if (!string.IsNullOrEmpty(delivery.DriverPhone))
+                                    {
+                                        <br><a href="tel:@delivery.DriverPhone" class="small text-decoration-none">@delivery.DriverPhone</a>
+                                    }
+                                </div>
+                            }
+
+                            @if (delivery.DeliveryType != "DealerPickup")
+                            {
+                                <div class="mb-2">
+                                    <small class="text-muted">Delivery Address:</small><br>
+                                    <span class="small">@delivery.DeliveryAddress</span><br>
+                                    <span class="small">@delivery.City, @delivery.State @delivery.ZipCode</span>
+                                </div>
+                            }
+
+                            @if (delivery.DeliveryFee > 0)
+                            {
+                                <div class="mb-2">
+                                    <small class="text-muted">Delivery Fee:</small>
+                                    <span class="fw-bold text-success">$@delivery.DeliveryFee.ToString("N2")</span>
+                                </div>
+                            }
+
+                            @if (delivery.RescheduleCount > 0)
+                            {
+                                <div class="mb-2">
+                                    <small class="text-warning">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        Rescheduled @delivery.RescheduleCount time(s)
+                                    </small>
+                                </div>
+                            }
+                        </div>
+                        <div class="card-footer">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a href="@Url.Action("Track", new { id = delivery.Id })" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-map-marker-alt"></i> Track
+                                </a>
+                                
+                                @if (delivery.Status == "Scheduled" && delivery.RescheduleCount < 3)
+                                {
+                                    <button class="btn btn-outline-secondary btn-sm" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#rescheduleModal" 
+                                            data-delivery-id="@delivery.Id"
+                                            data-current-date="@delivery.ScheduledDate.ToString("yyyy-MM-ddTHH:mm")">
+                                        <i class="fas fa-calendar-alt"></i> Reschedule
+                                    </button>
+                                }
+                                
+                                @if (delivery.Status == "Delivered" && delivery.CustomerRating == 0)
+                                {
+                                    <button class="btn btn-outline-warning btn-sm" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#feedbackModal" 
+                                            data-delivery-id="@delivery.Id">
+                                        <i class="fas fa-star"></i> Rate
+                                    </button>
+                                }
+                            </div>
+                            
+                            <div class="mt-2">
+                                <small class="text-muted">
+                                    Created: @delivery.CreatedDate.ToString("MMM dd, yyyy")
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Pagination could be added here if needed -->
+        @if (Model.Count() > 12)
+        {
+            <nav aria-label="Deliveries pagination">
+                <ul class="pagination justify-content-center">
+                    <!-- Pagination logic would go here -->
+                </ul>
+            </nav>
+        }
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <div class="mb-4">
+                <i class="fas fa-truck fa-4x text-muted"></i>
+            </div>
+            <h4 class="text-muted">No Deliveries Found</h4>
+            <p class="text-muted">You don't have any scheduled deliveries yet.</p>
+            <a href="@Url.Action("Index", "VehicleBrowse")" class="btn btn-primary">
+                <i class="fas fa-car"></i> Browse Vehicles
+            </a>
+        </div>
+    }
+</div>
+
+<!-- Reschedule Modal -->
+<div class="modal fade" id="rescheduleModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="rescheduleForm" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">Reschedule Delivery</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Note:</strong> You can reschedule up to 3 times. Additional changes may incur fees.
+                    </div>
+                    <div class="mb-3">
+                        <label for="newScheduledDate" class="form-label">New Delivery Date</label>
+                        <input type="datetime-local" class="form-control" id="newScheduledDate" name="newScheduledDate" required />
+                    </div>
+                    <div class="mb-3">
+                        <label for="rescheduleReason" class="form-label">Reason for Rescheduling</label>
+                        <select class="form-select" id="rescheduleReason" name="rescheduleReason" required>
+                            <option value="">Select a reason...</option>
+                            <option value="Schedule Conflict">Schedule Conflict</option>
+                            <option value="Weather Concerns">Weather Concerns</option>
+                            <option value="Address Change">Address Change</option>
+                            <option value="Personal Emergency">Personal Emergency</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="mb-3" id="otherReasonDiv" style="display: none;">
+                        <label for="otherReason" class="form-label">Please specify</label>
+                        <textarea class="form-control" id="otherReason" name="otherReason" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Reschedule Delivery</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Feedback Modal -->
+<div class="modal fade" id="feedbackModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="feedbackForm" method="post" action="@Url.Action("SubmitRating", "Delivery")">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="deliveryId" name="deliveryId" value="" />
+                <div class="modal-header">
+                    <h5 class="modal-title">Rate Your Delivery Experience</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3 text-center">
+                        <label class="form-label">How would you rate your delivery experience?</label>
+                        <div class="rating-stars mt-2">
+                            <i class="fas fa-star" data-rating="1"></i>
+                            <i class="fas fa-star" data-rating="2"></i>
+                            <i class="fas fa-star" data-rating="3"></i>
+                            <i class="fas fa-star" data-rating="4"></i>
+                            <i class="fas fa-star" data-rating="5"></i>
+                        </div>
+                        <input type="hidden" id="customerRating" name="customerRating" value="0" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="customerFeedback" class="form-label">Additional Comments (Optional)</label>
+                        <textarea class="form-control" id="customerFeedback" name="customerFeedback" rows="3" placeholder="Tell us about your delivery experience..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Submit Rating</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.rating-stars i {
+    font-size: 2rem;
+    color: #ddd;
+    cursor: pointer;
+    margin: 0 5px;
+    transition: color 0.2s;
+}
+
+.rating-stars i:hover,
+.rating-stars i.active {
+    color: #ffc107;
+}
+</style>
+
+<script>
+// Handle reschedule modal
+document.addEventListener('DOMContentLoaded', function() {
+    const rescheduleModal = document.getElementById('rescheduleModal');
+    const rescheduleForm = document.getElementById('rescheduleForm');
+    const rescheduleReasonSelect = document.getElementById('rescheduleReason');
+    const otherReasonDiv = document.getElementById('otherReasonDiv');
+    
+    // Set minimum date for rescheduling
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(9, 0, 0, 0);
+    document.getElementById('newScheduledDate').min = tomorrow.toISOString().slice(0, 16);
+    
+    // Handle reschedule modal show
+    rescheduleModal.addEventListener('show.bs.modal', function(event) {
+        const button = event.relatedTarget;
+        const deliveryId = button.getAttribute('data-delivery-id');
+        const currentDate = button.getAttribute('data-current-date');
+        
+        rescheduleForm.action = '@Url.Action("Reschedule")/' + deliveryId;
+        document.getElementById('newScheduledDate').value = currentDate;
+    });
+    
+    // Handle reason selection
+    rescheduleReasonSelect.addEventListener('change', function() {
+        if (this.value === 'Other') {
+            otherReasonDiv.style.display = 'block';
+            document.getElementById('otherReason').required = true;
+        } else {
+            otherReasonDiv.style.display = 'none';
+            document.getElementById('otherReason').required = false;
+        }
+    });
+    
+    // Handle feedback modal
+    const feedbackModal = document.getElementById('feedbackModal');
+    const feedbackForm = document.getElementById('feedbackForm');
+    
+    feedbackModal.addEventListener('show.bs.modal', function(event) {
+        const button = event.relatedTarget;
+        const deliveryId = button.getAttribute('data-delivery-id');
+        
+        document.getElementById('deliveryId').value = deliveryId;
+        
+        // Reset form
+        document.getElementById('customerRating').value = '0';
+        document.getElementById('customerFeedback').value = '';
+        
+        // Reset stars
+        const stars = document.querySelectorAll('.rating-stars i');
+        stars.forEach(star => {
+            star.classList.remove('active');
+            star.style.color = '#ddd';
+        });
+    });
+    
+    // Handle star rating
+    const stars = document.querySelectorAll('.rating-stars i');
+    const ratingInput = document.getElementById('customerRating');
+    
+    stars.forEach(star => {
+        star.addEventListener('click', function() {
+            const rating = parseInt(this.getAttribute('data-rating'));
+            ratingInput.value = rating;
+            
+            stars.forEach((s, index) => {
+                if (index < rating) {
+                    s.classList.add('active');
+                } else {
+                    s.classList.remove('active');
+                }
+            });
+        });
+        
+        star.addEventListener('mouseover', function() {
+            const rating = parseInt(this.getAttribute('data-rating'));
+            
+            stars.forEach((s, index) => {
+                if (index < rating) {
+                    s.style.color = '#ffc107';
+                } else {
+                    s.style.color = '#ddd';
+                }
+            });
+        });
+    });
+    
+    document.querySelector('.rating-stars').addEventListener('mouseleave', function() {
+        const currentRating = parseInt(ratingInput.value);
+        
+        stars.forEach((s, index) => {
+            if (index < currentRating) {
+                s.style.color = '#ffc107';
+            } else {
+                s.style.color = '#ddd';
+            }
+        });
+    });
+    
+    // Validate form submission
+     feedbackForm.addEventListener('submit', function(event) {
+         const rating = parseInt(document.getElementById('customerRating').value);
+         
+         if (rating === 0) {
+             event.preventDefault();
+             alert('Please select a rating before submitting.');
+             return false;
+         }
+     });
+});
+</script>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

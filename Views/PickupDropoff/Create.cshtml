@@ -1,0 +1,175 @@
+@model AutoEdge.Services.CreatePickupRequest
+@{
+    ViewData["Title"] = "Request Vehicle Pickup";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">Request Vehicle Pickup</h3>
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.Booking != null)
+                    {
+                        <div class="alert alert-info">
+                            <h5>Service Booking Details</h5>
+                            <p><strong>Reference:</strong> @ViewBag.Booking.Reference</p>
+                            <p><strong>Vehicle:</strong> @ViewBag.Booking.Make @ViewBag.Booking.Model (@ViewBag.Booking.Year)</p>
+                            <p><strong>Service Type:</strong> @ViewBag.Booking.ServiceType</p>
+                        </div>
+                    }
+
+                    <form asp-action="Create" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        
+                        @if (ViewBag.Booking != null)
+                        {
+                            <input asp-for="ServiceBookingId" type="hidden" value="@ViewBag.Booking.Id" />
+                        }
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="CustomerName" class="form-label">Full Name *</label>
+                                    <input asp-for="CustomerName" class="form-control" required />
+                                    <span asp-validation-for="CustomerName" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="CustomerPhone" class="form-label">Phone Number *</label>
+                                    <input asp-for="CustomerPhone" class="form-control" required />
+                                    <span asp-validation-for="CustomerPhone" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="PickupLocation" class="form-label">Pickup Address *</label>
+                            <textarea asp-for="PickupLocation" class="form-control" rows="3" required 
+                                placeholder="Enter complete address including street, city, and postal code"></textarea>
+                            <span asp-validation-for="PickupLocation" class="text-danger"></span>
+                            <small class="form-text text-muted">We'll verify this address is within our service area</small>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="PickupDate" class="form-label">Preferred Pickup Date *</label>
+                                    <input asp-for="PickupDate" type="date" class="form-control" required 
+                                        min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                                    <span asp-validation-for="PickupDate" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="PickupTime" class="form-label">Preferred Pickup Time *</label>
+                                    <input asp-for="PickupTime" type="time" class="form-control" required />
+                                    <span asp-validation-for="PickupTime" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label asp-for="VehicleMake" class="form-label">Vehicle Make *</label>
+                                    <input asp-for="VehicleMake" class="form-control" required />
+                                    <span asp-validation-for="VehicleMake" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label asp-for="VehicleModel" class="form-label">Vehicle Model *</label>
+                                    <input asp-for="VehicleModel" class="form-control" required />
+                                    <span asp-validation-for="VehicleModel" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label asp-for="VehicleYear" class="form-label">Vehicle Year *</label>
+                                    <input asp-for="VehicleYear" type="number" class="form-control" required 
+                                        min="1990" max="@DateTime.Now.Year" />
+                                    <span asp-validation-for="VehicleYear" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="VehicleLicensePlate" class="form-label">License Plate</label>
+                            <input asp-for="VehicleLicensePlate" class="form-control" 
+                                placeholder="Enter license plate number" />
+                            <span asp-validation-for="VehicleLicensePlate" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="SpecialInstructions" class="form-label">Special Instructions</label>
+                            <textarea asp-for="SpecialInstructions" class="form-control" rows="3" 
+                                placeholder="Any special instructions for the driver (access codes, parking restrictions, etc.)"></textarea>
+                            <span asp-validation-for="SpecialInstructions" class="text-danger"></span>
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <h6><i class="fas fa-info-circle"></i> Important Information</h6>
+                            <ul class="mb-0">
+                                <li>Pickup service is available during business hours (8 AM - 6 PM)</li>
+                                <li>Driver will contact you 30 minutes before arrival</li>
+                                <li>Please ensure someone is available to hand over the vehicle</li>
+                                <li>Driver will take photos of vehicle condition before pickup</li>
+                            </ul>
+                        </div>
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-car"></i> Request Pickup
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary btn-lg ms-2">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Address validation
+        document.getElementById('PickupLocation').addEventListener('blur', function() {
+            const address = this.value;
+            if (address.length > 10) {
+                // Simulate address validation
+                fetch('/PickupDropoff/ValidateAddress', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: JSON.stringify({ address: address })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.isServiceable) {
+                        this.setCustomValidity('This address is outside our serviceable area');
+                    } else {
+                        this.setCustomValidity('');
+                    }
+                });
+            }
+        });
+
+        // Time slot validation
+        document.getElementById('PickupTime').addEventListener('change', function() {
+            const time = this.value;
+            const hour = parseInt(time.split(':')[0]);
+            
+            if (hour < 8 || hour >= 18) {
+                this.setCustomValidity('Pickup time must be between 8:00 AM and 6:00 PM');
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+    </script>
+}

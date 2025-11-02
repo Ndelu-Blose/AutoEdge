@@ -1,0 +1,181 @@
+@model AutoEdge.Models.Entities.Contract
+@{
+    ViewData["Title"] = "Schedule Delivery";
+    var contract = ViewBag.Contract as AutoEdge.Models.Entities.Contract;
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-truck"></i> Schedule Delivery
+                    </h4>
+                </div>
+                <div class="card-body">
+                    @if (contract != null)
+                    {
+                        <div class="alert alert-info mb-4">
+                            <h6><strong>Vehicle Details:</strong></h6>
+                            <p class="mb-1"><strong>Vehicle:</strong> @contract.Purchase.Vehicle.Year @contract.Purchase.Vehicle.Make @contract.Purchase.Vehicle.Model</p>
+                            <p class="mb-1"><strong>VIN:</strong> @contract.Purchase.Vehicle.VIN</p>
+                            <p class="mb-0"><strong>Contract ID:</strong> @contract.Id</p>
+                        </div>
+                    }
+
+                    <form asp-action="Schedule" method="post">
+                        <input type="hidden" name="contractId" value="@contract?.Id" />
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="deliveryType" class="form-label"><strong>Delivery Type</strong></label>
+                                <select class="form-select" id="deliveryType" name="deliveryType" required onchange="toggleDeliveryFields()">
+                                    <option value="">Select delivery type...</option>
+                                    <option value="DealerPickup">Dealer Pickup (Free)</option>
+                                    <option value="HomeDelivery">Home Delivery ($150)</option>
+                                    <option value="ThirdPartyDelivery">Third Party Delivery ($200)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="scheduledDate" class="form-label"><strong>Preferred Date</strong></label>
+                                <input type="datetime-local" class="form-control" id="scheduledDate" name="scheduledDate" required min="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" />
+                            </div>
+                        </div>
+
+                        <div id="deliveryAddressSection" style="display: none;">
+                            <h6 class="text-primary mb-3">Delivery Address</h6>
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <label for="deliveryAddress" class="form-label">Street Address</label>
+                                    <input type="text" class="form-control" id="deliveryAddress" name="deliveryAddress" placeholder="Enter full street address" />
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label for="city" class="form-label">City</label>
+                                    <input type="text" class="form-control" id="city" name="city" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="state" class="form-label">State</label>
+                                    <input type="text" class="form-control" id="state" name="state" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="zipCode" class="form-label">ZIP Code</label>
+                                    <input type="text" class="form-control" id="zipCode" name="zipCode" />
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="country" class="form-label">Country</label>
+                                    <input type="text" class="form-control" id="country" name="country" value="United States" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <h6 class="text-primary mb-3">Contact Information</h6>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="contactPersonName" class="form-label">Contact Person</label>
+                                <input type="text" class="form-control" id="contactPersonName" name="contactPersonName" required />
+                            </div>
+                            <div class="col-md-4">
+                                <label for="contactPersonPhone" class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control" id="contactPersonPhone" name="contactPersonPhone" required />
+                            </div>
+                            <div class="col-md-4">
+                                <label for="contactPersonEmail" class="form-label">Email Address</label>
+                                <input type="email" class="form-control" id="contactPersonEmail" name="contactPersonEmail" required />
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="deliveryInstructions" class="form-label">Special Instructions</label>
+                            <textarea class="form-control" id="deliveryInstructions" name="deliveryInstructions" rows="3" placeholder="Any special delivery instructions or notes..."></textarea>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="@Url.Action("PurchaseStatus", "Purchase", new { id = contract?.Purchase.Id })" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to Purchase
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-calendar-check"></i> Schedule Delivery
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0"><i class="fas fa-info-circle"></i> Delivery Information</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="text-primary">Delivery Options:</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-store text-success"></i> <strong>Dealer Pickup:</strong> Free - Pick up at our location</li>
+                            <li><i class="fas fa-home text-warning"></i> <strong>Home Delivery:</strong> $150 - Delivered to your address</li>
+                            <li><i class="fas fa-shipping-fast text-info"></i> <strong>Third Party:</strong> $200 - Professional delivery service</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="text-primary">What to Expect:</h6>
+                        <ul class="list-unstyled small">
+                            <li><i class="fas fa-check text-success"></i> Real-time tracking updates</li>
+                            <li><i class="fas fa-check text-success"></i> SMS and email notifications</li>
+                            <li><i class="fas fa-check text-success"></i> Professional delivery team</li>
+                            <li><i class="fas fa-check text-success"></i> Vehicle inspection upon delivery</li>
+                        </ul>
+                    </div>
+
+                    <div class="alert alert-warning small">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Note:</strong> Delivery times are estimates and may vary based on weather and traffic conditions.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleDeliveryFields() {
+    const deliveryType = document.getElementById('deliveryType').value;
+    const addressSection = document.getElementById('deliveryAddressSection');
+    const addressFields = addressSection.querySelectorAll('input');
+    
+    if (deliveryType === 'HomeDelivery' || deliveryType === 'ThirdPartyDelivery') {
+        addressSection.style.display = 'block';
+        addressFields.forEach(field => {
+            if (field.id !== 'country') {
+                field.required = true;
+            }
+        });
+    } else {
+        addressSection.style.display = 'none';
+        addressFields.forEach(field => {
+            field.required = false;
+            field.value = '';
+        });
+    }
+}
+
+// Set minimum date to tomorrow
+document.addEventListener('DOMContentLoaded', function() {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(9, 0, 0, 0); // Set to 9 AM
+    
+    const dateInput = document.getElementById('scheduledDate');
+    dateInput.min = tomorrow.toISOString().slice(0, 16);
+    dateInput.value = tomorrow.toISOString().slice(0, 16);
+});
+</script>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

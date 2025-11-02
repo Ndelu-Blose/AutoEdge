@@ -1,0 +1,112 @@
+@* @model AutoEdge.Models.Entities.ServiceBooking
+
+@{
+    ViewData["Title"] = "Book Service";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-calendar-plus"></i> Book New Service</h3>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="VehicleMake" class="form-label">Vehicle Make</label>
+                                    <input asp-for="VehicleMake" class="form-control" placeholder="e.g., Toyota" />
+                                    <span asp-validation-for="VehicleMake" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="VehicleModel" class="form-label">Vehicle Model</label>
+                                    <input asp-for="VehicleModel" class="form-control" placeholder="e.g., Camry" />
+                                    <span asp-validation-for="VehicleModel" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="VehicleYear" class="form-label">Vehicle Year</label>
+                                    <input asp-for="VehicleYear" class="form-control" type="number" min="1990" max="@DateTime.Now.Year" />
+                                    <span asp-validation-for="VehicleYear" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="VehicleVin" class="form-label">VIN (Optional)</label>
+                                    <input asp-for="VehicleVin" class="form-control" placeholder="17-character VIN" maxlength="17" />
+                                    <span asp-validation-for="VehicleVin" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="VehicleMileage" class="form-label">Current Mileage (Optional)</label>
+                                    <input asp-for="VehicleMileage" class="form-control" type="number" min="0" />
+                                    <span asp-validation-for="VehicleMileage" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="ServiceType" class="form-label">Service Type</label>
+                                    <select asp-for="ServiceType" class="form-select">
+                                        <option value="">Select Service Type</option>
+                                        <option value="Maintenance">Maintenance (Oil changes, tire rotations, fluid checks)</option>
+                                        <option value="Repairs">Repairs (Brake work, engine diagnostics, transmission)</option>
+                                        <option value="Inspection">Inspection (Multi-point inspection, safety checks)</option>
+                                    </select>
+                                    <span asp-validation-for="ServiceType" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="BookingDate" class="form-label">Preferred Date</label>
+                                    <input asp-for="BookingDate" class="form-control" type="date" min="@DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")" />
+                                    <span asp-validation-for="BookingDate" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="BookingTime" class="form-label">Preferred Time</label>
+                                    <input asp-for="BookingTime" class="form-control" type="time" />
+                                    <span asp-validation-for="BookingTime" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="ServiceNotes" class="form-label">Service Notes / Special Requests</label>
+                            <textarea asp-for="ServiceNotes" class="form-control" rows="4" placeholder="Describe any specific issues or requests..."></textarea>
+                            <span asp-validation-for="ServiceNotes" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a asp-action="Index" class="btn btn-secondary me-md-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-calendar-check"></i> Book Service
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+} *@

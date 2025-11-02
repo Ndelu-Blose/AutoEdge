@@ -1,0 +1,245 @@
+@{
+    ViewData["Title"] = "AutoEdge - Your Premier Car Dealership";
+}
+
+<!-- Hero Section -->
+<section class="hero-section bg-primary text-white py-5 mb-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">Find Your Perfect Vehicle</h1>
+                <p class="lead mb-4">Discover premium quality vehicles with exceptional service. From luxury cars to reliable family vehicles, we have the perfect match for your lifestyle.</p>
+                <div class="d-flex gap-3">
+                    <a href="@Url.Action("Index", "VehicleBrowse")" class="btn btn-light btn-lg">
+                        <i class="fas fa-car me-2"></i>Browse Vehicles
+                    </a>
+                    <a href="#features" class="btn btn-outline-light btn-lg">
+                        Learn More
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <i class="fas fa-car-side fa-10x opacity-75"></i>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section id="features" class="py-5">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-lg-8 mx-auto">
+                <h2 class="display-5 fw-bold mb-3">Why Choose AutoEdge?</h2>
+                <p class="lead text-muted">We provide exceptional service and quality vehicles to make your car buying experience seamless and enjoyable.</p>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <div class="stats-icon" style="background-color: var(--accent-color);">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h5 class="card-title mt-3">Quality Assurance</h5>
+                        <p class="card-text text-muted">Every vehicle undergoes thorough inspection and comes with detailed history reports for your peace of mind.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <div class="stats-icon" style="background-color: var(--success-color);">
+                            <i class="fas fa-handshake"></i>
+                        </div>
+                        <h5 class="card-title mt-3">Expert Service</h5>
+                        <p class="card-text text-muted">Our experienced team provides personalized assistance to help you find the perfect vehicle for your needs.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <div class="stats-icon" style="background-color: var(--accent-color);">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <h5 class="card-title mt-3">Competitive Pricing</h5>
+                        <p class="card-text text-muted">We offer fair, transparent pricing with flexible financing options to fit your budget.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Statistics Section -->
+<section class="bg-light py-5">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-3 mb-4">
+                <div class="stat-item">
+                    <h3 class="display-6 fw-bold text-primary mb-2">500+</h3>
+                    <p class="text-muted mb-0">Vehicles Sold</p>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="stat-item">
+                    <h3 class="display-6 fw-bold text-success mb-2">98%</h3>
+                    <p class="text-muted mb-0">Customer Satisfaction</p>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="stat-item">
+                    <h3 class="display-6 fw-bold text-info mb-2">5+</h3>
+                    <p class="text-muted mb-0">Years Experience</p>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="stat-item">
+                    <h3 class="display-6 fw-bold text-warning mb-2">24/7</h3>
+                    <p class="text-muted mb-0">Customer Support</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h2 class="display-5 fw-bold mb-4">Ready to Find Your Dream Car?</h2>
+                <p class="lead text-muted mb-4">Join thousands of satisfied customers who found their perfect vehicle with AutoEdge. Start your journey today!</p>
+                <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
+                    <a href="@Url.Action("Index", "VehicleBrowse")" class="btn btn-primary btn-lg">
+                        <i class="fas fa-search me-2"></i>Browse Our Inventory
+                    </a>
+                    @if (!User.Identity.IsAuthenticated)
+                    {
+                        <a href="@Url.Page("/Account/Register", new { area = "Identity" })" class="btn btn-outline-primary btn-lg">
+                            <i class="fas fa-user-plus me-2"></i>Create Account
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Services Section -->
+<section class="bg-light py-5">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-lg-8 mx-auto">
+                <h2 class="display-5 fw-bold mb-3">Our Services</h2>
+                <p class="lead text-muted">Comprehensive automotive services to meet all your needs</p>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-lg-3 col-md-6">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <div class="stats-icon" style="background-color: var(--accent-color);">
+                            <i class="fas fa-car"></i>
+                        </div>
+                        <h5 class="mt-3">Vehicle Sales</h5>
+                        <p class="text-muted">Wide selection of new and pre-owned vehicles</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <div class="stats-icon" style="background-color: var(--success-color);">
+                            <i class="fas fa-credit-card"></i>
+                        </div>
+                        <h5 class="mt-3">Financing</h5>
+                        <p class="text-muted">Flexible financing options with competitive rates</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <div class="stats-icon" style="background-color: var(--accent-color);">
+                            <i class="fas fa-file-contract"></i>
+                        </div>
+                        <h5 class="mt-3">Documentation</h5>
+                        <p class="text-muted">Complete paperwork and registration assistance</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <div class="stats-icon" style="background-color: var(--warning-color);">
+                            <i class="fas fa-headset"></i>
+                        </div>
+                        <h5 class="mt-3">Support</h5>
+                        <p class="text-muted">Ongoing customer support and assistance</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.hero-section {
+    background: linear-gradient(135deg, var(--accent-color) 0%, var(--primary-color) 100%);
+}
+
+.stat-item h3 {
+    font-size: 3rem;
+}
+
+@@media (max-width: 768px) {
+    .hero-section .fa-10x {
+        font-size: 6em !important;
+    }
+    
+    .stat-item h3 {
+        font-size: 2rem;
+    }
+}
+</style>
+
+<!-- Success Popup Modal -->
+@if (TempData["ShowSuccessPopup"] != null && (bool)TempData["ShowSuccessPopup"])
+{
+    <div id="successModal" class="modal fade show" style="display: block; background-color: rgba(0,0,0,0.5);" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-check-circle me-2"></i>Success!
+                    </h5>
+                </div>
+                <div class="modal-body text-center">
+                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                    <p class="h5">@TempData["SuccessMessage"]</p>
+                    <p class="text-muted">You will receive a confirmation email shortly.</p>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-success btn-lg px-4" onclick="closeSuccessModal()">
+                        <i class="fas fa-home me-2"></i>OK
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function closeSuccessModal() {
+            $('#successModal').fadeOut(300, function() {
+                $(this).remove();
+            });
+        }
+
+        // Auto-close after 5 seconds if user doesn't click OK
+        setTimeout(function() {
+            closeSuccessModal();
+        }, 5000);
+    </script>
+}

@@ -1,0 +1,313 @@
+@model AutoEdge.Models.Entities.Purchase
+@{
+    ViewData["Title"] = "Payment Confirmation";
+    Layout = "_Layout";
+    var payment = ViewBag.Payment as AutoEdge.Models.Entities.Payment;
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            @if (payment != null && payment.Status == "Completed")
+            {
+                <div class="card border-success">
+                    <div class="card-header bg-success text-white text-center">
+                        <h3><i class="fas fa-check-circle"></i> Payment Successful!</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+                            <h4 class="mt-3">Thank you for your payment!</h4>
+                            <p class="text-muted">Your payment has been processed successfully.</p>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>Payment Details</h5>
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <td><strong>Transaction ID:</strong></td>
+                                        <td>@payment.TransactionId</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Amount Paid:</strong></td>
+                                        <td>@payment.Amount.ToString("C")</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Payment Method:</strong></td>
+                                        <td>@payment.PaymentMethod</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Payment Date:</strong></td>
+                                        <td>@payment.ProcessedDate.ToString("MMM dd, yyyy HH:mm")</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Status:</strong></td>
+                                        <td><span class="badge bg-success">@payment.Status</span></td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>Vehicle Information</h5>
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <td><strong>Vehicle:</strong></td>
+                                        <td>@Model.Vehicle.Make @Model.Vehicle.Model</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Year:</strong></td>
+                                        <td>@Model.Vehicle.Year</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>VIN:</strong></td>
+                                        <td>@Model.Vehicle.VIN</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Purchase ID:</strong></td>
+                                        <td>#@Model.Id</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        @if (payment.PaymentType == "DepositPayment")
+                        {
+                            <div class="alert alert-info mt-3">
+                                <h6><i class="fas fa-info-circle"></i> Deposit Payment Received</h6>
+                                <p>You have successfully paid the deposit amount. The remaining balance of <strong>@((Model.PurchasePrice - payment.Amount).ToString("C"))</strong> will be due before vehicle delivery.</p>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-success mt-3">
+                                <h6><i class="fas fa-check-circle"></i> Full Payment Received</h6>
+                                <p class="mb-3">Congratulations! You have completed the full payment for your vehicle. Your next step is to schedule delivery.</p>
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <a href="@Url.Action("Schedule", "Customer")" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-truck me-2"></i>Schedule Delivery
+                                    </a>
+                                    <a href="@Url.Action("Dashboard", "Customer")" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+                                    </a>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+            else if (payment != null && payment.Status == "Pending")
+            {
+                <div class="card border-warning">
+                    <div class="card-header bg-warning text-dark text-center">
+                        <h3><i class="fas fa-clock"></i> Payment Pending</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-clock text-warning" style="font-size: 4rem;"></i>
+                            <h4 class="mt-3">Payment is being processed</h4>
+                            <p class="text-muted">Your payment is currently being processed. This may take a few minutes.</p>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>Payment Details</h5>
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <td><strong>Transaction ID:</strong></td>
+                                        <td>@payment.TransactionId</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Amount:</strong></td>
+                                        <td>@payment.Amount.ToString("C")</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Payment Method:</strong></td>
+                                        <td>@payment.PaymentMethod</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Status:</strong></td>
+                                        <td><span class="badge bg-warning">@payment.Status</span></td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>Next Steps</h5>
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-check text-success"></i> Payment submitted</li>
+                                    <li><i class="fas fa-spinner fa-spin text-warning"></i> Processing payment</li>
+                                    <li><i class="fas fa-circle text-muted"></i> Confirmation</li>
+                                    <li><i class="fas fa-circle text-muted"></i> Vehicle preparation</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info mt-3">
+                            <h6><i class="fas fa-info-circle"></i> What happens next?</h6>
+                            <p>We will send you an email confirmation once your payment is processed. You can also check your purchase status at any time.</p>
+                        </div>
+                    </div>
+                </div>
+            }
+            else if (Model.Status == "PaymentPending")
+            {
+                <div class="card border-info">
+                    <div class="card-header bg-info text-white text-center">
+                        <h3><i class="fas fa-info-circle"></i> Payment Instructions</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-money-bill-wave text-info" style="font-size: 4rem;"></i>
+                            <h4 class="mt-3">Payment Instructions Sent</h4>
+                            <p class="text-muted">Please follow the instructions below to complete your payment.</p>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <h5><i class="fas fa-info-circle"></i> Payment Instructions</h5>
+                            <p><strong>Payment Method:</strong> Cash/Bank Transfer/Check</p>
+                            <p><strong>Amount Due:</strong> @Model.PurchasePrice.ToString("C")</p>
+                            <p><strong>Payment Deadline:</strong> @DateTime.UtcNow.AddDays(7).ToString("MMM dd, yyyy")</p>
+                            
+                            <hr>
+                            
+                            <h6>Payment Options:</h6>
+                            <ul>
+                                <li><strong>Cash:</strong> Visit our dealership at 123 Auto Street, City, State 12345</li>
+                                <li><strong>Check:</strong> Make payable to "AutoEdge" and bring to our dealership</li>
+                                <li><strong>Bank Transfer:</strong> Contact our finance department for wire transfer details</li>
+                            </ul>
+                            
+                            <p><strong>Contact Information:</strong></p>
+                            <ul>
+                                <li>Phone: (555) 123-4567</li>
+                                <li>Email: finance@autoedge.com</li>
+                                <li>Hours: Monday-Friday 9AM-6PM, Saturday 9AM-4PM</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="alert alert-warning">
+                            <h6><i class="fas fa-exclamation-triangle"></i> Important</h6>
+                            <p>Please complete your payment within 7 days to avoid cancellation of your purchase. Once payment is received, we will update your purchase status and contact you regarding vehicle delivery.</p>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="card border-danger">
+                    <div class="card-header bg-danger text-white text-center">
+                        <h3><i class="fas fa-exclamation-triangle"></i> Payment Issue</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-exclamation-triangle text-danger" style="font-size: 4rem;"></i>
+                            <h4 class="mt-3">Payment could not be processed</h4>
+                            <p class="text-muted">There was an issue processing your payment. Please try again or contact support.</p>
+                        </div>
+                        
+                        <div class="alert alert-danger">
+                            <h6><i class="fas fa-exclamation-triangle"></i> What went wrong?</h6>
+                            <p>Your payment could not be processed at this time. This could be due to:</p>
+                            <ul>
+                                <li>Insufficient funds</li>
+                                <li>Card declined by bank</li>
+                                <li>Technical issue</li>
+                                <li>Invalid payment information</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="text-center">
+                            <a href="@Url.Action("SelectPayment", new { id = Model.Id })" class="btn btn-primary">
+                                <i class="fas fa-redo"></i> Try Payment Again
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+            
+            <!-- Action Buttons -->
+            <div class="card mt-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <a href="@Url.Action("PurchaseStatus", new { id = Model.Id })" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-eye"></i> View Purchase Status
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="@Url.Action("MyPurchases")" class="btn btn-outline-secondary w-100">
+                                <i class="fas fa-list"></i> My Purchases
+                            </a>
+                        </div>
+                    </div>
+                    
+                    @if (payment != null && payment.Status == "Completed")
+                    {
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <button class="btn btn-outline-info w-100" onclick="window.print()">
+                                    <i class="fas fa-print"></i> Print Receipt
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <a href="@Url.Action("DownloadReceipt", new { purchaseId = Model.Id, paymentId = payment.Id })" class="btn btn-outline-success w-100">
+                                    <i class="fas fa-download"></i> Download Receipt
+                                </a>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+            
+            <!-- Contact Support -->
+            <div class="card mt-4">
+                <div class="card-body text-center">
+                    <h6>Need Help?</h6>
+                    <p class="text-muted">If you have any questions about your payment or purchase, please contact our support team.</p>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <i class="fas fa-phone text-primary"></i><br>
+                            <small>(555) 123-4567</small>
+                        </div>
+                        <div class="col-md-4">
+                            <i class="fas fa-envelope text-primary"></i><br>
+                            <small>support@autoedge.com</small>
+                        </div>
+                        <div class="col-md-4">
+                            <i class="fas fa-clock text-primary"></i><br>
+                            <small>Mon-Fri 9AM-6PM</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Auto-refresh for pending payments
+            @if (payment != null && payment.Status == "Pending")
+            {
+                <text>
+                setTimeout(function() {
+                    location.reload();
+                }, 30000); // Refresh every 30 seconds
+                </text>
+            }
+        });
+    </script>
+    
+    <style>
+        @@media print {
+            .btn, .card-header, nav, footer {
+                display: none !important;
+            }
+            
+            .card {
+                border: none !important;
+                box-shadow: none !important;
+            }
+        }
+    </style>
+}

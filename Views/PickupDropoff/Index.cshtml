@@ -1,0 +1,236 @@
+@model IEnumerable<AutoEdge.Models.Entities.VehiclePickup>
+@{
+    ViewData["Title"] = "Pickup & Drop-off Management";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0">Pickup & Drop-off Management</h3>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="fas fa-filter"></i> Filter
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="?status=Scheduled">Scheduled</a></li>
+                            <li><a class="dropdown-item" href="?status=EnRoute">En Route</a></li>
+                            <li><a class="dropdown-item" href="?status=Collected">Collected</a></li>
+                            <li><a class="dropdown-item" href="?status=InService">In Service</a></li>
+                            <li><a class="dropdown-item" href="?status=Completed">Completed</a></li>
+                            <li><a class="dropdown-item" href="?status=Delivered">Delivered</a></li>
+                            <li><a class="dropdown-item" href="?status=Failed">Failed</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (Model.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Pickup ID</th>
+                                        <th>Customer</th>
+                                        <th>Vehicle</th>
+                                        <th>Pickup Location</th>
+                                        <th>Date & Time</th>
+                                        <th>Driver</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var pickup in Model)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <strong>#@pickup.VehiclePickupId</strong>
+                                                @if (pickup.ServiceBooking != null)
+                                                {
+                                                    <br><small class="text-muted">Booking: @pickup.ServiceBooking.Reference</small>
+                                                }
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <strong>@pickup.ServiceBooking?.CustomerName</strong>
+                                                    <br><small class="text-muted">@pickup.ServiceBooking?.CustomerEmail</small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                @if (pickup.ServiceBooking != null)
+                                                {
+                                                    <div>
+                                                        <strong>@pickup.ServiceBooking.Make @pickup.ServiceBooking.Model</strong>
+                                                        <br><small class="text-muted">@pickup.ServiceBooking.Year</small>
+                                                    </div>
+                                                }
+                                            </td>
+                                            <td>
+                                                <div class="text-truncate" style="max-width: 200px;" title="@pickup.PickupLocation">
+                                                    @pickup.PickupLocation
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <strong>@pickup.PickupDate.ToString("MMM dd, yyyy")</strong>
+                                                    <br><small class="text-muted">@pickup.PickupTime.ToString(@"hh\:mm")</small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                @if (pickup.Driver != null)
+                                                {
+                                                    <div>
+                                                        <strong>@pickup.Driver.Name</strong>
+                                                        <br><small class="text-muted">@pickup.Driver.Phone</small>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-warning">Unassigned</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @{
+                                                    var statusClass = pickup.PickupStatus switch
+                                                    {
+                                                        "Scheduled" => "bg-primary",
+                                                        "EnRoute" => "bg-info",
+                                                        "Collected" => "bg-success",
+                                                        "InService" => "bg-warning",
+                                                        "Completed" => "bg-success",
+                                                        "Delivered" => "bg-success",
+                                                        "Failed" => "bg-danger",
+                                                        _ => "bg-secondary"
+                                                    };
+                                                }
+                                                <span class="badge @statusClass">@pickup.PickupStatus</span>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a asp-action="Details" asp-route-id="@pickup.VehiclePickupId" 
+                                                       class="btn btn-sm btn-outline-primary" title="View Details">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    @if (pickup.Driver == null)
+                                                    {
+                                                        <a asp-action="AssignDriver" asp-route-id="@pickup.VehiclePickupId" 
+                                                           class="btn btn-sm btn-outline-success" title="Assign Driver">
+                                                            <i class="fas fa-user-plus"></i>
+                                                        </a>
+                                                    }
+                                                    @if (pickup.PickupStatus == "Scheduled" || pickup.PickupStatus == "EnRoute")
+                                                    {
+                                                        <button type="button" class="btn btn-sm btn-outline-warning" 
+                                                                onclick="updateStatus(@pickup.VehiclePickupId, 'EnRoute')" title="Mark En Route">
+                                                            <i class="fas fa-truck"></i>
+                                                        </button>
+                                                    }
+                                                    @if (pickup.PickupStatus == "EnRoute")
+                                                    {
+                                                        <button type="button" class="btn btn-sm btn-outline-success" 
+                                                                onclick="updateStatus(@pickup.VehiclePickupId, 'Collected')" title="Mark Collected">
+                                                            <i class="fas fa-check"></i>
+                                                        </button>
+                                                    }
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-truck fa-3x text-muted mb-3"></i>
+                            <h4 class="text-muted">No Pickup Requests Found</h4>
+                            <p class="text-muted">There are no pickup requests matching your current filter.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Status Update Modal -->
+<div class="modal fade" id="statusModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Update Pickup Status</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="statusForm">
+                    <input type="hidden" id="pickupId" name="pickupId" />
+                    <div class="mb-3">
+                        <label for="status" class="form-label">New Status</label>
+                        <select id="status" name="status" class="form-select" required>
+                            <option value="">Select Status</option>
+                            <option value="EnRoute">En Route</option>
+                            <option value="Collected">Collected</option>
+                            <option value="InService">In Service</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Delivered">Delivered</option>
+                            <option value="Failed">Failed</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Notes (Optional)</label>
+                        <textarea id="notes" name="notes" class="form-control" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitStatusUpdate()">Update Status</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function updateStatus(pickupId, status) {
+            document.getElementById('pickupId').value = pickupId;
+            document.getElementById('status').value = status;
+            new bootstrap.Modal(document.getElementById('statusModal')).show();
+        }
+
+        function submitStatusUpdate() {
+            const pickupId = document.getElementById('pickupId').value;
+            const status = document.getElementById('status').value;
+            const notes = document.getElementById('notes').value;
+
+            fetch('/PickupDropoff/UpdateStatus', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: `id=${pickupId}&status=${status}&notes=${encodeURIComponent(notes)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error updating status: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while updating the status');
+            });
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(function() {
+            location.reload();
+        }, 30000);
+    </script>
+}

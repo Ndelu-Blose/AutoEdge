@@ -1,0 +1,606 @@
+@model AutoEdge.Models.Entities.Purchase
+@{
+    ViewData["Title"] = $"Purchase Details - #{Model.Id}";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2>
+                        <i class="fas fa-shopping-cart me-2"></i>
+                        Purchase #@Model.Id
+                    </h2>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="@Url.Action("Index", "Admin")">Admin</a></li>
+                            <li class="breadcrumb-item"><a href="@Url.Action("Purchases", "Admin")">Purchases</a></li>
+                            <li class="breadcrumb-item active">Purchase #@Model.Id</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div>
+                    @switch (Model.Status)
+                    {
+                        case "Initiated":
+                            <span class="badge bg-secondary fs-6">@Model.Status</span>
+                            break;
+                        case "DocumentsUploaded":
+                            <span class="badge bg-info fs-6">Documents Uploaded</span>
+                            break;
+                        case "DocumentsReview":
+                            <span class="badge bg-warning fs-6">Under Review</span>
+                            break;
+                        case "DocumentsApproved":
+                            <span class="badge bg-success fs-6">Documents Approved</span>
+                            break;
+                        case "DocumentsRejected":
+                            <span class="badge bg-danger fs-6">Documents Rejected</span>
+                            break;
+                        case "ContractReview":
+                            <span class="badge bg-primary fs-6">Contract Review</span>
+                            break;
+                        case "PaymentPending":
+                            <span class="badge bg-warning fs-6">Payment Pending</span>
+                            break;
+                        case "Completed":
+                            <span class="badge bg-success fs-6">Completed</span>
+                            break;
+                        case "Cancelled":
+                            <span class="badge bg-dark fs-6">Cancelled</span>
+                            break;
+                        default:
+                            <span class="badge bg-secondary fs-6">@Model.Status</span>
+                            break;
+                    }
+                </div>
+            </div>
+
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @TempData["Success"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    @TempData["Error"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <div class="row">
+                <!-- Customer Information -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-user me-2"></i>
+                                Customer Information
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-sm-4"><strong>Name:</strong></div>
+                                <div class="col-sm-8">@Model.Customer.User.FirstName @Model.Customer.User.LastName</div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-4"><strong>Email:</strong></div>
+                                <div class="col-sm-8">@Model.Customer.User.Email</div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-4"><strong>Phone:</strong></div>
+                                <div class="col-sm-8">@(Model.Customer.User.PhoneNumber ?? "Not provided")</div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-4"><strong>Address:</strong></div>
+                                <div class="col-sm-8">
+                                    @if (!string.IsNullOrEmpty(Model.Customer.User.Address))
+                                    {
+                                        <text>@Model.Customer.User.Address<br />
+                                        @Model.Customer.User.City, @Model.Customer.User.State @Model.Customer.User.ZipCode<br />
+                                        @Model.Customer.User.Country</text>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Not provided</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vehicle Information -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-car me-2"></i>
+                                Vehicle Information
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            @if (Model.Vehicle.VehicleImages.Any())
+                            {
+                                <div class="text-center mb-3">
+                                    <img src="@Model.Vehicle.VehicleImages.First().ImagePath" 
+                                         alt="@Model.Vehicle.Make @Model.Vehicle.Model" 
+                                         class="img-fluid rounded" 
+                                         style="max-height: 150px; object-fit: cover;">
+                                </div>
+                            }
+                            <div class="row">
+                                <div class="col-sm-4"><strong>Vehicle:</strong></div>
+                                <div class="col-sm-8">@Model.Vehicle.Year @Model.Vehicle.Make @Model.Vehicle.Model</div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-4"><strong>VIN:</strong></div>
+                                <div class="col-sm-8">@Model.Vehicle.VIN</div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-4"><strong>Price:</strong></div>
+                                <div class="col-sm-8"><strong>@Model.Vehicle.SellingPrice.ToString("C")</strong></div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-4"><strong>Mileage:</strong></div>
+                                <div class="col-sm-8">@Model.Vehicle.Mileage.ToString("N0") miles</div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-4"><strong>Condition:</strong></div>
+                                <div class="col-sm-8">@Model.Vehicle.Condition</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Purchase Details -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-receipt me-2"></i>
+                                Purchase Details
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-sm-4"><strong>Created:</strong></div>
+                                <div class="col-sm-8">@Model.CreatedDate.ToString("MMM dd, yyyy hh:mm tt")</div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-4"><strong>Modified:</strong></div>
+                                <div class="col-sm-8">@Model.ModifiedDate.ToString("MMM dd, yyyy hh:mm tt")</div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-4"><strong>Total Amount:</strong></div>
+                                <div class="col-sm-8"><strong class="text-success">@Model.PurchasePrice.ToString("C")</strong></div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-4"><strong>Notes:</strong></div>
+                                <div class="col-sm-8">@(Model.Notes ?? "No notes")</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin Actions -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-cogs me-2"></i>
+                                Admin Actions
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            @if (Model.Status == "DocumentsReview")
+                            {
+                                <div class="mb-3">
+                                    <h6>Document Review Actions:</h6>
+                                    <form asp-action="ApproveDocuments" method="post" class="d-inline">
+                                        <input type="hidden" name="purchaseId" value="@Model.Id" />
+                                        <input type="hidden" name="action" value="approve" />
+                                        <div class="mb-2">
+                                            <textarea name="notes" class="form-control" placeholder="Optional notes..." rows="2"></textarea>
+                                        </div>
+                                        <button type="submit" class="btn btn-success me-2">
+                                            <i class="fas fa-check"></i> Approve Documents
+                                        </button>
+                                    </form>
+                                    <form asp-action="ApproveDocuments" method="post" class="d-inline">
+                                        <input type="hidden" name="purchaseId" value="@Model.Id" />
+                                        <input type="hidden" name="action" value="reject" />
+                                        <button type="submit" class="btn btn-danger">
+                                            <i class="fas fa-times"></i> Reject Documents
+                                        </button>
+                                    </form>
+                                </div>
+                                <hr>
+                            }
+
+                            @if (Model.Status == "DocumentsApproved" || Model.Status == "ContractReview" || Model.Status == "PaymentPending" || Model.Status == "Completed")
+                            {
+                                <div class="mb-3">
+                                    <h6>Contract Management:</h6>
+                                    <div class="d-flex gap-2 flex-wrap">
+                                        @if (string.IsNullOrEmpty(Model.Contracts.FirstOrDefault()?.ContractPath))
+                                        {
+                                            <form asp-action="GenerateContractForCustomer" method="post" class="d-inline">
+                                                <input type="hidden" name="purchaseId" value="@Model.Id" />
+                                                <button type="submit" class="btn btn-info">
+                                                    <i class="fas fa-file-contract"></i> Generate Contract
+                                                </button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <a href="@Url.Action("ViewContract", new { purchaseId = Model.Id })" class="btn btn-primary">
+                                                <i class="fas fa-eye"></i> View Contract
+                                            </a>
+                                            <a href="@Url.Action("DownloadContract", new { purchaseId = Model.Id })" class="btn btn-success">
+                                                <i class="fas fa-download"></i> Download Contract
+                                            </a>
+                                        }
+                                    </div>
+                                </div>
+                                <hr>
+                            }
+
+                            <div class="mb-3">
+                                <h6>Update Purchase Status:</h6>
+                                <form asp-action="UpdatePurchaseStatus" method="post">
+                                    <input type="hidden" name="purchaseId" value="@Model.Id" />
+                                    <div class="mb-2">
+                                        <select name="status" class="form-select">
+                                            <option value="Initiated" selected="@(Model.Status == "Initiated")">Initiated</option>
+                                            <option value="DocumentsUploaded" selected="@(Model.Status == "DocumentsUploaded")">Documents Uploaded</option>
+                                            <option value="DocumentsReview" selected="@(Model.Status == "DocumentsReview")">Documents Review</option>
+                                            <option value="DocumentsApproved" selected="@(Model.Status == "DocumentsApproved")">Documents Approved</option>
+                                            <option value="DocumentsRejected" selected="@(Model.Status == "DocumentsRejected")">Documents Rejected</option>
+                                            <option value="ContractGenerated" selected="@(Model.Status == "ContractGenerated")">Contract Generated</option>
+                                            <option value="ContractSentForSigning" selected="@(Model.Status == "ContractSentForSigning")">Contract Sent for Signing</option>
+                                            <option value="ContractSigned" selected="@(Model.Status == "ContractSigned")">Contract Signed</option>
+                                            <option value="PaymentPending" selected="@(Model.Status == "PaymentPending")">Payment Pending</option>
+                                            <option value="Completed" selected="@(Model.Status == "Completed")">Completed</option>
+                                            <option value="Cancelled" selected="@(Model.Status == "Cancelled")">Cancelled</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-2">
+                                        <textarea name="adminNotes" class="form-control" placeholder="Admin notes..." rows="2"></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> Update Status
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Documents Section -->
+            <div class="row">
+                <div class="col-12 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-file-alt me-2"></i>
+                                Customer Documents
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            @if (Model.Customer.Documents.Any())
+                            {
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Document Type</th>
+                                                <th>File Name</th>
+                                                <th>Upload Date</th>
+                                                <th>Status</th>
+                                                <th>Reviewed By</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var document in Model.Customer.Documents)
+                                            {
+                                                <tr>
+                                                    <td>@document.DocumentType.Name</td>
+                                                    <td>@document.FileName</td>
+                                                    <td>@document.UploadDate.ToString("MMM dd, yyyy")</td>
+                                                    <td>
+                                                        @switch (document.Status)
+                                                        {
+                                                            case "Pending":
+                                                                <span class="badge bg-warning">Pending</span>
+                                                                break;
+                                                            case "Approved":
+                                                                <span class="badge bg-success">Approved</span>
+                                                                break;
+                                                            case "Rejected":
+                                                                <span class="badge bg-danger">Rejected</span>
+                                                                break;
+                                                            default:
+                                                                <span class="badge bg-secondary">@document.Status</span>
+                                                                break;
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        @if (!string.IsNullOrEmpty(document.ReviewedBy))
+                                                        {
+                                                            @document.ReviewedBy
+                                                            <br>
+                                                            <small class="text-muted">@document.ReviewDate?.ToString("MMM dd, yyyy")</small>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="text-muted">Not reviewed</span>
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        <a href="@document.FilePath" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                            <i class="fas fa-eye"></i> View
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="text-center py-4">
+                                    <i class="fas fa-file-alt fa-2x text-muted mb-2"></i>
+                                    <p class="text-muted">No documents uploaded yet.</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Information -->
+            <div class="row">
+                <div class="col-12 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-credit-card me-2"></i>
+                                Payment Information
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            @if (Model.Contracts.Any())
+                            {
+                                @foreach (var contract in Model.Contracts)
+                                {
+                                    if (contract.Payments.Any())
+                                    {
+                                        <div class="mb-3">
+                                            <h6 class="text-muted mb-3">Contract #@contract.ContractNumber</h6>
+                                            <div class="table-responsive">
+                                                <table class="table table-striped">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Payment ID</th>
+                                                            <th>Amount</th>
+                                                            <th>Payment Method</th>
+                                                            <th>Transaction ID</th>
+                                                            <th>Status</th>
+                                                            <th>Processed Date</th>
+                                                            <th>Actions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach (var payment in contract.Payments.OrderByDescending(p => p.ProcessedDate))
+                                                        {
+                                                            <tr>
+                                                                <td><strong>#@payment.Id</strong></td>
+                                                                <td><strong>$@payment.Amount.ToString("N2")</strong></td>
+                                                                <td>
+                                                                    <span class="badge bg-info">@payment.PaymentMethod</span>
+                                                                </td>
+                                                                <td>
+                                                                    @if (!string.IsNullOrEmpty(payment.TransactionId))
+                                                                    {
+                                                                        <code>@payment.TransactionId</code>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <span class="text-muted">N/A</span>
+                                                                    }
+                                                                </td>
+                                                                <td>
+                                                                    @switch (payment.Status.ToLower())
+                                                                    {
+                                                                        case "completed":
+                                                                            <span class="badge bg-success">Completed</span>
+                                                                            break;
+                                                                        case "pending":
+                                                                            <span class="badge bg-warning">Pending</span>
+                                                                            break;
+                                                                        case "processing":
+                                                                            <span class="badge bg-info">Processing</span>
+                                                                            break;
+                                                                        case "failed":
+                                                                            <span class="badge bg-danger">Failed</span>
+                                                                            break;
+                                                                        case "cancelled":
+                                                                            <span class="badge bg-secondary">Cancelled</span>
+                                                                            break;
+                                                                        case "refunded":
+                                                                            <span class="badge bg-dark">Refunded</span>
+                                                                            break;
+                                                                        default:
+                                                                            <span class="badge bg-secondary">@payment.Status</span>
+                                                                            break;
+                                                                    }
+                                                                </td>
+                                                                <td>@payment.ProcessedDate.ToString("MMM dd, yyyy HH:mm")</td>
+                                                                <td>
+                                                                    @if (payment.Status.ToLower() == "completed" && payment.RefundAmount == 0)
+                                                                    {
+                                                                        <button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#refundModal" data-payment-id="@payment.Id" data-payment-amount="@payment.Amount">
+                                                                            <i class="fas fa-undo"></i> Refund
+                                                                        </button>
+                                                                    }
+                                                                    @if (payment.RefundAmount > 0)
+                                                                    {
+                                                                        <small class="text-muted d-block">Refunded: $@payment.RefundAmount.ToString("N2")</small>
+                                                                        @if (payment.RefundDate.HasValue)
+                                                                        {
+                                                                            <small class="text-muted d-block">@payment.RefundDate.Value.ToString("MMM dd, yyyy")</small>
+                                                                        }
+                                                                    }
+                                                                </td>
+                                                            </tr>
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="alert alert-info mb-3">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            No payments found for Contract #@contract.ContractNumber
+                                        </div>
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                <div class="text-center py-4">
+                                    <i class="fas fa-credit-card fa-2x text-muted mb-2"></i>
+                                    <p class="text-muted">No contracts or payments found for this purchase.</p>
+                                    @if (Model.Status == "PaymentPending" || Model.Status == "ContractSigned")
+                                    {
+                                        <p class="text-info"><small>Payment processing may be in progress.</small></p>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status History -->
+            <div class="row">
+                <div class="col-12 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-history me-2"></i>
+                                Status History
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            @if (Model.StatusHistory.Any())
+                            {
+                                <div class="timeline">
+                                    @foreach (var history in Model.StatusHistory.OrderByDescending(h => h.ChangedDate))
+                                    {
+                                        <div class="timeline-item">
+                                            <div class="timeline-marker"></div>
+                                            <div class="timeline-content">
+                                                <h6 class="timeline-title">@history.Status</h6>
+                                                <p class="timeline-text">@history.Notes</p>
+                                                <small class="text-muted">
+                                                    @history.ChangedDate.ToString("MMM dd, yyyy hh:mm tt") by @history.ChangedBy
+                                                </small>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="text-center py-4">
+                                    <i class="fas fa-history fa-2x text-muted mb-2"></i>
+                                    <p class="text-muted">No status history available.</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #dee2e6;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 30px;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -23px;
+    top: 5px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #007bff;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 2px #dee2e6;
+}
+
+.timeline-content {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 3px solid #007bff;
+}
+
+.timeline-title {
+    margin-bottom: 5px;
+    color: #495057;
+}
+
+.timeline-text {
+    margin-bottom: 10px;
+    color: #6c757d;
+}
+
+.fs-6 {
+    font-size: 1rem !important;
+}
+</style>

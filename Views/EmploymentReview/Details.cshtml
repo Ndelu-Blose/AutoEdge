@@ -1,0 +1,688 @@
+@model AutoEdge.Models.Entities.PreEmploymentDocumentation
+
+@{
+    ViewData["Title"] = "Documentation Review Details";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-clipboard-list mr-2"></i>
+                        Documentation Review - @Model.EmploymentOffer.Application.FirstName @Model.EmploymentOffer.Application.LastName
+                    </h3>
+                    <div class="card-tools">
+                        <a asp-action="Index" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left mr-1"></i>
+                            Back to List
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle mr-2"></i>
+                            @TempData["SuccessMessage"]
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    }
+
+                    <!-- Status Overview -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-info">
+                                    <i class="fas fa-user"></i>
+                                </span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Employee</span>
+                                    <span class="info-box-number">@Model.EmploymentOffer.Application.FirstName @Model.EmploymentOffer.Application.LastName</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-primary">
+                                    <i class="fas fa-briefcase"></i>
+                                </span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Position</span>
+                                    <span class="info-box-number">@Model.EmploymentOffer.JobTitle</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-success">
+                                    <i class="fas fa-calendar-check"></i>
+                                </span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Submitted</span>
+                                    <span class="info-box-number">@Model.CompletedDate?.ToString("dd MMM yyyy")</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="info-box">
+                                <span class="info-box-icon @(Model.Approved ? "bg-success" : Model.AdminReviewed ? "bg-danger" : "bg-warning")">
+                                    <i class="fas fa-clipboard-check"></i>
+                                </span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Status</span>
+                                    <span class="info-box-number">
+                                        @if (Model.Approved)
+                                        {
+                                            <span class="badge badge-success">Approved</span>
+                                        }
+                                        else if (Model.AdminReviewed && !Model.Approved)
+                                        {
+                                            <span class="badge badge-danger">Rejected</span>
+                                        }
+                                        else if (!string.IsNullOrEmpty(Model.CorrectionRequests))
+                                        {
+                                            <span class="badge badge-warning">Corrections Requested</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-primary">Pending Review</span>
+                                        }
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Review Tabs -->
+                    <ul class="nav nav-tabs" id="reviewTabs" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="personal-tab" data-toggle="tab" href="#personal" role="tab">
+                                <i class="fas fa-user mr-1"></i>Personal Info
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="contact-tab" data-toggle="tab" href="#contact" role="tab">
+                                <i class="fas fa-phone mr-1"></i>Contact & Emergency
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="financial-tab" data-toggle="tab" href="#financial" role="tab">
+                                <i class="fas fa-university mr-1"></i>Financial
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="medical-tab" data-toggle="tab" href="#medical" role="tab">
+                                <i class="fas fa-heartbeat mr-1"></i>Medical & Dependents
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="documents-tab" data-toggle="tab" href="#documents" role="tab">
+                                <i class="fas fa-file-upload mr-1"></i>Documents
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="declarations-tab" data-toggle="tab" href="#declarations" role="tab">
+                                <i class="fas fa-gavel mr-1"></i>Declarations
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="reviewTabContent">
+                        <!-- Personal Information Tab -->
+                        <div class="tab-pane fade show active" id="personal" role="tabpanel">
+                            <div class="card mt-3">
+                                <div class="card-body">
+                                    <h5>Personal Information</h5>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <table class="table table-borderless">
+                                                <tr>
+                                                    <td><strong>ID Number:</strong></td>
+                                                    <td>@Model.IdNumber</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Date of Birth:</strong></td>
+                                                    <td>@Model.DateOfBirth.ToString("dd MMMM yyyy")</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Gender:</strong></td>
+                                                    <td>@Model.Gender</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Nationality:</strong></td>
+                                                    <td>@Model.Nationality</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Marital Status:</strong></td>
+                                                    <td>@Model.MaritalStatus</td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <table class="table table-borderless">
+                                                <tr>
+                                                    <td><strong>Address:</strong></td>
+                                                    <td>@Model.ResidentialAddress</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>City:</strong></td>
+                                                    <td>@Model.City</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Province:</strong></td>
+                                                    <td>@Model.Province</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Postal Code:</strong></td>
+                                                    <td>@Model.PostalCode</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Alternative Phone:</strong></td>
+                                                    <td>@(Model.AlternativePhoneNumber ?? "Not provided")</td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Contact & Emergency Tab -->
+                        <div class="tab-pane fade" id="contact" role="tabpanel">
+                            <div class="card mt-3">
+                                <div class="card-body">
+                                    <h5>Emergency Contact Information</h5>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h6>Primary Emergency Contact</h6>
+                                            <table class="table table-borderless">
+                                                <tr>
+                                                    <td><strong>Name:</strong></td>
+                                                    <td>@Model.EmergencyContactName</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Relationship:</strong></td>
+                                                    <td>@Model.EmergencyContactRelationship</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Phone:</strong></td>
+                                                    <td>@Model.EmergencyContactPhone</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Address:</strong></td>
+                                                    <td>@(Model.EmergencyContactAddress ?? "Not provided")</td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6>Secondary Emergency Contact</h6>
+                                            @if (!string.IsNullOrEmpty(Model.SecondaryEmergencyContactName))
+                                            {
+                                                <table class="table table-borderless">
+                                                    <tr>
+                                                        <td><strong>Name:</strong></td>
+                                                        <td>@Model.SecondaryEmergencyContactName</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td><strong>Relationship:</strong></td>
+                                                        <td>@Model.SecondaryEmergencyContactRelationship</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td><strong>Phone:</strong></td>
+                                                        <td>@Model.SecondaryEmergencyContactPhone</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td><strong>Address:</strong></td>
+                                                        <td>@(Model.SecondaryEmergencyContactAddress ?? "Not provided")</td>
+                                                    </tr>
+                                                </table>
+                                            }
+                                            else
+                                            {
+                                                <p class="text-muted">No secondary emergency contact provided</p>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Financial Tab -->
+                        <div class="tab-pane fade" id="financial" role="tabpanel">
+                            <div class="card mt-3">
+                                <div class="card-body">
+                                    <h5>Financial Information</h5>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h6>Banking Details</h6>
+                                            <table class="table table-borderless">
+                                                <tr>
+                                                    <td><strong>Bank:</strong></td>
+                                                    <td>@Model.BankName</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Account Type:</strong></td>
+                                                    <td>@Model.AccountType</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Account Number:</strong></td>
+                                                    <td>@Model.AccountNumber</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Branch Code:</strong></td>
+                                                    <td>@Model.BranchCode</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Account Holder:</strong></td>
+                                                    <td>@Model.AccountHolderName</td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6>Tax Information</h6>
+                                            <table class="table table-borderless">
+                                                <tr>
+                                                    <td><strong>Tax Number:</strong></td>
+                                                    <td>@(Model.TaxNumber ?? "Not provided")</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Registered for Tax:</strong></td>
+                                                    <td>@(Model.RegisteredForTax ? "Yes" : "No")</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Tax Directive:</strong></td>
+                                                    <td>@(Model.TaxDirectiveNumber ?? "Not provided")</td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Medical & Dependents Tab -->
+                        <div class="tab-pane fade" id="medical" role="tabpanel">
+                            <div class="card mt-3">
+                                <div class="card-body">
+                                    <h5>Medical & Dependents Information</h5>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h6>Medical Aid Information</h6>
+                                            <table class="table table-borderless">
+                                                <tr>
+                                                    <td><strong>Has Medical Aid:</strong></td>
+                                                    <td>@(Model.HasMedicalAid ? "Yes" : "No")</td>
+                                                </tr>
+                                                @if (Model.HasMedicalAid)
+                                                {
+                                                    <tr>
+                                                        <td><strong>Provider:</strong></td>
+                                                        <td>@Model.MedicalAidProvider</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td><strong>Number:</strong></td>
+                                                        <td>@Model.MedicalAidNumber</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td><strong>Member Type:</strong></td>
+                                                        <td>@Model.MedicalAidMemberType</td>
+                                                    </tr>
+                                                }
+                                            </table>
+                                            
+                                            <h6>Health Declaration</h6>
+                                            <table class="table table-borderless">
+                                                <tr>
+                                                    <td><strong>Chronic Conditions:</strong></td>
+                                                    <td>@(Model.HasChronicConditions ? "Yes" : "No")</td>
+                                                </tr>
+                                                @if (Model.HasChronicConditions && !string.IsNullOrEmpty(Model.ChronicConditionsDetails))
+                                                {
+                                                    <tr>
+                                                        <td><strong>Details:</strong></td>
+                                                        <td>@Model.ChronicConditionsDetails</td>
+                                                    </tr>
+                                                }
+                                                <tr>
+                                                    <td><strong>Chronic Medication:</strong></td>
+                                                    <td>@(Model.OnChronicMedication ? "Yes" : "No")</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Disabilities:</strong></td>
+                                                    <td>@(Model.HasDisabilities ? "Yes" : "No")</td>
+                                                </tr>
+                                                @if (Model.HasDisabilities && !string.IsNullOrEmpty(Model.DisabilitiesDetails))
+                                                {
+                                                    <tr>
+                                                        <td><strong>Details:</strong></td>
+                                                        <td>@Model.DisabilitiesDetails</td>
+                                                    </tr>
+                                                }
+                                            </table>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6>Dependents</h6>
+                                            <table class="table table-borderless">
+                                                <tr>
+                                                    <td><strong>Number of Dependents:</strong></td>
+                                                    <td>@Model.NumberOfDependents</td>
+                                                </tr>
+                                            </table>
+                                            
+                                            @if (!string.IsNullOrEmpty(Model.DependentsDetails))
+                                            {
+                                                <h6>Dependents Details</h6>
+                                                <div class="alert alert-info">
+                                                    <small>@Model.DependentsDetails</small>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Documents Tab -->
+                        <div class="tab-pane fade" id="documents" role="tabpanel">
+                            <div class="card mt-3">
+                                <div class="card-body">
+                                    <h5>Uploaded Documents</h5>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h6>Mandatory Documents</h6>
+                                            <div class="list-group">
+                                                @if (!string.IsNullOrEmpty(Model.CertifiedIdPath))
+                                                {
+                                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <i class="fas fa-file-pdf text-danger mr-2"></i>
+                                                            Certified ID Document
+                                                        </div>
+                                                        <div>
+                                                            <a asp-action="ViewDocument" asp-route-id="@Model.DocumentationId" asp-route-documentType="certifiedId" 
+                                                               class="btn btn-sm btn-outline-primary" target="_blank">View</a>
+                                                            <a asp-action="DownloadDocument" asp-route-id="@Model.DocumentationId" asp-route-documentType="certifiedId" 
+                                                               class="btn btn-sm btn-outline-success">Download</a>
+                                                        </div>
+                                                    </div>
+                                                }
+                                                
+                                                @if (!string.IsNullOrEmpty(Model.ProofOfAddressPath))
+                                                {
+                                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <i class="fas fa-file-pdf text-danger mr-2"></i>
+                                                            Proof of Address
+                                                        </div>
+                                                        <div>
+                                                            <a asp-action="ViewDocument" asp-route-id="@Model.DocumentationId" asp-route-documentType="proofOfAddress" 
+                                                               class="btn btn-sm btn-outline-primary" target="_blank">View</a>
+                                                            <a asp-action="DownloadDocument" asp-route-id="@Model.DocumentationId" asp-route-documentType="proofOfAddress" 
+                                                               class="btn btn-sm btn-outline-success">Download</a>
+                                                        </div>
+                                                    </div>
+                                                }
+                                                
+                                                @if (!string.IsNullOrEmpty(Model.QualificationCertificatesPath))
+                                                {
+                                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <i class="fas fa-file-pdf text-danger mr-2"></i>
+                                                            Qualification Certificates
+                                                        </div>
+                                                        <div>
+                                                            <span class="badge badge-info">Multiple files</span>
+                                                        </div>
+                                                    </div>
+                                                }
+                                                
+                                                @if (!string.IsNullOrEmpty(Model.DriversLicensePath))
+                                                {
+                                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <i class="fas fa-file-pdf text-danger mr-2"></i>
+                                                            Driver's License
+                                                        </div>
+                                                        <div>
+                                                            <a asp-action="ViewDocument" asp-route-id="@Model.DocumentationId" asp-route-documentType="driversLicense" 
+                                                               class="btn btn-sm btn-outline-primary" target="_blank">View</a>
+                                                            <a asp-action="DownloadDocument" asp-route-id="@Model.DocumentationId" asp-route-documentType="driversLicense" 
+                                                               class="btn btn-sm btn-outline-success">Download</a>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6>Financial Documents</h6>
+                                            <div class="list-group">
+                                                @if (!string.IsNullOrEmpty(Model.BankStatementPath))
+                                                {
+                                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <i class="fas fa-file-pdf text-danger mr-2"></i>
+                                                            Bank Statement
+                                                        </div>
+                                                        <div>
+                                                            <a asp-action="ViewDocument" asp-route-id="@Model.DocumentationId" asp-route-documentType="bankStatement" 
+                                                               class="btn btn-sm btn-outline-primary" target="_blank">View</a>
+                                                            <a asp-action="DownloadDocument" asp-route-id="@Model.DocumentationId" asp-route-documentType="bankStatement" 
+                                                               class="btn btn-sm btn-outline-success">Download</a>
+                                                        </div>
+                                                    </div>
+                                                }
+                                                
+                                                @if (!string.IsNullOrEmpty(Model.TaxClearancePath))
+                                                {
+                                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <i class="fas fa-file-pdf text-danger mr-2"></i>
+                                                            Tax Clearance Certificate
+                                                        </div>
+                                                        <div>
+                                                            <a asp-action="ViewDocument" asp-route-id="@Model.DocumentationId" asp-route-documentType="taxClearance" 
+                                                               class="btn btn-sm btn-outline-primary" target="_blank">View</a>
+                                                            <a asp-action="DownloadDocument" asp-route-id="@Model.DocumentationId" asp-route-documentType="taxClearance" 
+                                                               class="btn btn-sm btn-outline-success">Download</a>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Declarations Tab -->
+                        <div class="tab-pane fade" id="declarations" role="tabpanel">
+                            <div class="card mt-3">
+                                <div class="card-body">
+                                    <h5>Legal Declarations</h5>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <table class="table table-borderless">
+                                                <tr>
+                                                    <td><strong>Criminal Record:</strong></td>
+                                                    <td>
+                                                        @if (Model.HasCriminalRecord)
+                                                        {
+                                                            <span class="badge badge-warning">Yes</span>
+                                                            @if (!string.IsNullOrEmpty(Model.CriminalRecordDetails))
+                                                            {
+                                                                <br><small class="text-muted">@Model.CriminalRecordDetails</small>
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="badge badge-success">No</span>
+                                                        }
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Accuracy Declaration:</strong></td>
+                                                    <td>
+                                                        @if (Model.DeclareAccurate)
+                                                        {
+                                                            <span class="badge badge-success">Accepted</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="badge badge-danger">Not Accepted</span>
+                                                        }
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Background Check Consent:</strong></td>
+                                                    <td>
+                                                        @if (Model.ConsentBackgroundCheck)
+                                                        {
+                                                            <span class="badge badge-success">Consented</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="badge badge-danger">Not Consented</span>
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <table class="table table-borderless">
+                                                <tr>
+                                                    <td><strong>Data Processing Consent:</strong></td>
+                                                    <td>
+                                                        @if (Model.ConsentDataProcessing)
+                                                        {
+                                                            <span class="badge badge-success">Consented</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="badge badge-danger">Not Consented</span>
+                                                        }
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Document Authenticity:</strong></td>
+                                                    <td>
+                                                        @if (Model.DocumentAuthenticity)
+                                                        {
+                                                            <span class="badge badge-success">Confirmed</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="badge badge-danger">Not Confirmed</span>
+                                                        }
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Signed Date:</strong></td>
+                                                    <td>@Model.SignedDate?.ToString("dd MMMM yyyy HH:mm")</td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    
+                                    @if (!string.IsNullOrEmpty(Model.DigitalSignature))
+                                    {
+                                        <h6>Digital Signature</h6>
+                                        <div class="text-center">
+                                            <img src="@Model.DigitalSignature" alt="Digital Signature" class="img-fluid" style="max-width: 400px; border: 1px solid #ddd; border-radius: 4px;" />
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Admin Actions -->
+                    @if (!Model.AdminReviewed)
+                    {
+                        <div class="card mt-4">
+                            <div class="card-header">
+                                <h5 class="card-title">
+                                    <i class="fas fa-tasks mr-2"></i>
+                                    Admin Actions
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-success btn-lg" onclick="approveDocumentation(@Model.DocumentationId)">
+                                        <i class="fas fa-check mr-2"></i>
+                                        Approve Documentation
+                                    </button>
+                                    <button type="button" class="btn btn-warning btn-lg" onclick="requestCorrections(@Model.DocumentationId)">
+                                        <i class="fas fa-edit mr-2"></i>
+                                        Request Corrections
+                                    </button>
+                                    <button type="button" class="btn btn-danger btn-lg" onclick="rejectDocumentation(@Model.DocumentationId)">
+                                        <i class="fas fa-times mr-2"></i>
+                                        Reject Documentation
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="card mt-4">
+                            <div class="card-header">
+                                <h5 class="card-title">
+                                    <i class="fas fa-info-circle mr-2"></i>
+                                    Review Information
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p><strong>Reviewed By:</strong> @(Model.Reviewer?.FirstName) @(Model.Reviewer?.LastName)</p>
+                                        <p><strong>Review Date:</strong> @Model.AdminReviewedDate?.ToString("dd MMMM yyyy HH:mm")</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        @if (!string.IsNullOrEmpty(Model.AdminNotes))
+                                        {
+                                            <p><strong>Admin Notes:</strong></p>
+                                            <div class="alert alert-info">@Model.AdminNotes</div>
+                                        }
+                                        @if (!string.IsNullOrEmpty(Model.CorrectionRequests))
+                                        {
+                                            <p><strong>Correction Requests:</strong></p>
+                                            <div class="alert alert-warning">@Model.CorrectionRequests</div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Include the same modals from Index.cshtml -->
+@section Scripts {
+    <script>
+        function approveDocumentation(docId) {
+            $('#approvalDocId').val(docId);
+            $('#approvalForm').attr('action', '@Url.Action("Approve", "EmploymentReview")');
+            $('#approvalModal').modal('show');
+        }
+
+        function requestCorrections(docId) {
+            $('#correctionsDocId').val(docId);
+            $('#correctionsForm').attr('action', '@Url.Action("RequestCorrections", "EmploymentReview")');
+            $('#correctionsModal').modal('show');
+        }
+
+        function rejectDocumentation(docId) {
+            $('#rejectionDocId').val(docId);
+            $('#rejectionForm').attr('action', '@Url.Action("Reject", "EmploymentReview")');
+            $('#rejectionModal').modal('show');
+        }
+    </script>
+}

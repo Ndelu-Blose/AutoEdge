@@ -1,0 +1,210 @@
+@model IEnumerable<AutoEdge.Models.Entities.ServiceBooking>
+@using AutoEdge.Models.Entities
+@{
+    ViewData["Title"] = "My Services";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">My Service History</h3>
+                </div>
+                <div class="card-body">
+                    @if (Model.Any())
+                    {
+                        <div class="row">
+                            @foreach (var service in Model)
+                            {
+                                <div class="col-md-6 col-lg-4 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-header d-flex justify-content-between align-items-center">
+                                            <h6 class="mb-0">@service.Reference</h6>
+                                            @{
+                                                var statusClass = service.Status switch
+                                                {
+                                                    ServiceBookingStatus.Pending => "bg-warning",
+                                                    ServiceBookingStatus.Confirmed => "bg-info",
+                                                    ServiceBookingStatus.Waitlisted => "bg-secondary",
+                                                    ServiceBookingStatus.Canceled => "bg-danger",
+                                                    ServiceBookingStatus.Completed => "bg-success",
+                                                    _ => "bg-secondary"
+                                                };
+                                            }
+                                            <span class="badge @statusClass">@service.Status</span>
+                                        </div>
+                                        <div class="card-body">
+                                            <h5 class="card-title">@service.Make @service.Model (@service.Year)</h5>
+                                            <p class="card-text">
+                                                <strong>Service Type:</strong> @service.ServiceType<br>
+                                                <strong>Date:</strong> @service.PreferredDate.ToString("MMM dd, yyyy")<br>
+                                                <strong>Time:</strong> @service.PreferredStart.ToString(@"hh\:mm")<br>
+                                                @if (service.ServiceJob?.Mechanic != null)
+                                                {
+                                                    <strong>Mechanic:</strong> @service.ServiceJob.Mechanic.Name<br>
+                                                }
+                                            </p>
+                                            
+                                            @if (service.ServiceInvoices.Any())
+                                            {
+                                                var invoice = service.ServiceInvoices.First();
+                                                var totalPaid = service.ServiceInvoices.SelectMany(i => i.ServicePayments)
+                                                    .Where(p => p.Status == "Completed")
+                                                    .Sum(p => p.Amount);
+                                                var remaining = invoice.TotalAmount - totalPaid;
+                                                
+                                                <div class="alert alert-info">
+                                                    <h6><i class="fas fa-receipt"></i> Invoice Status</h6>
+                                                    <p class="mb-1"><strong>Total:</strong> R @invoice.TotalAmount.ToString("F2")</p>
+                                                    <p class="mb-1"><strong>Paid:</strong> R @totalPaid.ToString("F2")</p>
+                                                    @if (remaining > 0)
+                                                    {
+                                                        <p class="mb-1 text-danger"><strong>Remaining:</strong> R @remaining.ToString("F2")</p>
+                                                    }
+                                                    else
+                                                    {
+                                                        <p class="mb-1 text-success"><strong>Fully Paid</strong></p>
+                                                    }
+                                                </div>
+                                            }
+                                        </div>
+                                        <div class="card-footer">
+                                            <div class="btn-group w-100" role="group">
+                                                <a asp-action="ServiceDetails" asp-route-id="@service.Id" 
+                                                   class="btn btn-outline-primary btn-sm">
+                                                    <i class="fas fa-eye"></i> Details
+                                                </a>
+                                                @if (service.Status == ServiceBookingStatus.Completed && service.ServiceInvoices.Any())
+                                                {
+                                                    var invoice = service.ServiceInvoices.First();
+                                                    var totalPaid = service.ServiceInvoices.SelectMany(i => i.ServicePayments)
+                                                        .Where(p => p.Status == "Completed")
+                                                        .Sum(p => p.Amount);
+                                                    var remaining = invoice.TotalAmount - totalPaid;
+                                                    
+                                                    @if (remaining > 0)
+                                                    {
+                                                        <a asp-controller="ServiceInvoice" asp-action="Pay" asp-route-id="@invoice.Id" 
+                                                           class="btn btn-success btn-sm">
+                                                            <i class="fas fa-credit-card"></i> Pay
+                                                        </a>
+                                                    }
+                                                }
+                                                @if (service.Status == ServiceBookingStatus.Pending || service.Status == ServiceBookingStatus.Confirmed)
+                                                {
+                                                    <button type="button" class="btn btn-info btn-sm" 
+                                                            onclick="requestPickup(@service.Id)">
+                                                        <i class="fas fa-truck"></i> Pickup
+                                                    </button>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-wrench fa-3x text-muted mb-3"></i>
+                            <h4 class="text-muted">No Services Found</h4>
+                            <p class="text-muted">You haven't booked any services yet.</p>
+                            <a asp-controller="Bookings" asp-action="Create" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Book a Service
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pickup Request Modal -->
+<div class="modal fade" id="pickupModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Request Vehicle Pickup</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="pickupForm">
+                    <input type="hidden" id="bookingId" name="bookingId" />
+                    <div class="mb-3">
+                        <label for="pickupLocation" class="form-label">Pickup Address *</label>
+                        <textarea id="pickupLocation" name="pickupLocation" class="form-control" rows="3" required></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="pickupDate" class="form-label">Pickup Date *</label>
+                                <input type="date" id="pickupDate" name="pickupDate" class="form-control" required 
+                                       min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="pickupTime" class="form-label">Pickup Time *</label>
+                                <input type="time" id="pickupTime" name="pickupTime" class="form-control" required />
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitPickupRequest()">Request Pickup</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function requestPickup(bookingId) {
+            document.getElementById('bookingId').value = bookingId;
+            new bootstrap.Modal(document.getElementById('pickupModal')).show();
+        }
+
+        function submitPickupRequest() {
+            const bookingId = document.getElementById('bookingId').value;
+            const pickupLocation = document.getElementById('pickupLocation').value;
+            const pickupDate = document.getElementById('pickupDate').value;
+            const pickupTime = document.getElementById('pickupTime').value;
+
+            fetch('/CustomerServicePortal/RequestPickup', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: `bookingId=${bookingId}&pickupLocation=${encodeURIComponent(pickupLocation)}&pickupDate=${pickupDate}&pickupTime=${pickupTime}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Pickup request submitted successfully!');
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while submitting the pickup request');
+            });
+        }
+
+        // Auto-refresh every 60 seconds for status updates
+        setInterval(function() {
+            // Only refresh if there are pending services
+            const pendingServices = document.querySelectorAll('.badge.bg-warning, .badge.bg-info');
+            if (pendingServices.length > 0) {
+                location.reload();
+            }
+        }, 60000);
+    </script>
+}

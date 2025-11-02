@@ -1,0 +1,42 @@
+@model IEnumerable<AutoEdge.Models.Entities.ServiceBooking>
+@{
+    ViewData["Title"] = "Scheduling";
+    var mechanics = ViewBag.Mechanics as List<AutoEdge.Models.Entities.Mechanic> ?? new();
+}
+<h2>Pending Bookings</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Reference</th>
+            <th>Customer</th>
+            <th>Vehicle</th>
+            <th>Preferred</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var b in Model)
+    {
+        <tr>
+            <td>@b.Reference</td>
+            <td>@b.CustomerName</td>
+            <td>@b.Make @b.Model (@b.Year)</td>
+            <td>@b.PreferredDate.ToString("yyyy-MM-dd") @b.PreferredStart</td>
+            <td>
+                <form asp-action="Assign" method="post" class="d-flex align-items-center gap-2">
+                    <input type="hidden" name="bookingId" value="@b.Id" />
+                    <input type="datetime-local" name="start" value="@($"{b.PreferredDate:yyyy-MM-dd}T{b.PreferredStart:HH\\:mm}")" class="form-control" />
+                    <select name="mechanicId" class="form-select">
+                        <option value="">(auto)</option>
+                        @foreach (var m in mechanics)
+                        {
+                            <option value="@m.Id">@m.Name (@m.Rating)</option>
+                        }
+                    </select>
+                    <button type="submit" class="btn btn-primary">Assign</button>
+                </form>
+            </td>
+        </tr>
+    }
+    </tbody>
+    </table>

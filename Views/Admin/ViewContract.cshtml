@@ -1,0 +1,284 @@
+@model AutoEdge.Models.Entities.Purchase
+@{
+    ViewData["Title"] = "View Contract - Admin";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>
+                    <i class="fas fa-file-contract me-2"></i>
+                    Contract Preview - @ViewBag.ContractNumber
+                </h2>
+                <div>
+                    <a href="@Url.Action("PurchaseDetails", new { id = ViewBag.PurchaseId })" 
+                       class="btn btn-outline-secondary me-2">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Back to Purchase
+                    </a>
+                    <a href="@Url.Action("DownloadContract", new { purchaseId = ViewBag.PurchaseId })" 
+                       class="btn btn-primary">
+                        <i class="fas fa-download me-2"></i>
+                        Download Contract
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Purchase Summary -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Purchase Summary
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6>Customer Information</h6>
+                            <p class="mb-1"><strong>Name:</strong> @Model.Customer.User.FirstName @Model.Customer.User.LastName</p>
+                            <p class="mb-1"><strong>Email:</strong> @Model.Customer.User.Email</p>
+                            <p class="mb-1"><strong>Phone:</strong> @Model.Customer.User.PhoneNumber</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>Vehicle Details</h6>
+                            <p class="mb-1"><strong>Vehicle:</strong> @Model.Vehicle.Year @Model.Vehicle.Make @Model.Vehicle.Model</p>
+                            <p class="mb-1"><strong>VIN:</strong> @Model.Vehicle.VIN</p>
+                            <p class="mb-1"><strong>Mileage:</strong> @Model.Vehicle.Mileage.ToString("N0") miles</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>Purchase Information</h6>
+                            <p class="mb-1"><strong>Purchase ID:</strong> #@Model.Id</p>
+                            <p class="mb-1"><strong>Status:</strong> <span class="badge bg-info">@Model.Status</span></p>
+                            <p class="mb-1"><strong>Price:</strong> $@Model.Vehicle.SellingPrice.ToString("N2")</p>
+                            <p class="mb-1"><strong>Date:</strong> @Model.CreatedDate.ToString("MMMM dd, yyyy")</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contract Content -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-file-alt me-2"></i>
+                        Contract Document
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="contract-preview p-4">
+                        @Html.Raw(ViewBag.ContractHtml)
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Digital Signatures -->
+    @{
+        var contract = ViewBag.Contract as AutoEdge.Models.Entities.Contract;
+    }
+    @if (contract != null)
+    {
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-signature me-2"></i>
+                            Digital Signatures
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Signing Status:</strong>
+                                @if (contract.DigitalSignatures.Any())
+                                {
+                                    <span class="badge bg-success">
+                                        Signed
+                                    </span>
+                                }
+                                else
+                                {
+                                    @if (!string.IsNullOrEmpty(contract.SigningStatus) && contract.SigningStatus == "pending")
+                                    {
+                                        <span class="badge bg-warning">Pending</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Not Sent</span>
+                                    }
+                                }
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Signing Request Sent:</strong>
+                                @if (contract.SigningRequestSentDate.HasValue)
+                                {
+                                    <span>@contract.SigningRequestSentDate.Value.ToString("MMM dd, yyyy HH:mm")</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Not sent</span>
+                                }
+                            </div>
+                        </div>
+                        
+                        @if (contract.DigitalSignatures.Any())
+                        {
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <h6><i class="fas fa-pen-fancy me-2"></i>Signature Details</h6>
+                                    @foreach (var signature in contract.DigitalSignatures.OrderByDescending(s => s.SignedDate))
+                                    {
+                                        <div class="card mt-2">
+                                            <div class="card-body">
+                                                <div class="row">
+                                                    <div class="col-md-3">
+                                                        <strong>Signer:</strong><br>
+                                                        <span>@signature.SignerName</span><br>
+                                                        <small class="text-muted">@signature.SignerEmail</small>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <strong>Signed Date:</strong><br>
+                                                        <span>@signature.SignedDate.ToString("MMM dd, yyyy HH:mm")</span>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <strong>IP Address:</strong><br>
+                                                        <span>@signature.IpAddress</span>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <strong>Document Hash:</strong><br>
+                                                        <small class="text-muted font-monospace">@signature.DocumentHash?.Substring(0, 16)...</small>
+                                                    </div>
+                                                </div>
+                                                <div class="row mt-3">
+                                                    <div class="col-12">
+                                                        <strong>Signature:</strong><br>
+                                                        <div class="signature-display p-2 border rounded" style="background-color: #f8f9fa; max-width: 300px;">
+                                                            <img src="@signature.SignatureData" alt="Digital Signature" class="img-fluid" style="max-height: 100px;" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                        else if (!string.IsNullOrEmpty(contract.SigningUrl))
+                        {
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <a href="@contract.SigningUrl" target="_blank" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-external-link-alt me-2"></i>Open Signing Page
+                                    </a>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Admin Actions -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-tools me-2"></i>
+                        Admin Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex gap-2">
+                        <a href="@Url.Action("DownloadContract", new { purchaseId = ViewBag.PurchaseId })" 
+                           class="btn btn-outline-primary">
+                            <i class="fas fa-download me-2"></i>
+                            Download Contract
+                        </a>
+                        
+                        @if (Model.Status == "ContractGenerated")
+                        {
+                            <form asp-action="UpdatePurchaseStatus" method="post" class="d-inline">
+                                <input type="hidden" name="purchaseId" value="@Model.Id" />
+                                <input type="hidden" name="status" value="PaymentProcessing" />
+                                <input type="hidden" name="adminNotes" value="Contract approved, ready for payment" />
+                                <button type="submit" class="btn btn-success" 
+                                        onclick="return confirm('Mark this purchase as ready for payment?')">
+                                    <i class="fas fa-check me-2"></i>
+                                    Approve for Payment
+                                </button>
+                            </form>
+                        }
+                        
+                        <a href="@Url.Action("PurchaseDetails", new { id = ViewBag.PurchaseId })" 
+                           class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>
+                            Back to Purchase Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.contract-preview {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    max-height: 800px;
+    overflow-y: auto;
+    font-family: 'Times New Roman', serif;
+    line-height: 1.6;
+}
+
+.contract-preview h1, .contract-preview h2, .contract-preview h3 {
+    color: #333;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.contract-preview p {
+    margin-bottom: 10px;
+    text-align: justify;
+}
+
+.contract-preview .signature-section {
+    margin-top: 40px;
+    border-top: 1px solid #ddd;
+    padding-top: 20px;
+}
+
+.contract-preview table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+}
+
+.contract-preview table th,
+.contract-preview table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.contract-preview table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+</style>

@@ -1,0 +1,353 @@
+@model AutoEdge.Models.Entities.Delivery
+@{
+    ViewData["Title"] = "Track Delivery";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-map-marker-alt"></i> Delivery Tracking
+                        <span class="badge bg-light text-dark ms-2">@Model.TrackingNumber</span>
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <!-- Vehicle Information -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6 class="text-primary">Vehicle Details</h6>
+                            <p class="mb-1"><strong>Vehicle:</strong> @Model.Contract.Purchase.Vehicle.Year @Model.Contract.Purchase.Vehicle.Make @Model.Contract.Purchase.Vehicle.Model</p>
+                            <p class="mb-1"><strong>VIN:</strong> @Model.Contract.Purchase.Vehicle.VIN</p>
+                            <p class="mb-0"><strong>Contract ID:</strong> @Model.Contract.Id</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-primary">Delivery Information</h6>
+                            <p class="mb-1"><strong>Type:</strong> 
+                                @switch(Model.DeliveryType)
+                                {
+                                    case "DealerPickup":
+                                        <span class="badge bg-success">Dealer Pickup</span>
+                                        break;
+                                    case "HomeDelivery":
+                                        <span class="badge bg-warning">Home Delivery</span>
+                                        break;
+                                    case "ThirdPartyDelivery":
+                                        <span class="badge bg-info">Third Party Delivery</span>
+                                        break;
+                                }
+                            </p>
+                            <p class="mb-1"><strong>Scheduled:</strong> @Model.ScheduledDate.ToString("MMM dd, yyyy h:mm tt")</p>
+                            @if (Model.CompletedDate.HasValue)
+                            {
+                                <p class="mb-0"><strong>Completed:</strong> @Model.CompletedDate.Value.ToString("MMM dd, yyyy h:mm tt")</p>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Status Timeline -->
+                    <div class="mb-4">
+                        <h6 class="text-primary">Delivery Status</h6>
+                        <div class="progress mb-3" style="height: 25px;">
+                            @{
+                                var progressPercentage = Model.Status switch
+                                {
+                                    "Scheduled" => 25,
+                                    "InTransit" => 75,
+                                    "Delivered" => 100,
+                                    "Failed" => 0,
+                                    "Cancelled" => 0,
+                                    _ => 0
+                                };
+                                var progressColor = Model.Status switch
+                                {
+                                    "Scheduled" => "bg-info",
+                                    "InTransit" => "bg-warning",
+                                    "Delivered" => "bg-success",
+                                    "Failed" => "bg-danger",
+                                    "Cancelled" => "bg-secondary",
+                                    _ => "bg-secondary"
+                                };
+                            }
+                            <div class="progress-bar @progressColor" role="progressbar" style="width: @progressPercentage%" aria-valuenow="@progressPercentage" aria-valuemin="0" aria-valuemax="100">
+                                @Model.Status
+                            </div>
+                        </div>
+
+                        <div class="row text-center">
+                            <div class="col-3">
+                                <div class="@(new[] {"Scheduled", "InTransit", "Delivered"}.Contains(Model.Status) ? "text-success" : "text-muted")">
+                                    <i class="fas fa-calendar-check fa-2x"></i>
+                                    <p class="small mt-1">Scheduled</p>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="@(new[] {"InTransit", "Delivered"}.Contains(Model.Status) ? "text-warning" : "text-muted")">
+                                    <i class="fas fa-truck fa-2x"></i>
+                                    <p class="small mt-1">In Transit</p>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="@(Model.Status == "Delivered" ? "text-success" : "text-muted")">
+                                    <i class="fas fa-home fa-2x"></i>
+                                    <p class="small mt-1">Delivered</p>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="@(Model.Status == "Delivered" ? "text-success" : "text-muted")">
+                                    <i class="fas fa-check-circle fa-2x"></i>
+                                    <p class="small mt-1">Complete</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Driver Information -->
+                    @if (!string.IsNullOrEmpty(Model.DriverName))
+                    {
+                        <div class="mb-4">
+                            <h6 class="text-primary">Driver Information</h6>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <p class="mb-1"><strong>Name:</strong> @Model.DriverName</p>
+                                </div>
+                                <div class="col-md-4">
+                                    <p class="mb-1"><strong>Phone:</strong> @Model.DriverPhone</p>
+                                </div>
+                                <div class="col-md-4">
+                                    @if (!string.IsNullOrEmpty(Model.VehicleLicensePlate))
+                                    {
+                                        <p class="mb-1"><strong>Vehicle:</strong> @Model.VehicleLicensePlate</p>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- GPS Tracking -->
+                    @if (Model.CurrentLatitude.HasValue && Model.CurrentLongitude.HasValue && Model.Status == "InTransit")
+                    {
+                        <div class="mb-4">
+                            <h6 class="text-primary">Live Tracking</h6>
+                            <div id="map" style="height: 300px; border-radius: 8px;"></div>
+                            @if (Model.EstimatedMinutesRemaining.HasValue)
+                            {
+                                <p class="mt-2 text-center">
+                                    <i class="fas fa-clock text-warning"></i>
+                                    <strong>Estimated arrival:</strong> @Model.EstimatedMinutesRemaining minutes
+                                </p>
+                            }
+                        </div>
+                    }
+
+                    <!-- Delivery Address -->
+                    @if (Model.DeliveryType != "DealerPickup")
+                    {
+                        <div class="mb-4">
+                            <h6 class="text-primary">Delivery Address</h6>
+                            <address>
+                                @Model.DeliveryAddress<br>
+                                @Model.City, @Model.State @Model.ZipCode<br>
+                                @Model.Country
+                            </address>
+                            @if (!string.IsNullOrEmpty(Model.DeliveryInstructions))
+                            {
+                                <p><strong>Instructions:</strong> @Model.DeliveryInstructions</p>
+                            }
+                        </div>
+                    }
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex justify-content-between">
+                        @if (User.IsInRole("Driver") || User.IsInRole("Admin"))
+                        {
+                            <div>
+                                @if (Model.Status == "Scheduled")
+                                {
+                                    <button class="btn btn-warning" onclick="updateStatus('InTransit')">Start Delivery</button>
+                                }
+                                @if (Model.Status == "InTransit")
+                                {
+                                    <button class="btn btn-success" onclick="updateStatus('Delivered')">Mark Delivered</button>
+                                    <button class="btn btn-secondary" onclick="updateLocation()">Update Location</button>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            @if (Model.Status == "Scheduled" && Model.RescheduleCount < 3)
+                            {
+                                <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#rescheduleModal">
+                                    <i class="fas fa-calendar-alt"></i> Reschedule
+                                </button>
+                            }
+                        }
+                        
+                        <a href="@Url.Action("MyDeliveries")" class="btn btn-secondary">
+                            <i class="fas fa-list"></i> My Deliveries
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Contact Information -->
+            <div class="card mb-3">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0"><i class="fas fa-phone"></i> Contact Information</h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2"><strong>Contact Person:</strong> @Model.ContactPersonName</p>
+                    <p class="mb-2"><strong>Phone:</strong> <a href="tel:@Model.ContactPersonPhone">@Model.ContactPersonPhone</a></p>
+                    <p class="mb-0"><strong>Email:</strong> <a href="mailto:@Model.ContactPersonEmail">@Model.ContactPersonEmail</a></p>
+                </div>
+            </div>
+
+            <!-- Delivery Details -->
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h6 class="mb-0"><i class="fas fa-info-circle"></i> Delivery Details</h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2"><strong>Delivery Fee:</strong> $@Model.DeliveryFee.ToString("N2")</p>
+                    <p class="mb-2"><strong>Created:</strong> @Model.CreatedDate.ToString("MMM dd, yyyy")</p>
+                    @if (Model.RescheduleCount > 0)
+                    {
+                        <p class="mb-2"><strong>Rescheduled:</strong> @Model.RescheduleCount time(s)</p>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Notes))
+                    {
+                        <p class="mb-0"><strong>Notes:</strong> @Model.Notes</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reschedule Modal -->
+<div class="modal fade" id="rescheduleModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="Reschedule" method="post">
+                <input type="hidden" name="id" value="@Model.Id" />
+                <div class="modal-header">
+                    <h5 class="modal-title">Reschedule Delivery</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="newScheduledDate" class="form-label">New Delivery Date</label>
+                        <input type="datetime-local" class="form-control" id="newScheduledDate" name="newScheduledDate" required />
+                    </div>
+                    <div class="mb-3">
+                        <label for="rescheduleReason" class="form-label">Reason for Rescheduling</label>
+                        <textarea class="form-control" id="rescheduleReason" name="rescheduleReason" rows="3" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Reschedule</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Update delivery status (for drivers)
+function updateStatus(status) {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            updateStatusWithLocation(status, position.coords.latitude, position.coords.longitude);
+        }, function() {
+            updateStatusWithLocation(status, null, null);
+        });
+    } else {
+        updateStatusWithLocation(status, null, null);
+    }
+}
+
+function updateStatusWithLocation(status, latitude, longitude) {
+    fetch('@Url.Action("UpdateStatus")', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+        },
+        body: new URLSearchParams({
+            id: '@Model.Id',
+            status: status,
+            latitude: latitude,
+            longitude: longitude
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error updating status: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error updating status');
+    });
+}
+
+// Update location (for drivers)
+function updateLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            updateStatusWithLocation('@Model.Status', position.coords.latitude, position.coords.longitude);
+        }, function() {
+            alert('Unable to get current location');
+        });
+    } else {
+        alert('Geolocation is not supported by this browser');
+    }
+}
+
+// Initialize map if GPS coordinates are available
+@if (Model.CurrentLatitude.HasValue && Model.CurrentLongitude.HasValue)
+{
+    <text>
+    function initMap() {
+        var deliveryLocation = { lat: @Model.CurrentLatitude, lng: @Model.CurrentLongitude };
+        var map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 15,
+            center: deliveryLocation
+        });
+        var marker = new google.maps.Marker({
+            position: deliveryLocation,
+            map: map,
+            title: 'Current Delivery Location'
+        });
+    }
+    </text>
+}
+
+// Set minimum date for rescheduling
+document.addEventListener('DOMContentLoaded', function() {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(9, 0, 0, 0);
+    
+    const rescheduleInput = document.getElementById('newScheduledDate');
+    if (rescheduleInput) {
+        rescheduleInput.min = tomorrow.toISOString().slice(0, 16);
+    }
+});
+</script>
+
+@if (Model.CurrentLatitude.HasValue && Model.CurrentLongitude.HasValue)
+{
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap"></script>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

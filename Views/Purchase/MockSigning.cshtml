@@ -1,0 +1,122 @@
+@model dynamic
+@{
+    ViewData["Title"] = "Mock Contract Signing";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-file-signature"></i>
+                        Mock Contract Signing
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Development Mode:</strong> This is a mock signing interface for testing purposes.
+                    </div>
+                    
+                    <div class="contract-details mb-4">
+                        <h5>Contract Details</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Contract Number:</strong> @Model.ContractNumber</p>
+                                <p><strong>Vehicle:</strong> @Model.VehicleInfo</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Signer Name:</strong> @Model.SignerName</p>
+                                <p><strong>Signer Email:</strong> @Model.SignerEmail</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="contract-preview mb-4">
+                        <h5>Contract Preview</h5>
+                        <div class="border p-3 bg-light" style="height: 300px; overflow-y: auto;">
+                            <h6>VEHICLE PURCHASE AGREEMENT</h6>
+                            <p>This agreement is between AutoEdge and @Model.SignerName for the purchase of @Model.VehicleInfo.</p>
+                            <p>Contract Number: @Model.ContractNumber</p>
+                            <p>Date: @DateTime.Now.ToString("MMMM dd, yyyy")</p>
+                            <br>
+                            <p><strong>Terms and Conditions:</strong></p>
+                            <ul>
+                                <li>The buyer agrees to purchase the vehicle as described</li>
+                                <li>Payment terms as agreed upon</li>
+                                <li>Vehicle delivery upon contract completion</li>
+                                <li>All applicable warranties apply</li>
+                            </ul>
+                            <br>
+                            <p><strong>Signature Required:</strong></p>
+                            <div class="signature-area border p-2 mt-2" style="height: 80px; background: #f8f9fa;">
+                                <small class="text-muted">Digital signature will be placed here</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="signing-actions text-center">
+                        <button type="button" class="btn btn-success btn-lg me-3" onclick="signContract()">
+                            <i class="fas fa-signature"></i>
+                            Sign Contract
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="window.history.back()">
+                            <i class="fas fa-arrow-left"></i>
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function signContract() {
+    if (confirm('Are you sure you want to sign this contract? This action cannot be undone.')) {
+        // Show loading state
+        const signBtn = document.querySelector('.btn-success');
+        const originalText = signBtn.innerHTML;
+        signBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing...';
+        signBtn.disabled = true;
+        
+        // Submit signing request
+        fetch('@Url.Action("CompleteMockSigning", "Purchase")', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+            },
+            body: JSON.stringify({
+                contractId: @Model.ContractId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Contract signed successfully!');
+                if (data.redirectUrl) {
+                    window.location.href = data.redirectUrl;
+                } else {
+                    window.history.back();
+                }
+            } else {
+                alert('Error: ' + (data.message || 'Failed to sign contract'));
+                signBtn.innerHTML = originalText;
+                signBtn.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while signing the contract.');
+            signBtn.innerHTML = originalText;
+            signBtn.disabled = false;
+        });
+    }
+}
+</script>
+
+@section Scripts {
+    @Html.AntiForgeryToken()
+}

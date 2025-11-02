@@ -1,0 +1,271 @@
+@model AutoEdge.Models.Entities.ServiceInvoice
+@{
+    ViewData["Title"] = "Pay Invoice";
+}
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">
+                        <i class="fas fa-file-invoice-dollar"></i> Pay Invoice #@Model.InvoiceNumber
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <!-- Invoice Summary -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-car text-primary"></i> Service Details</h5>
+                            @if (Model.ServiceBooking != null)
+                            {
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td><strong>Reference:</strong></td>
+                                        <td>@Model.ServiceBooking.Reference</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Vehicle:</strong></td>
+                                        <td>@Model.ServiceBooking.Make @Model.ServiceBooking.Model (@Model.ServiceBooking.Year)</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Service Type:</strong></td>
+                                        <td>@Model.ServiceBooking.ServiceType</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Service Date:</strong></td>
+                                        <td>@Model.ServiceBooking.PreferredDate.ToString("MMMM dd, yyyy")</td>
+                                    </tr>
+                                </table>
+                            }
+                        </div>
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-receipt text-success"></i> Invoice Summary</h5>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><strong>Invoice Date:</strong></td>
+                                    <td>@Model.IssueDate.ToString("MMMM dd, yyyy")</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Due Date:</strong></td>
+                                    <td>@Model.DueDate.ToString("MMMM dd, yyyy")</td>
+                                </tr>
+                                @if (Model.ServiceBooking != null && Model.ServiceBooking.DeliveryMethod == AutoEdge.Models.Entities.ServiceDeliveryMethod.Pickup)
+                                {
+                                    <tr>
+                                        <td><strong>Subtotal (Service):</strong></td>
+                                        <td>R @((Model.SubTotal - 100.00m).ToString("F2"))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Pickup Service:</strong></td>
+                                        <td>R 100.00</td>
+                                    </tr>
+                                }
+                                <tr>
+                                    <td><strong>Subtotal:</strong></td>
+                                    <td>R @Model.SubTotal.ToString("F2")</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Tax:</strong></td>
+                                    <td>R @Model.TaxAmount.ToString("F2")</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Discount:</strong></td>
+                                    <td class="text-success">-R 0.00</td>
+                                </tr>
+                                <tr class="table-primary">
+                                    <td><strong>Total Amount:</strong></td>
+                                    <td><strong>R @Model.TotalAmount.ToString("F2")</strong></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Payment Status -->
+                    @{
+                        var totalPaid = Model.ServicePayments.Where(p => p.Status == "Completed").Sum(p => p.Amount);
+                        var remaining = Model.TotalAmount - totalPaid;
+                    }
+                    
+                    @if (remaining <= 0)
+                    {
+                        <div class="alert alert-success">
+                            <h5><i class="fas fa-check-circle"></i> Invoice Fully Paid</h5>
+                            <p class="mb-0">This invoice has been fully paid. Thank you!</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">
+                            <h5><i class="fas fa-info-circle"></i> Payment Status</h5>
+                            <p class="mb-1"><strong>Total Amount:</strong> R @Model.TotalAmount.ToString("F2")</p>
+                            <p class="mb-1"><strong>Amount Paid:</strong> R @totalPaid.ToString("F2")</p>
+                            <p class="mb-0"><strong>Remaining Balance:</strong> <span class="text-danger">R @remaining.ToString("F2")</span></p>
+                        </div>
+                        
+                        <!-- Payment Form -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-credit-card"></i> Payment Information
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <form method="post" asp-action="Pay" asp-route-id="@Model.Id">
+                                    @Html.AntiForgeryToken()
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="paymentMethod" class="form-label">Payment Method</label>
+                                                <select name="paymentMethod" id="paymentMethod" class="form-select" required>
+                                                    <option value="">Select Payment Method</option>
+                                                    <option value="CreditCard">Credit Card</option>
+                                                    <option value="DebitCard">Debit Card</option>
+                                                    <option value="EFT">Electronic Transfer</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="amountDisplay" class="form-label">Payment Amount (Full Payment Required)</label>
+                                                <div class="input-group">
+                                                    <span class="input-group-text">R</span>
+                                                    <input type="text" id="amountDisplay" class="form-control" 
+                                                           value="R @remaining.ToString("F2")" 
+                                                           readonly style="background-color: #f8f9fa;">
+                                                </div>
+                                                <small class="form-text text-muted">Full payment required: R @remaining.ToString("F2")</small>
+                                                <input type="hidden" name="amount" id="amount" value="@remaining.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)" required>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Credit Card Fields (shown when Credit Card is selected) -->
+                                    <div id="creditCardFields" style="display: none;">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="cardNumber" class="form-label">Card Number</label>
+                                                    <input type="text" name="cardNumber" id="cardNumber" class="form-control" placeholder="1234 5678 9012 3456">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="mb-3">
+                                                    <label for="expiryDate" class="form-label">Expiry Date</label>
+                                                    <input type="text" name="expiryDate" id="expiryDate" class="form-control" placeholder="MM/YY">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="mb-3">
+                                                    <label for="cvv" class="form-label">CVV</label>
+                                                    <input type="text" name="cvv" id="cvv" class="form-control" placeholder="123">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="cardholderName" class="form-label">Cardholder Name</label>
+                                                    <input type="text" name="cardholderName" id="cardholderName" class="form-control" placeholder="John Doe">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="notes" class="form-label">Payment Notes (Optional)</label>
+                                        <textarea name="notes" id="notes" class="form-control" rows="2" placeholder="Any additional notes about this payment..."></textarea>
+                                    </div>
+                                    
+                                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                        <a asp-controller="CustomerServicePortal" asp-action="MyServices" class="btn btn-outline-secondary me-md-2">Cancel</a>
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="fas fa-credit-card"></i> Process Payment
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    }
+                    
+                    <!-- Payment History -->
+                    @if (Model.ServicePayments.Any())
+                    {
+                        <div class="card mt-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-history"></i> Payment History
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Amount</th>
+                                                <th>Method</th>
+                                                <th>Status</th>
+                                                <th>Transaction ID</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var payment in Model.ServicePayments.OrderByDescending(p => p.PaymentDate))
+                                            {
+                                                <tr>
+                                                    <td>@payment.PaymentDate.ToString("MMM dd, yyyy")</td>
+                                                    <td><strong>R @payment.Amount.ToString("F2")</strong></td>
+                                                    <td>@payment.PaymentMethod</td>
+                                                    <td>
+                                                        @{
+                                                            var statusClass = payment.Status switch
+                                                            {
+                                                                "Completed" => "bg-success",
+                                                                "Pending" => "bg-warning",
+                                                                "Failed" => "bg-danger",
+                                                                _ => "bg-secondary"
+                                                            };
+                                                        }
+                                                        <span class="badge @statusClass">@payment.Status</span>
+                                                    </td>
+                                                    <td>@payment.TransactionId</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('paymentMethod').addEventListener('change', function() {
+            const creditCardFields = document.getElementById('creditCardFields');
+            if (this.value === 'CreditCard' || this.value === 'DebitCard') {
+                creditCardFields.style.display = 'block';
+            } else {
+                creditCardFields.style.display = 'none';
+            }
+        });
+
+        // Ensure amount is properly set on form submission
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const amountInput = document.getElementById('amount');
+            const remainingAmount = parseFloat('@remaining.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)');
+            
+            // Ensure the hidden amount field has the correct value
+            if (amountInput) {
+                amountInput.value = remainingAmount.toFixed(2);
+                console.log('Submitting payment amount:', amountInput.value);
+            }
+        });
+    </script>
+}
+

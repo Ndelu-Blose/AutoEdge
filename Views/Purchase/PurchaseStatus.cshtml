@@ -1,0 +1,625 @@
+@model AutoEdge.Models.Entities.Purchase
+@{
+    ViewData["Title"] = "Purchase Status";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-clipboard-check me-2"></i>Purchase Status</h2>
+                <div>
+                    <a href="@Url.Action("MyPurchases")" class="btn btn-outline-secondary me-2">
+                        <i class="fas fa-list"></i> My Purchases
+                    </a>
+                    <a href="@Url.Action("PurchaseWorkflow", new { id = Model.Id })" class="btn btn-primary">
+                        <i class="fas fa-tasks"></i> View Workflow
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Purchase Summary Card -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="mb-0"><i class="fas fa-shopping-cart me-2"></i>Purchase #@Model.Id</h5>
+                        </div>
+                        <div class="col-auto">
+                            <span class="badge @GetStatusBadgeClass(Model.Status) fs-6">@Model.Status</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h4 class="mb-3">@Model.Vehicle.Year @Model.Vehicle.Make @Model.Vehicle.Model</h4>
+                            <div class="row mb-2">
+                                <div class="col-sm-4"><strong>VIN:</strong></div>
+                                <div class="col-sm-8">@Model.Vehicle.VIN</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-sm-4"><strong>Mileage:</strong></div>
+                                <div class="col-sm-8">@Model.Vehicle.Mileage.ToString("N0") miles</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-sm-4"><strong>Initiated Date:</strong></div>
+                                <div class="col-sm-8">@Model.InitiatedDate.ToString("MMMM dd, yyyy hh:mm tt")</div>
+                            </div>
+                            @if (Model.ScheduledDeliveryDate.HasValue)
+                            {
+                                <div class="row mb-2">
+                                    <div class="col-sm-4"><strong>Scheduled Delivery:</strong></div>
+                                    <div class="col-sm-8">@Model.ScheduledDeliveryDate?.ToString("MMMM dd, yyyy")</div>
+                                </div>
+                            }
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <h3 class="text-primary mb-3">@Model.PurchasePrice.ToString("C")</h3>
+                                @if (Model.DepositAmount > 0)
+                                {
+                                    <div class="mb-2">
+                                        <small class="text-muted">Deposit Paid:</small><br>
+                                        <strong class="text-success">@Model.DepositAmount.ToString("C")</strong>
+                                    </div>
+                                }
+                                @if (Model.RemainingAmount > 0)
+                                {
+                                    <div class="mb-2">
+                                        <small class="text-muted">Remaining:</small><br>
+                                        <strong class="text-warning">@Model.RemainingAmount.ToString("C")</strong>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Progress -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Progress Overview</h5>
+                </div>
+                <div class="card-body">
+                    <div class="progress-container">
+                        @{
+                            var progressPercentage = GetProgressPercentage(Model.Status);
+                        }
+                        <div class="progress mb-3" style="height: 25px;">
+                            <div class="progress-bar bg-success progress-bar-striped @(Model.Status != "Completed" && Model.Status != "Cancelled" ? "progress-bar-animated" : "")" 
+                                 role="progressbar" 
+                                 style="width: @progressPercentage%" 
+                                 aria-valuenow="@progressPercentage" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                                @progressPercentage% Complete
+                            </div>
+                        </div>
+                        <div class="row text-center">
+                            <div class="col">
+                                <small class="text-muted">Initiated</small>
+                            </div>
+                            <div class="col">
+                                <small class="text-muted">Documents</small>
+                            </div>
+                            <div class="col">
+                                <small class="text-muted">Review</small>
+                            </div>
+                            <div class="col">
+                                <small class="text-muted">Contract</small>
+                            </div>
+                            <div class="col">
+                                <small class="text-muted">Payment</small>
+                            </div>
+                            <div class="col">
+                                <small class="text-muted">Complete</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Current Status Details -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Current Status Details</h5>
+                </div>
+                <div class="card-body">
+                    @switch (Model.Status)
+                    {
+                        case "Initiated":
+                            <div class="alert alert-info border-0">
+                                <h6><i class="fas fa-rocket me-2"></i>Purchase Started</h6>
+                                <p class="mb-0">Your purchase process has been initiated. Our team will guide you through each step to complete your vehicle purchase.</p>
+                            </div>
+                            break;
+                            
+                        case "DocumentsRequired":
+                            <div class="alert alert-warning border-0">
+                                <h6><i class="fas fa-file-upload me-2"></i>Documents Needed</h6>
+                                <p class="mb-3">Please upload the required documents to proceed with your purchase. Required documents may include:</p>
+                                <ul class="mb-0">
+                                    <li>Valid Driver's License</li>
+                                    <li>Proof of Insurance</li>
+                                    <li>Proof of Income</li>
+                                    <li>Bank Statements (if financing)</li>
+                                </ul>
+                            </div>
+                            break;
+                            
+                        case "DocumentsReview":
+                            <div class="alert alert-info border-0">
+                                <h6><i class="fas fa-search me-2"></i>Under Review</h6>
+                                <p class="mb-0">Our team is currently reviewing your submitted documents. This process typically takes 1-2 business days. We'll notify you once the review is complete.</p>
+                            </div>
+                            break;
+                            
+                        case "DocumentsApproved":
+                            <div class="alert alert-success border-0">
+                                <h6><i class="fas fa-check-circle me-2"></i>Documents Approved</h6>
+                                <p class="mb-3">Great! Your documents have been approved. You can now generate your purchase contract to proceed to payment.</p>
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                                    <a href="@Url.Action("GenerateContract", new { id = Model.Id })" class="btn btn-primary">
+                                        <i class="fas fa-file-contract me-2"></i>Generate Contract
+                                    </a>
+                                </div>
+                            </div>
+                            break;
+                            
+                        case "ContractGenerated":
+                            <div class="alert alert-primary border-0">
+                                <h6><i class="fas fa-file-contract me-2"></i>Contract Ready for Signing</h6>
+                                <p class="mb-3">Your purchase contract has been generated and is ready for electronic signature. Please review the contract carefully before signing.</p>
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                                    <a href="@Url.Action("GenerateContract", new { id = Model.Id })" class="btn btn-primary me-md-2">
+                                        <i class="fas fa-eye me-2"></i>View Contract
+                                    </a>
+                                    <a href="@Url.Action("DownloadContract", new { id = Model.Id })" class="btn btn-outline-primary me-md-2">
+                                        <i class="fas fa-download me-2"></i>Download
+                                    </a>
+                                    <button type="button" class="btn btn-success me-md-2" onclick="sendContractForSigning(@Model.Id)">
+                                        <i class="fas fa-signature me-2"></i>Send for E-Signature
+                                    </button>
+                                </div>
+                            </div>
+                            break;
+                            
+                        case "ContractSentForSigning":
+                            <div class="alert alert-warning border-0">
+                                <h6><i class="fas fa-envelope me-2"></i>Contract Sent for Signing</h6>
+                                <p class="mb-3">Your contract has been sent for electronic signature. Please check your email for the signing link or click the button below to sign now.</p>
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                                    <button type="button" class="btn btn-primary me-md-2" onclick="signContract(@Model.Id)">
+                                        <i class="fas fa-signature me-2"></i>Sign Contract Now
+                                    </button>
+                                    <button type="button" class="btn btn-outline-info me-md-2" onclick="checkSigningStatus(@Model.Id)">
+                                        <i class="fas fa-sync me-2"></i>Check Status
+                                    </button>
+                                    <a href="@Url.Action("GenerateContract", new { id = Model.Id })" class="btn btn-outline-secondary">
+                                        <i class="fas fa-eye me-2"></i>View Contract
+                                    </a>
+                                </div>
+                                <div id="signing-status-@Model.Id" class="mt-3" style="display: none;">
+                                    <!-- Signing status will be displayed here -->
+                                </div>
+                            </div>
+                            break;
+                            
+                        case "ContractSigned":
+                        case "PaymentPending":
+                            <div class="alert alert-info border-0">
+                                <h6><i class="fas fa-credit-card me-2"></i>Payment Required</h6>
+                                <p class="mb-3">Your contract has been signed and payment is now required to complete your purchase.</p>
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                                    <a href="@Url.Action("SelectPayment", new { id = Model.Id })" class="btn btn-primary">
+                                        <i class="fas fa-credit-card me-2"></i>Make Payment
+                                    </a>
+                                </div>
+                            </div>
+                            break;
+                            
+                        case "ContractGeneration":
+                            <div class="alert alert-primary border-0">
+                                <h6><i class="fas fa-file-contract me-2"></i>Contract Preparation</h6>
+                                <p class="mb-0">Your purchase contract is being prepared based on your approved documents. You'll be able to review and sign the contract once it's ready.</p>
+                            </div>
+                            break;
+                            
+                        case "PaymentProcessing":
+                            <div class="alert alert-warning border-0">
+                                <h6><i class="fas fa-spinner fa-spin me-2"></i>Payment Processing</h6>
+                                <p class="mb-3">Your payment is currently being processed. This may take a few minutes.</p>
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                                    <button type="button" class="btn btn-outline-primary" onclick="checkPaymentStatus(@Model.Id)">
+                                        <i class="fas fa-eye me-2"></i>Check Payment Status
+                                    </button>
+                                </div>
+                                <div id="payment-status-result" class="mt-3" style="display: none;"></div>
+                            </div>
+                            break;
+                            
+                        case "Completed":
+                            <div class="alert alert-success border-0">
+                                <h6><i class="fas fa-check-circle me-2"></i>Purchase Complete!</h6>
+                                <p class="mb-3">Congratulations! Your vehicle purchase has been completed successfully. Your next step is to schedule delivery of your vehicle.</p>
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <a href="@Url.Action("MyDeliveries", "Customer")" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-truck me-2"></i>Schedule Delivery
+                                    </a>
+                                    <a href="@Url.Action("Dashboard", "Customer")" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+                                    </a>
+                                </div>
+                            </div>
+                            break;
+                            
+                        case "Cancelled":
+                            <div class="alert alert-danger border-0">
+                                <h6><i class="fas fa-times-circle me-2"></i>Purchase Cancelled</h6>
+                                <p class="mb-0">This purchase has been cancelled. @(!string.IsNullOrEmpty(Model.CancellationReason) ? "Reason: " + Model.CancellationReason : "Please contact support for more information.")</p>
+                            </div>
+                            break;
+                            
+                        default:
+                            <div class="alert alert-secondary border-0">
+                                <h6><i class="fas fa-question-circle me-2"></i>Status: @Model.Status</h6>
+                                <p class="mb-0">For questions about your purchase status, please contact our support team.</p>
+                            </div>
+                            break;
+                    }
+                    
+                    @if (!string.IsNullOrEmpty(Model.Notes))
+                    {
+                        <div class="mt-3">
+                            <h6><i class="fas fa-sticky-note me-2"></i>Additional Notes</h6>
+                            <p class="mb-0 text-muted">@Model.Notes</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-phone me-2"></i>Need Help?</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-3">Our support team is here to help you with your purchase.</p>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-primary" onclick="alert('Contact feature coming soon!')">
+                            <i class="fas fa-envelope me-2"></i>Send Message
+                        </button>
+                        <button class="btn btn-outline-success" onclick="alert('Call feature coming soon!')">
+                            <i class="fas fa-phone me-2"></i>Call Support
+                        </button>
+                        @if (!string.IsNullOrEmpty(Model.AssignedSalesRep))
+                        {
+                            <button class="btn btn-outline-info" onclick="alert('Sales rep contact coming soon!')">
+                                <i class="fas fa-user-tie me-2"></i>Contact Sales Rep
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status History -->
+    @if (Model.StatusHistory != null && Model.StatusHistory.Any())
+    {
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-history me-2"></i>Status History</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Date & Time</th>
+                                        <th>Status</th>
+                                        <th>Changed By</th>
+                                        <th>Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var history in Model.StatusHistory.OrderByDescending(h => h.ChangedDate))
+                                    {
+                                        <tr>
+                                            <td>
+                                                <strong>@history.ChangedDate.ToString("MMM dd, yyyy")</strong><br>
+                                                <small class="text-muted">@history.ChangedDate.ToString("hh:mm tt")</small>
+                                            </td>
+                                            <td>
+                                                <span class="badge @GetStatusBadgeClass(history.ToStatus)">@history.ToStatus</span>
+                                                @if (!string.IsNullOrEmpty(history.FromStatus))
+                                                {
+                                                    <br><small class="text-muted">from @history.FromStatus</small>
+                                                }
+                                            </td>
+                                            <td>@history.ChangedBy</td>
+                                            <td>
+                                                @if (!string.IsNullOrEmpty(history.Notes))
+                                                {
+                                                    @history.Notes
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@functions {
+    private string GetStatusBadgeClass(string status)
+    {
+        return status switch
+        {
+            "Initiated" => "bg-info",
+            "DocumentsRequired" => "bg-warning",
+            "DocumentsReview" => "bg-primary",
+            "ContractGeneration" => "bg-info",
+            "PaymentProcessing" => "bg-success",
+            "Completed" => "bg-success",
+            "Cancelled" => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+    
+    private int GetProgressPercentage(string status)
+    {
+        return status switch
+        {
+            "Initiated" => 15,
+            "DocumentsRequired" => 25,
+            "DocumentsReview" => 45,
+            "ContractGeneration" => 65,
+            "PaymentProcessing" => 85,
+            "Completed" => 100,
+            "Cancelled" => 0,
+            _ => 10
+        };
+    }
+}
+
+<style>
+    .progress-container {
+        padding: 1rem 0;
+    }
+    
+    .alert {
+        border-radius: 0.5rem;
+    }
+    
+    .card {
+        border: none;
+        border-radius: 0.5rem;
+    }
+    
+    .table th {
+        border-top: none;
+        font-weight: 600;
+    }
+    
+    .badge {
+        font-size: 0.8rem;
+    }
+</style>
+
+<script>
+    function sendContractForSigning(purchaseId) {
+        if (confirm('Are you sure you want to send this contract for electronic signature?')) {
+            // Show loading state
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
+            button.disabled = true;
+            
+            // Create form data with antiforgery token
+            const formData = new FormData();
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+            if (token) {
+                formData.append('__RequestVerificationToken', token);
+            }
+            
+            fetch(`/Purchase/SendContractForSigning/${purchaseId}`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Contract sent for signature successfully! Please check your email.');
+                    // Refresh the page to show updated status
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to send contract for signature'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while sending the contract for signature.');
+            })
+            .finally(() => {
+                // Restore button state
+                button.innerHTML = originalText;
+                button.disabled = false;
+            });
+        }
+    }
+    
+    function signContract(purchaseId) {
+        // Show loading state
+        const button = event.target;
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Loading...';
+        button.disabled = true;
+        
+        fetch(`/Purchase/GetSigningUrl/${purchaseId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.signingUrl) {
+                // Open canvas-based signing page in new tab
+                window.open(data.signingUrl, '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
+            } else {
+                alert('Error: ' + (data.message || 'Unable to get signing URL'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while getting the signing URL.');
+        })
+        .finally(() => {
+            // Restore button state
+            button.innerHTML = originalText;
+            button.disabled = false;
+        });
+    }
+    
+    function checkSigningStatus(purchaseId) {
+        const statusDiv = document.getElementById(`signing-status-${purchaseId}`);
+        const button = event.target;
+        const originalText = button.innerHTML;
+        
+        // Show loading state
+        button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Checking...';
+        button.disabled = true;
+        
+        fetch(`/Purchase/CheckSigningStatus/${purchaseId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                let statusHtml = `
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle me-2"></i>Signing Status</h6>
+                        <p><strong>Status:</strong> ${data.status}</p>
+                        <p><strong>Contract Status:</strong> ${data.contractStatus}</p>`;
+                
+                if (data.isCompleted) {
+                    statusHtml += `<p><strong>Signed At:</strong> ${new Date(data.signedAt).toLocaleString()}</p>`;
+                    if (data.certificateUrl) {
+                        statusHtml += `<p><a href="${data.certificateUrl}" target="_blank" class="btn btn-sm btn-outline-primary"><i class="fas fa-certificate me-1"></i>View Certificate</a></p>`;
+                    }
+                }
+                
+                statusHtml += `</div>`;
+                statusDiv.innerHTML = statusHtml;
+                statusDiv.style.display = 'block';
+                
+                // If completed, refresh page to show updated status
+                if (data.isCompleted) {
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+                }
+            } else {
+                statusDiv.innerHTML = `
+                    <div class="alert alert-warning">
+                        <p><strong>Error:</strong> ${data.message || 'Unable to check signing status'}</p>
+                    </div>`;
+                statusDiv.style.display = 'block';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            statusDiv.innerHTML = `
+                <div class="alert alert-danger">
+                    <p><strong>Error:</strong> An error occurred while checking the signing status.</p>
+                </div>`;
+            statusDiv.style.display = 'block';
+        })
+        .finally(() => {
+            // Restore button state
+            button.innerHTML = originalText;
+            button.disabled = false;
+        });
+    }
+
+    function checkPaymentStatus(purchaseId) {
+        const button = event.target;
+        const originalText = button.innerHTML;
+        const resultDiv = document.getElementById('payment-status-result');
+        
+        // Show loading state
+        button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Checking...';
+        button.disabled = true;
+        
+        fetch(`/Purchase/CheckPaymentStatusByPurchase?purchaseId=${purchaseId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                resultDiv.innerHTML = `
+                    <div class="alert alert-success">
+                        <h6><i class="fas fa-check-circle me-2"></i>Payment Status Updated</h6>
+                        <p><strong>Status:</strong> ${data.status}</p>
+                        <p><strong>Purchase Status:</strong> ${data.purchaseStatus}</p>
+                        <p><strong>Payment Completed:</strong> ${data.paymentCompleted ? 'Yes' : 'No'}</p>
+                        <p class="mb-0">The page will refresh automatically to show the updated status.</p>
+                    </div>`;
+                
+                // Refresh the page after 2 seconds to show updated status
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            } else {
+                resultDiv.innerHTML = `
+                    <div class="alert alert-warning">
+                        <h6><i class="fas fa-exclamation-triangle me-2"></i>Payment Status Check</h6>
+                        <p><strong>Message:</strong> ${data.message || data.status}</p>
+                        <p class="mb-0">Please try again or contact support if the issue persists.</p>
+                    </div>`;
+            }
+            resultDiv.style.display = 'block';
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            resultDiv.innerHTML = `
+                <div class="alert alert-danger">
+                    <p><strong>Error:</strong> An error occurred while checking the payment status.</p>
+                </div>`;
+            resultDiv.style.display = 'block';
+        })
+        .finally(() => {
+            // Restore button state
+            button.innerHTML = originalText;
+            button.disabled = false;
+        });
+    }
+</script>

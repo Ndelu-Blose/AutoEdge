@@ -1,0 +1,410 @@
+@model AutoEdge.Models.Entities.ServiceChecklist
+@using AutoEdge.Models.Entities
+@{
+    ViewData["Title"] = "Service Checklist";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-clipboard-list me-2"></i>Service Checklist</h2>
+                <a href="/Mechanics/ServiceChecklists" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Checklists
+                </a>
+            </div>
+
+            <!-- Service Information -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Service Information</h5>
+                    <div>
+                        <span class="badge @(Model.IsCompleted ? "bg-success" : "bg-warning") fs-6">
+                            @(Model.IsCompleted ? "Completed" : "In Progress")
+                        </span>
+                        <span class="badge bg-info ms-2">@Model.ProgressPercentage.ToString("F1")% Complete</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Vehicle & Customer</h6>
+                            <p><strong>Vehicle:</strong> @Model.ServiceJob.ServiceBooking.Make @Model.ServiceJob.ServiceBooking.Model (@Model.ServiceJob.ServiceBooking.Year)</p>
+                            <p><strong>Customer:</strong> @Model.ServiceJob.ServiceBooking.CustomerName</p>
+                            <p><strong>Reference:</strong> <code>@Model.ServiceJob.ServiceBooking.Reference</code></p>
+                            <p><strong>Service Type:</strong> @Model.ServiceType</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Timing & Progress</h6>
+                            <p><strong>Started:</strong> @Model.StartedAt.ToString("MMMM dd, yyyy HH:mm")</p>
+                            @if (Model.CompletedAt.HasValue)
+                            {
+                                <p><strong>Completed:</strong> @Model.CompletedAt.Value.ToString("MMMM dd, yyyy HH:mm")</p>
+                                <p><strong>Duration:</strong> @((Model.CompletedAt.Value - Model.StartedAt).ToString(@"hh\:mm"))</p>
+                            }
+                            else
+                            {
+                                <p><strong>Duration:</strong> @((DateTime.UtcNow - Model.StartedAt).ToString(@"hh\:mm")) (ongoing)</p>
+                            }
+                            <p><strong>Progress:</strong> @Model.CompletedItemsCount of @Model.TotalItemsCount tasks completed</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Progress Bar -->
+                    <div class="mt-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span><strong>Service Progress</strong></span>
+                            <span class="badge @(Model.ProgressPercentage == 100 ? "bg-success" : Model.ProgressPercentage > 0 ? "bg-primary" : "bg-secondary")">@Model.ProgressPercentage.ToString("F1")%</span>
+                        </div>
+                        <div class="progress" style="height: 30px !important; border-radius: 15px !important; overflow: hidden !important; background-color: #e9ecef !important; box-shadow: 0 2px 5px rgba(0,0,0,0.1) !important;">
+                            @{
+                                var progressWidth = Model.ProgressPercentage >= 100 ? 100.0 : Math.Min(Model.ProgressPercentage, 100);
+                            }
+                            <div class="progress-bar @(Model.ProgressPercentage >= 100 ? "bg-success" : Model.ProgressPercentage > 0 ? "bg-primary" : "bg-secondary")" 
+                                 role="progressbar" 
+                                 style="width: @(progressWidth >= 100 ? "100" : progressWidth.ToString("F1"))% !important; 
+                                        min-width: @(progressWidth >= 100 ? "100" : progressWidth.ToString("F1"))% !important;
+                                        transition: width 0.6s ease !important;
+                                        line-height: 30px !important;
+                                        font-weight: bold !important;
+                                        font-size: 14px !important;
+                                        color: white !important;"
+                                 aria-valuenow="@Model.ProgressPercentage" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                                @Model.ProgressPercentage.ToString("F1")%
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Cost Summary -->
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <h6>Cost Summary</h6>
+                            <p><strong>Estimated Total:</strong> R @Model.TotalEstimatedCost.ToString("F2")</p>
+                            <p><strong>Actual Cost (so far):</strong> 
+                                <span class="@(Model.TotalActualCost > Model.TotalEstimatedCost ? "text-danger" : "text-success")">
+                                    R @Model.TotalActualCost.ToString("F2")
+                                </span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Duration Summary</h6>
+                            <p><strong>Estimated Duration:</strong> @Model.TotalEstimatedDurationMinutes minutes</p>
+                            <p><strong>Actual Duration:</strong> @Model.TotalActualDurationMinutes minutes</p>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Checklist Items -->
+                <div class="col-md-8">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-tasks me-2"></i>Checklist Items</h5>
+                        </div>
+                        <div class="card-body">
+                            @if (Model.Items.Any())
+                            {
+                                <div class="list-group">
+                                    @foreach (var item in Model.Items.OrderBy(i => i.Id))
+                                    {
+                                        <div class="list-group-item @(item.IsCompleted ? "list-group-item-success" : "")">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div class="flex-grow-1">
+                                                    <div class="d-flex align-items-center">
+                                                        @if (item.IsCompleted)
+                                                        {
+                                                            <i class="fas fa-check-circle text-success me-3"></i>
+                                                        }
+                                                        else
+                                                        {
+                                                            <i class="fas fa-circle text-muted me-3"></i>
+                                                        }
+                                                        <div>
+                                                            <h6 class="mb-1">@item.TaskName</h6>
+                                                            @if (!string.IsNullOrEmpty(item.Description))
+                                                            {
+                                                                <p class="mb-1 text-muted">@item.Description</p>
+                                                            }
+                                                            @if (item.IsCompleted && !string.IsNullOrEmpty(item.Notes))
+                                                            {
+                                                                <small class="text-success"><strong>Notes:</strong> @item.Notes</small>
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="text-end">
+                                                    @if (item.IsCompleted)
+                                                    {
+                                                        <small class="text-success">Completed<br/>@item.CompletedAt?.ToString("HH:mm")</small>
+                                                        @if (item.ActualCost.HasValue)
+                                                        {
+                                                            <br><strong class="@(item.ActualCost > item.EstimatedCost ? "text-danger" : "text-success")">
+                                                                R @item.ActualCost.Value.ToString("F2")
+                                                            </strong>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <button class="btn btn-sm btn-outline-success" onclick="completeItem(@item.Id)">
+                                                            <i class="fas fa-check me-1"></i>Complete
+                                                        </button>
+                                                        @if (item.EstimatedCost.HasValue)
+                                                        {
+                                                            <br><small class="text-muted">Est: R @item.EstimatedCost.Value.ToString("F2")</small>
+                                                        }
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="text-center py-3">
+                                    <i class="fas fa-clipboard-list fa-2x text-muted mb-2"></i>
+                                    <p class="text-muted">No checklist items found.</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Photos & Actions -->
+                <div class="col-md-4">
+                    <!-- Photo Upload -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-camera me-2"></i>Before/After Photos</h5>
+                        </div>
+                        <div class="card-body">
+                            @if (!Model.IsCompleted)
+                            {
+                                <form id="photoUploadForm" enctype="multipart/form-data">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="checklistId" value="@Model.Id" />
+                                    <div class="mb-3">
+                                        <label for="photoType" class="form-label">Photo Type:</label>
+                                        <select name="photoType" class="form-select" required>
+                                            <option value="">Select photo type...</option>
+                                            <option value="Before">Before Service</option>
+                                            <option value="During">During Service</option>
+                                            <option value="After">After Service</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="photo" class="form-label">Photo:</label>
+                                        <input type="file" name="photo" class="form-control" accept="image/*" required />
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="description" class="form-label">Description (Optional):</label>
+                                        <textarea name="description" class="form-control" rows="2" placeholder="Describe what's shown in the photo..."></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="fas fa-upload me-2"></i>Upload Photo
+                                    </button>
+                                </form>
+                            }
+                            else
+                            {
+                                <p class="text-muted">Photo upload is disabled for completed checklists.</p>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Photos Gallery -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-images me-2"></i>Photos (@Model.Photos.Count)</h5>
+                        </div>
+                        <div class="card-body">
+                            @if (Model.Photos.Any())
+                            {
+                                <div class="row">
+                                    @foreach (var photo in Model.Photos.OrderBy(p => p.TakenAt))
+                                    {
+                                        <div class="col-6 mb-3">
+                                            <div class="position-relative">
+                                                <img src="@photo.FilePath" class="img-thumbnail w-100" style="height: 100px; object-fit: cover;" 
+                                                     data-bs-toggle="modal" data-bs-target="#photoModal" 
+                                                     data-photo-path="@photo.FilePath" data-photo-desc="@photo.Description" data-photo-type="@photo.PhotoType" />
+                                                <span class="badge bg-primary position-absolute top-0 start-0 m-1">@photo.PhotoType</span>
+                                            </div>
+                                            <small class="text-muted d-block">@photo.TakenAt.ToString("HH:mm")</small>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="text-center py-3">
+                                    <i class="fas fa-images fa-2x text-muted mb-2"></i>
+                                    <p class="text-muted">No photos uploaded yet.</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Complete Checklist -->
+                    @if (!Model.IsCompleted)
+                    {
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-flag-checkered me-2"></i>Complete Service</h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="completeChecklistForm">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="checklistId" value="@Model.Id" />
+                                    <div class="mb-3">
+                                        <label for="completionNotes" class="form-label">Final Notes:</label>
+                                        <textarea name="completionNotes" class="form-control" rows="3" placeholder="Any final notes about the service..."></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-success w-100">
+                                        <i class="fas fa-check-circle me-2"></i>Complete Service
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Photo Modal -->
+<div class="modal fade" id="photoModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="photoModalTitle">Photo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="modalPhoto" class="img-fluid" style="max-height: 500px;" />
+                <p id="modalPhotoDesc" class="mt-3 text-muted"></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Photo upload form
+    document.getElementById('photoUploadForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        
+        fetch('/Mechanics/UploadPhoto', {
+            method: 'POST',
+            headers: {
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Photo uploaded successfully!');
+                location.reload();
+            } else {
+                alert('Error uploading photo: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error uploading photo.');
+        });
+    });
+
+    // Complete checklist form
+    document.getElementById('completeChecklistForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        if (!confirm('Are you sure you want to complete this service checklist? This action cannot be undone.')) {
+            return;
+        }
+        
+        const formData = new FormData(this);
+        const checklistId = formData.get('checklistId');
+        const notes = formData.get('completionNotes');
+        
+        console.log('Completing checklist:', checklistId, 'with notes:', notes);
+        
+        fetch('/Mechanics/CompleteChecklist', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+            },
+            body: `checklistId=${checklistId}&notes=${encodeURIComponent(notes || '')}`
+        })
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Response data:', data);
+            if (data.success) {
+                alert('Service checklist completed successfully!');
+                location.reload();
+            } else {
+                alert('Error completing checklist: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error completing checklist: ' + error.message);
+        });
+    });
+
+    // Photo modal
+    document.getElementById('photoModal').addEventListener('show.bs.modal', function(event) {
+        const button = event.relatedTarget;
+        const photoPath = button.getAttribute('data-photo-path');
+        const photoDesc = button.getAttribute('data-photo-desc');
+        const photoType = button.getAttribute('data-photo-type');
+        
+        document.getElementById('modalPhoto').src = photoPath;
+        document.getElementById('modalPhotoTitle').textContent = photoType + ' Photo';
+        document.getElementById('modalPhotoDesc').textContent = photoDesc || 'No description provided.';
+    });
+});
+
+function completeItem(itemId) {
+    const notes = prompt('Add notes for this completed item (optional):');
+    const actualCost = prompt('Enter actual cost (optional, press Cancel to use estimated cost):');
+    const actualDuration = prompt('Enter actual duration in minutes (optional, press Cancel to use estimated duration):');
+    
+    const cost = actualCost && !isNaN(parseFloat(actualCost)) ? parseFloat(actualCost) : null;
+    const duration = actualDuration && !isNaN(parseInt(actualDuration)) ? parseInt(actualDuration) : null;
+    
+    fetch('/Mechanics/CompleteChecklistItem', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+        },
+        body: `itemId=${itemId}&notes=${encodeURIComponent(notes || '')}&actualCost=${cost || ''}&actualDurationMinutes=${duration || ''}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Checklist item completed successfully!');
+            location.reload();
+        } else {
+            alert('Error completing item: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error completing item.');
+    });
+}
+</script>

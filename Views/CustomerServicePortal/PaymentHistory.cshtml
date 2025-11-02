@@ -1,0 +1,211 @@
+@model IEnumerable<AutoEdge.Models.Entities.ServicePayment>
+@{
+    ViewData["Title"] = "Payment History";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">
+                        <i class="fas fa-credit-card"></i> Payment History
+                    </h3>
+                </div>
+                <div class="card-body">
+                    @if (Model.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Transaction ID</th>
+                                        <th>Invoice</th>
+                                        <th>Amount</th>
+                                        <th>Payment Method</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var payment in Model)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <strong>@payment.TransactionId</strong>
+                                            </td>
+                                            <td>
+                                                @if (payment.ServiceInvoice != null)
+                                                {
+                                                    <div>
+                                                        <strong>@payment.ServiceInvoice.InvoiceNumber</strong>
+                                                        @if (payment.ServiceInvoice.ServiceBooking != null)
+                                                        {
+                                                            <br><small class="text-muted">Service: @payment.ServiceInvoice.ServiceBooking.Reference</small>
+                                                        }
+                                                    </div>
+                                                }
+                                            </td>
+                                            <td>
+                                                <strong class="text-success">R @payment.Amount.ToString("F2")</strong>
+                                            </td>
+                                            <td>
+                                                @{
+                                                    var methodClass = payment.PaymentMethod switch
+                                                    {
+                                                        "CreditCard" => "bg-primary",
+                                                        "DebitCard" => "bg-info",
+                                                        "Cash" => "bg-success",
+                                                        "EFT" => "bg-warning",
+                                                        "Financing" => "bg-secondary",
+                                                        _ => "bg-light text-dark"
+                                                    };
+                                                }
+                                                <span class="badge @methodClass">@payment.PaymentMethod</span>
+                                            </td>
+                                            <td>
+                                                @payment.PaymentDate.ToString("MMM dd, yyyy 'at' h:mm tt")
+                                            </td>
+                                            <td>
+                                                @{
+                                                    var statusClass = payment.Status switch
+                                                    {
+                                                        "Completed" => "bg-success",
+                                                        "Pending" => "bg-warning",
+                                                        "Failed" => "bg-danger",
+                                                        "Refunded" => "bg-info",
+                                                        _ => "bg-secondary"
+                                                    };
+                                                }
+                                                <span class="badge @statusClass">@payment.Status</span>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a asp-action="DownloadReceipt" asp-route-id="@payment.Id" 
+                                                       class="btn btn-sm btn-outline-primary" title="Download Receipt">
+                                                        <i class="fas fa-download"></i>
+                                                    </a>
+                                                    @if (payment.ServiceInvoice != null)
+                                                    {
+                                                        <a asp-controller="ServiceInvoice" asp-action="CustomerView" asp-route-id="@payment.ServiceInvoice.Id" 
+                                                           class="btn btn-sm btn-outline-info" title="View Invoice">
+                                                            <i class="fas fa-file-invoice"></i>
+                                                        </a>
+                                                    }
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Payment Summary -->
+                        @* <div class="row mt-4">
+                            <div class="col-md-4">
+                                <div class="card bg-primary text-white">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">Total Payments</h5>
+                                        <h3>R @Model.Sum(p => p.Amount).ToString("F2")</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-success text-white">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">Completed</h5>
+                                        <h3>R @Model.Where(p => p.Status == "Completed").Sum(p => p.Amount).ToString("F2")</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-warning text-white">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">Pending</h5>
+                                        <h3>R @Model.Where(p => p.Status == "Pending").Sum(p => p.Amount).ToString("F2")</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div> *@
+                        <div class="summary-strip">
+                        <div class="summary-card total">
+                            <div class="label">Total Payments</div>
+                            <div class="figure">R @Model.Sum(p => p.Amount).ToString("F2")</div>
+                        </div>
+
+                        <div class="summary-card completed">
+                            <div class="label">Completed</div>
+                            <div class="figure">R @Model.Where(p => p.Status == "Completed").Sum(p => p.Amount).ToString("F2")</div>
+                        </div>
+
+                        <div class="summary-card pending">
+                            <div class="label">Pending</div>
+                            <div class="figure">R @Model.Where(p => p.Status == "Pending").Sum(p => p.Amount).ToString("F2")</div>
+                        </div>
+                    </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-credit-card fa-3x text-muted mb-3"></i>
+                            <h4 class="text-muted">No Payment History</h4>
+                            <p class="text-muted">You haven't made any payments yet.</p>
+                            <a asp-action="MyServices" class="btn btn-primary">
+                                <i class="fas fa-wrench"></i> View My Services
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    /* ---- mini reset ---- */
+    .summary-strip, .summary-card, .summary-card * { box-sizing: border-box; }
+
+    /* ---- parent flex row ---- */
+    .summary-strip{
+        display: flex;
+        gap: 1.2rem;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+
+    /* ---- individual card ---- */
+    .summary-card{
+        flex: 1 1 220px;          /* grow | shrink | base */
+        background: #ffffff;
+        border: 1px solid #e5e5e5;
+        border-radius: 8px;
+        padding: 1.4rem 1rem;
+        text-align: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,.05);
+        transition: transform .15s ease, box-shadow .15s ease;
+    }
+    .summary-card:hover{
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0,0,0,.08);
+    }
+
+    /* ---- top label ---- */
+    .summary-card .label{
+        font-size: .85rem;
+        letter-spacing: .5px;
+        color: #666;
+        margin-bottom: .4rem;
+    }
+
+    /* ---- big figure ---- */
+    .summary-card .figure{
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: #111;
+    }
+
+    /* ---- subtle colour accents (no Bootstrap bg-xxx) ---- */
+    .summary-card.total   { border-top: 4px solid #0d6efd; }
+    .summary-card.completed{ border-top: 4px solid #198754; }
+    .summary-card.pending { border-top: 4px solid #ffc107; }
+</style>

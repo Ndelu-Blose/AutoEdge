@@ -1,0 +1,158 @@
+@model List<AutoEdge.Models.Entities.ServiceBooking>
+@{
+    ViewData["Title"] = "Service Bookings Management";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Service Bookings Management</h2>
+    <div>
+        <span class="badge bg-primary">Total: @Model.Count</span>
+        <span class="badge bg-success">Confirmed: @Model.Count(b => b.Status == AutoEdge.Models.Entities.ServiceBookingStatus.Confirmed)</span>
+        <span class="badge bg-warning">Pending: @Model.Count(b => b.Status == AutoEdge.Models.Entities.ServiceBookingStatus.Pending)</span>
+        <span class="badge bg-info">Completed: @Model.Count(b => b.Status == AutoEdge.Models.Entities.ServiceBookingStatus.Completed)</span>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">All Service Bookings</h5>
+    </div>
+    <div class="card-body">
+        @if (Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Reference</th>
+                            <th>Customer</th>
+                            <th>Vehicle</th>
+                            <th>Service Type</th>
+                            <th>Scheduled Date</th>
+                            <th>Assigned Technician</th>
+                            <th>Status</th>
+                            <th>Delivery Method</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var booking in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@booking.Reference</strong>
+                                </td>
+                                <td>
+                                    <div>
+                                        <strong>@booking.CustomerName</strong><br>
+                                        <small class="text-muted">@booking.CustomerEmail</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>
+                                        @booking.Make @booking.Model (@booking.Year)<br>
+                                        @if (!string.IsNullOrEmpty(booking.VIN))
+                                        {
+                                            <small class="text-muted">VIN: @booking.VIN</small>
+                                        }
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">@booking.ServiceType</span>
+                                </td>
+                                <td>
+                                    <div>
+                                        <strong>@booking.PreferredDate.ToString("MMM dd, yyyy")</strong><br>
+                                        <small class="text-muted">@booking.PreferredStart.ToString("HH:mm")</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    @if (booking.ServiceJob?.Mechanic != null)
+                                    {
+                                        <div>
+                                            <strong>@booking.ServiceJob.Mechanic.Name</strong><br>
+                                            <small class="text-muted">Rating: @booking.ServiceJob.Mechanic.Rating ⭐</small>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-warning">Not Assigned</span>
+                                    }
+                                </td>
+                                <td>
+                                    @switch (booking.Status)
+                                    {
+                                        case AutoEdge.Models.Entities.ServiceBookingStatus.Pending:
+                                            <span class="badge bg-warning">Pending</span>
+                                            break;
+                                        case AutoEdge.Models.Entities.ServiceBookingStatus.Confirmed:
+                                            <span class="badge bg-success">Confirmed</span>
+                                            break;
+                                        case AutoEdge.Models.Entities.ServiceBookingStatus.Waitlisted:
+                                            <span class="badge bg-info">Waitlisted</span>
+                                            break;
+                                        case AutoEdge.Models.Entities.ServiceBookingStatus.Canceled:
+                                            <span class="badge bg-danger">Canceled</span>
+                                            break;
+                                        case AutoEdge.Models.Entities.ServiceBookingStatus.Completed:
+                                            <span class="badge bg-primary">Completed</span>
+                                            break;
+                                        default:
+                                            <span class="badge bg-secondary">@booking.Status</span>
+                                            break;
+                                    }
+                                    @if (booking.IsCheckedIn)
+                                    {
+                                        <br><small class="text-success">✓ Checked In</small>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">@booking.DeliveryMethod</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="@Url.Action("BookingDetails", "Admin", new { id = booking.Id })" 
+                                           class="btn btn-sm btn-outline-primary" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        @if (booking.Status != AutoEdge.Models.Entities.ServiceBookingStatus.Completed)
+                                        {
+                                            <a href="@Url.Action("BookingDetails", "Admin", new { id = booking.Id })" 
+                                               class="btn btn-sm btn-outline-secondary" title="Manage">
+                                                <i class="fas fa-cog"></i>
+                                            </a>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-4">
+                <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">No service bookings found</h5>
+                <p class="text-muted">Service bookings will appear here once customers start making appointments.</p>
+            </div>
+        }
+    </div>
+</div>

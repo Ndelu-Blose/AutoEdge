@@ -1,0 +1,576 @@
+@{
+    ViewData["Title"] = "Vehicle Analytics Report";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2><i class="fas fa-car-side me-2"></i>Vehicle Analytics Report</h2>
+                    <p class="text-muted mb-0">Inventory performance and vehicle analytics</p>
+                </div>
+                <div>
+                    <a href="@Url.Action("Index")" class="btn btn-outline-secondary me-2">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Reports
+                    </a>
+                    <button class="btn btn-primary" onclick="window.print()">
+                        <i class="fas fa-print me-2"></i>Print Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filter Options</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" action="@Url.Action("Vehicles")">
+                        <div class="row">
+                            <div class="col-md-2">
+                                <label for="make" class="form-label">Make</label>
+                                <select class="form-select" id="make" name="make">
+                                    <option value="">All Makes</option>
+                                    <option value="Toyota" selected="@(ViewBag.Make == "Toyota")">Toyota</option>
+                                    <option value="BMW" selected="@(ViewBag.Make == "BMW")">BMW</option>
+                                    <option value="Mercedes" selected="@(ViewBag.Make == "Mercedes")">Mercedes</option>
+                                    <option value="Audi" selected="@(ViewBag.Make == "Audi")">Audi</option>
+                                    <option value="Ford" selected="@(ViewBag.Make == "Ford")">Ford</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label for="type" class="form-label">Type</label>
+                                <select class="form-select" id="type" name="type">
+                                    <option value="">All Types</option>
+                                    <option value="Sedan" selected="@(ViewBag.Type == "Sedan")">Sedan</option>
+                                    <option value="SUV" selected="@(ViewBag.Type == "SUV")">SUV</option>
+                                    <option value="Hatchback" selected="@(ViewBag.Type == "Hatchback")">Hatchback</option>
+                                    <option value="Coupe" selected="@(ViewBag.Type == "Coupe")">Coupe</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label for="status" class="form-label">Status</label>
+                                <select class="form-select" id="status" name="status">
+                                    <option value="">All Statuses</option>
+                                    <option value="Available" selected="@(ViewBag.Status == "Available")">Available</option>
+                                    <option value="Sold" selected="@(ViewBag.Status == "Sold")">Sold</option>
+                                    <option value="Reserved" selected="@(ViewBag.Status == "Reserved")">Reserved</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label for="minPrice" class="form-label">Min Price</label>
+                                <input type="number" class="form-control" id="minPrice" name="minPrice" value="@ViewBag.MinPrice" placeholder="0">
+                            </div>
+                            <div class="col-md-2">
+                                <label for="maxPrice" class="form-label">Max Price</label>
+                                <input type="number" class="form-control" id="maxPrice" name="maxPrice" value="@ViewBag.MaxPrice" placeholder="1000000">
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary me-2">
+                                    <i class="fas fa-search me-1"></i>Filter
+                                </button>
+                                <a href="@Url.Action("Vehicles")" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times me-1"></i>Clear
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vehicle Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">@ViewBag.TotalVehicles</h4>
+                            <p class="mb-0">Total Vehicles</p>
+                            <small class="text-light">In inventory</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-car fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">@ViewBag.AvailableVehicles</h4>
+                            <p class="mb-0">Available</p>
+                            <small class="text-light">Ready for sale</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-check-circle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-warning text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">@ViewBag.SoldVehicles</h4>
+                            <p class="mb-0">Sold</p>
+                            <small class="text-light">@ViewBag.SoldPercentage% of inventory</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-handshake fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-info text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">@ViewBag.AveragePrice.ToString("C")</h4>
+                            <p class="mb-0">Average Price</p>
+                            <small class="text-light">Per vehicle</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-dollar-sign fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vehicle Distribution and Performance -->
+    <div class="row mb-4">
+        <div class="col-lg-6 mb-3">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Vehicle Distribution by Type</h5>
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.VehiclesByType != null)
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Count</th>
+                                        <th>Available</th>
+                                        <th>Sold</th>
+                                        <th>Distribution</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var type in ViewBag.VehiclesByType)
+                                    {
+                                        <tr>
+                                            <td><strong>@type.Type</strong></td>
+                                            <td><span class="badge bg-primary">@type.Total</span></td>
+                                            <td><span class="badge bg-success">@type.Available</span></td>
+                                            <td><span class="badge bg-warning">@type.Sold</span></td>
+                                            <td>
+                                                <div class="progress" style="height: 20px;">
+                                                    <div class="progress-bar bg-info" role="progressbar" style="width: @type.Percentage%" aria-valuenow="@type.Percentage" aria-valuemin="0" aria-valuemax="100">
+                                                        @Math.Round((double)type.Percentage, 1)%
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center">No vehicle type data available</p>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 mb-3">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Vehicle Distribution by Make</h5>
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.VehiclesByMake != null)
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Make</th>
+                                        <th>Count</th>
+                                        <th>Avg Price</th>
+                                        <th>Share</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var make in ViewBag.VehiclesByMake)
+                                    {
+                                        <tr>
+                                            <td><strong>@make.Make</strong></td>
+                                            <td><span class="badge bg-info">@make.Count</span></td>
+                                            <td><span class="text-success">@make.AveragePrice.ToString("C")</span></td>
+                                            <td>
+                                                <div class="progress" style="height: 15px;">
+                                                    <div class="progress-bar bg-success" role="progressbar" style="width: @make.Percentage%" aria-valuenow="@make.Percentage" aria-valuemin="0" aria-valuemax="100">
+                                                        @Math.Round((double)make.Percentage, 1)%
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center">No vehicle make data available</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Performing Vehicles -->
+    @if (ViewBag.TopPerformingVehicles != null)
+    {
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-trophy me-2"></i>Top Performing Vehicles</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Vehicle</th>
+                                        <th>Make & Model</th>
+                                        <th>Type</th>
+                                        <th>Price</th>
+                                        <th>Views</th>
+                                        <th>Inquiries</th>
+                                        <th>Status</th>
+                                        <th>Performance Score</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        var rank = 1;
+                                    }
+                                    @foreach (var vehicle in ViewBag.TopPerformingVehicles)
+                                    {
+                                        <tr>
+                                            <td>
+                                                @if (rank <= 3)
+                                                {
+                                                    <span class="badge bg-warning text-dark">@rank</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary">@rank</span>
+                                                }
+                                            </td>
+                                            <td><strong>@vehicle.Name</strong></td>
+                                            <td>@vehicle.Make @vehicle.Model</td>
+                                            <td><span class="badge bg-info">@vehicle.Type</span></td>
+                                            <td><span class="text-success fw-bold">@vehicle.Price.ToString("C")</span></td>
+                                            <td><span class="badge bg-primary">@vehicle.Views</span></td>
+                                            <td><span class="badge bg-warning">@vehicle.Inquiries</span></td>
+                                            <td>
+                                                @if (vehicle.Status == "Available")
+                                                {
+                                                    <span class="badge bg-success">@vehicle.Status</span>
+                                                }
+                                                else if (vehicle.Status == "Sold")
+                                                {
+                                                    <span class="badge bg-danger">@vehicle.Status</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-warning">@vehicle.Status</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <div class="progress" style="height: 20px;">
+                                                    @{
+                                                        var vehicles = ViewBag.TopPerformingVehicles as IEnumerable<dynamic>;
+                                                        var maxScore = vehicles?.Max(v => (int)v.PerformanceScore) ?? 1;
+                                                        var percentage = maxScore > 0 ? (double)vehicle.PerformanceScore / maxScore * 100 : 0;
+                                                    }
+                                                    <div class="progress-bar bg-success" role="progressbar" style="width: @percentage%" aria-valuenow="@percentage" aria-valuemin="0" aria-valuemax="100">
+                                                        @Math.Round((double)percentage, 1)%
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        rank++;
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Inventory Insights -->
+    <div class="row mb-4">
+        <div class="col-lg-8 mb-3">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-area me-2"></i>Inventory Insights</h5>
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.InventoryInsights != null)
+                    {
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="text-center p-3 border rounded mb-3">
+                                    <h4 class="text-primary">@ViewBag.InventoryInsights.AverageDaysOnLot</h4>
+                                    <p class="mb-0">Avg Days on Lot</p>
+                                    <small class="text-muted">Time to sell</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-center p-3 border rounded mb-3">
+                                    <h4 class="text-success">@ViewBag.InventoryInsights.TurnoverRate%</h4>
+                                    <p class="mb-0">Inventory Turnover</p>
+                                    <small class="text-muted">Annual rate</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-center p-3 border rounded mb-3">
+                                    <h4 class="text-info">@ViewBag.InventoryInsights.TotalInventoryValue.ToString("C")</h4>
+                                    <p class="mb-0">Total Inventory Value</p>
+                                    <small class="text-muted">Current worth</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="text-center p-3 border rounded mb-3">
+                                    <h4 class="text-warning">@ViewBag.InventoryInsights.SlowMovingVehicles</h4>
+                                    <p class="mb-0">Slow Moving Vehicles</p>
+                                    <small class="text-muted">Over 90 days on lot</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="text-center p-3 border rounded mb-3">
+                                    <h4 class="text-danger">@ViewBag.InventoryInsights.FastMovingVehicles</h4>
+                                    <p class="mb-0">Fast Moving Vehicles</p>
+                                    <small class="text-muted">Under 30 days on lot</small>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center">No inventory insights available</p>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 mb-3">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Inventory Alerts</h5>
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.InventoryAlerts != null)
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var alert in ViewBag.InventoryAlerts)
+                            {
+                                <div class="list-group-item d-flex justify-content-between align-items-start">
+                                    <div class="ms-2 me-auto">
+                                        <div class="fw-bold">@alert.AlertType</div>
+                                        <small class="text-muted">@alert.Description</small>
+                                    </div>
+                                    @if (alert.Priority == "High")
+                                    {
+                                        <span class="badge bg-danger rounded-pill">@alert.Count</span>
+                                    }
+                                    else if (alert.Priority == "Medium")
+                                    {
+                                        <span class="badge bg-warning rounded-pill">@alert.Count</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-info rounded-pill">@alert.Count</span>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center text-success">
+                            <i class="fas fa-check-circle fa-3x mb-3"></i>
+                            <p class="mb-0">No inventory alerts</p>
+                            <small class="text-muted">All systems normal</small>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Vehicle Activity -->
+    @if (ViewBag.RecentVehicleActivity != null)
+    {
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Recent Vehicle Activity</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Vehicle</th>
+                                        <th>Make & Model</th>
+                                        <th>Activity</th>
+                                        <th>Price</th>
+                                        <th>Status</th>
+                                        <th>Days on Lot</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var activity in ViewBag.RecentVehicleActivity)
+                                    {
+                                        <tr>
+                                            <td>@activity.Date.ToString("MMM dd, yyyy")</td>
+                                            <td><strong>@activity.VehicleName</strong></td>
+                                            <td>@activity.Make @activity.Model</td>
+                                            <td>
+                                                @if (activity.Activity == "Added")
+                                                {
+                                                    <span class="badge bg-success">@activity.Activity</span>
+                                                }
+                                                else if (activity.Activity == "Sold")
+                                                {
+                                                    <span class="badge bg-primary">@activity.Activity</span>
+                                                }
+                                                else if (activity.Activity == "Reserved")
+                                                {
+                                                    <span class="badge bg-warning">@activity.Activity</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-info">@activity.Activity</span>
+                                                }
+                                            </td>
+                                            <td><span class="text-success fw-bold">@activity.Price.ToString("C")</span></td>
+                                            <td>
+                                                @if (activity.Status == "Available")
+                                                {
+                                                    <span class="badge bg-success">@activity.Status</span>
+                                                }
+                                                else if (activity.Status == "Sold")
+                                                {
+                                                    <span class="badge bg-danger">@activity.Status</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-warning">@activity.Status</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (activity.DaysOnLot > 90)
+                                                {
+                                                    <span class="text-danger fw-bold">@activity.DaysOnLot days</span>
+                                                }
+                                                else if (activity.DaysOnLot > 60)
+                                                {
+                                                    <span class="text-warning fw-bold">@activity.DaysOnLot days</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-success fw-bold">@activity.DaysOnLot days</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+@@media print {
+    .btn, .card-header, .navbar, .sidebar {
+        display: none !important;
+    }
+    
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+    
+    .container-fluid {
+        padding: 0 !important;
+    }
+}
+
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.progress {
+    height: 8px;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #495057;
+}
+
+.badge {
+    font-size: 0.75em;
+}
+
+.list-group-item {
+    border-left: none;
+    border-right: none;
+    padding-left: 0;
+    padding-right: 0;
+}
+</style>

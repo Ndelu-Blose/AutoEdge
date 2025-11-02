@@ -1,0 +1,470 @@
+@model IEnumerable<AutoEdge.Models.Entities.ApplicationUser>
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <h2>Admin Dashboard</h2>
+            <hr />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-icon" style="background-color: var(--accent-color);">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stats-number">@Model.Count()</div>
+                <div class="stats-label">Total Users</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-icon" style="background-color: var(--success-color);">
+                    <i class="fas fa-user-check"></i>
+                </div>
+                <div class="stats-number">@Model.Count(u => u.IsActive)</div>
+                <div class="stats-label">Active Users</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-icon" style="background-color: var(--warning-color);">
+                    <i class="fas fa-user-times"></i>
+                </div>
+                <div class="stats-number">@Model.Count(u => !u.IsActive)</div>
+                <div class="stats-label">Inactive Users</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-icon" style="background-color: var(--accent-color);">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <div class="stats-number">@Model.Count(u => u.CreatedDate >= DateTime.UtcNow.AddDays(-30))</div>
+                <div class="stats-label">New Users (30 Days)</div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Service Bookings Statistics -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <h4><i class="fas fa-calendar-alt me-2"></i>Service Bookings Overview</h4>
+            <hr />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Total Bookings</h5>
+                    <h3 class="text-primary">@ViewBag.TotalBookings</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Pending</h5>
+                    <h3 class="text-warning">@ViewBag.PendingBookings</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Confirmed</h5>
+                    <h3 class="text-success">@ViewBag.ConfirmedBookings</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Completed</h5>
+                    <h3 class="text-info">@ViewBag.CompletedBookings</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Service Bookings Quick Access -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Service Bookings Management</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Quick Actions</h6>
+                            <a href="@Url.Action("Bookings", "Admin")" class="btn btn-primary me-2">
+                                <i class="fas fa-calendar-alt me-2"></i>View All Bookings
+                            </a>
+                            <a href="@Url.Action("Board", "Mechanics")" class="btn btn-info me-2">
+                                <i class="fas fa-tasks me-2"></i>Service Board
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Recent Activity</h6>
+                            <p class="text-muted">Manage service appointments, reassign technicians, and track booking status.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delivery Statistics -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <h4><i class="fas fa-truck me-2"></i>Delivery Management Overview</h4>
+            <hr />
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-2">
+            <div class="stats-card">
+                <div class="stats-icon" style="background-color: var(--accent-color);">
+                    <i class="fas fa-truck"></i>
+                </div>
+                <div class="stats-number">@ViewBag.TotalDeliveries</div>
+                <div class="stats-label">Total Deliveries</div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="stats-card">
+                <div class="stats-icon" style="background-color: var(--warning-color);">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stats-number">@ViewBag.PendingDeliveries</div>
+                <div class="stats-label">Pending</div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="stats-card">
+                <div class="stats-icon" style="background-color: var(--accent-color);">
+                    <i class="fas fa-shipping-fast"></i>
+                </div>
+                <div class="stats-number">@ViewBag.InTransitDeliveries</div>
+                <div class="stats-label">In Transit</div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="stats-card">
+                <div class="stats-icon" style="background-color: var(--success-color);">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stats-number">@ViewBag.CompletedDeliveries</div>
+                <div class="stats-label">Completed</div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="stats-card">
+                <div class="stats-icon" style="background-color: var(--danger-color);">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="stats-number">@ViewBag.FailedDeliveries</div>
+                <div class="stats-label">Failed</div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="stats-card">
+                <div class="stats-icon" style="background-color: var(--text-muted);">
+                    <i class="fas fa-user-slash"></i>
+                </div>
+                <div class="stats-number">@(ViewBag.UnassignedDeliveries != null ? ((IEnumerable<AutoEdge.Models.Entities.Delivery>)ViewBag.UnassignedDeliveries).Count() : 0)</div>
+                <div class="stats-label">Unassigned</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <a asp-action="Users" class="btn btn-primary w-100">
+                                <i class="fas fa-users"></i> Manage Users
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a asp-action="Roles" class="btn btn-secondary w-100">
+                                <i class="fas fa-user-tag"></i> Manage Roles
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a asp-controller="Vehicle" asp-action="Index" class="btn btn-success w-100">
+                                <i class="fas fa-car"></i> Manage Vehicles
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a asp-action="Inquiries" class="btn btn-warning w-100">
+                                <i class="fas fa-question-circle"></i> Manage Inquiries
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a asp-action="Reservations" class="btn btn-info w-100">
+                                <i class="fas fa-bookmark"></i> Manage Reservations
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a asp-action="Purchases" class="btn btn-primary w-100">
+                                <i class="fas fa-shopping-cart"></i> Manage Purchases
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a asp-controller="Delivery" asp-action="DriverAssignments" class="btn btn-warning w-100">
+                                <i class="fas fa-truck"></i> Manage Deliveries
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a asp-controller="Reports" asp-action="Index" class="btn btn-dark w-100">
+                                <i class="fas fa-chart-bar"></i> View Reports
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a asp-controller="RecruitmentAdmin" asp-action="Index" class="btn btn-success w-100">
+                                <i class="fas fa-users"></i> Recruitment Management
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Recent User Registrations</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Registration Date</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var user in Model.OrderByDescending(u => u.CreatedDate).Take(10))
+                                    {
+                                        <tr>
+                                            <td>@user.FirstName @user.LastName</td>
+                                            <td>@user.Email</td>
+                                            <td>@user.CreatedDate.ToString("MMM dd, yyyy")</td>
+                                            <td>
+                                                @if (user.IsActive)
+                                                {
+                                                    <span class="badge bg-success">Active</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-warning">Inactive</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <a asp-action="UserDetails" asp-route-id="@user.Id" class="btn btn-sm btn-outline-primary">
+                                                    View
+                                                </a>
+                                                <a asp-action="EditUser" asp-route-id="@user.Id" class="btn btn-sm btn-outline-secondary">
+                                                    Edit
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">No users found.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delivery Management Sections -->
+    <div class="row mt-4">
+        <!-- Purchases Needing Delivery -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Purchases Needing Delivery</h5>
+                    <span class="badge bg-dark">@(ViewBag.PurchasesNeedingDelivery != null ? ((IEnumerable<AutoEdge.Models.Entities.Purchase>)ViewBag.PurchasesNeedingDelivery).Count() : 0)</span>
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.PurchasesNeedingDelivery != null && ((IEnumerable<AutoEdge.Models.Entities.Purchase>)ViewBag.PurchasesNeedingDelivery).Any())
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var purchase in ((IEnumerable<AutoEdge.Models.Entities.Purchase>)ViewBag.PurchasesNeedingDelivery).Take(5))
+                            {
+                                <div class="list-group-item border-0 px-0">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">
+                                                @purchase.Vehicle?.Year @purchase.Vehicle?.Make @purchase.Vehicle?.Model
+                                            </h6>
+                                            <p class="mb-1 text-muted small">
+                                                <i class="fas fa-user me-1"></i>Customer: @purchase.Customer?.User?.FirstName @purchase.Customer?.User?.LastName
+                                                <br>
+                                                <i class="fas fa-calendar me-1"></i>Completed: @purchase.ModifiedDate.ToString("MMM dd, yyyy")
+                                                <br>
+                                                <i class="fas fa-dollar-sign me-1"></i>Total: @purchase.PurchasePrice.ToString("C")
+                                            </p>
+                                        </div>
+                                        <div class="ms-2">
+                                            @if (purchase.Contracts?.Any() == true)
+                                            {
+                                                <a href="@Url.Action("Schedule", "Delivery", new { contractId = purchase.Contracts.First().Id })" class="btn btn-sm btn-warning">
+                                                    <i class="fas fa-truck"></i> Schedule
+                                                </a>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        @if (((IEnumerable<AutoEdge.Models.Entities.Purchase>)ViewBag.PurchasesNeedingDelivery).Count() > 5)
+                        {
+                            <div class="text-center mt-3">
+                                <a href="@Url.Action("Purchases")" class="btn btn-outline-warning">
+                                    View All (@(((IEnumerable<AutoEdge.Models.Entities.Purchase>)ViewBag.PurchasesNeedingDelivery).Count()) purchases)
+                                </a>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                            <h6>All purchases have delivery scheduled</h6>
+                            <p class="text-muted">No action required at this time.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Deliveries -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-truck me-2"></i>Recent Deliveries</h5>
+                    <a href="@Url.Action("DriverAssignments", "Delivery")" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.RecentDeliveries != null && ((IEnumerable<AutoEdge.Models.Entities.Delivery>)ViewBag.RecentDeliveries).Any())
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var delivery in (IEnumerable<AutoEdge.Models.Entities.Delivery>)ViewBag.RecentDeliveries)
+                            {
+                                <div class="list-group-item border-0 px-0">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">
+                                                @delivery.Contract?.Purchase?.Vehicle?.Year @delivery.Contract?.Purchase?.Vehicle?.Make @delivery.Contract?.Purchase?.Vehicle?.Model
+                                            </h6>
+                                            <p class="mb-1 text-muted small">
+                                                <i class="fas fa-user me-1"></i>Customer: @delivery.Contract?.Purchase?.Customer?.User?.FirstName @delivery.Contract?.Purchase?.Customer?.User?.LastName
+                                                <br>
+                                                <i class="fas fa-truck me-1"></i>Type: @delivery.DeliveryType
+                                                <br>
+                                                <i class="fas fa-calendar me-1"></i>Scheduled: @delivery.ScheduledDate.ToString("MMM dd, yyyy")
+                                                @if (!string.IsNullOrEmpty(delivery.DriverName))
+                                                {
+                                                    <br />
+                                                    <span><i class="fas fa-user-tie me-1"></i>Driver: @delivery.DriverName</span>
+                                                }
+                                            </p>
+                                        </div>
+                                        <div class="ms-2 d-flex flex-column align-items-end">
+                                            @switch(delivery.Status)
+                                            {
+                                                case "Scheduled":
+                                                    <span class="badge bg-info mb-2">Scheduled</span>
+                                                    break;
+                                                case "InTransit":
+                                                    <span class="badge bg-warning mb-2">In Transit</span>
+                                                    break;
+                                                case "Delivered":
+                                                    <span class="badge bg-success mb-2">Delivered</span>
+                                                    break;
+                                                case "Failed":
+                                                    <span class="badge bg-danger mb-2">Failed</span>
+                                                    break;
+                                                case "Cancelled":
+                                                    <span class="badge bg-secondary mb-2">Cancelled</span>
+                                                    break;
+                                            }
+                                            <div class="btn-group-vertical btn-group-sm">
+                                                <a href="@Url.Action("Track", "Delivery", new { id = delivery.Id })" class="btn btn-outline-primary btn-sm">
+                                                    <i class="fas fa-eye"></i> View
+                                                </a>
+                                                @if (string.IsNullOrEmpty(delivery.DriverUserId))
+                                                {
+                                                    <a href="@Url.Action("AssignDriver", "Delivery", new { id = delivery.Id })" class="btn btn-outline-warning btn-sm">
+                                                        <i class="fas fa-user-plus"></i> Assign
+                                                    </a>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-truck fa-3x text-muted mb-3"></i>
+                            <h6>No recent deliveries</h6>
+                            <p class="text-muted">Delivery information will appear here once scheduled.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unassigned Deliveries Alert -->
+    @if (ViewBag.UnassignedDeliveries != null && ((IEnumerable<AutoEdge.Models.Entities.Delivery>)ViewBag.UnassignedDeliveries).Any())
+    {
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="alert alert-warning d-flex align-items-center" role="alert">
+                    <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+                    <div class="flex-grow-1">
+                        <h5 class="alert-heading mb-1">Action Required: Unassigned Deliveries</h5>
+                        <p class="mb-2">There are @(((IEnumerable<AutoEdge.Models.Entities.Delivery>)ViewBag.UnassignedDeliveries).Count()) deliveries that need driver assignment.</p>
+                        <a href="@Url.Action("DriverAssignments", "Delivery")" class="btn btn-warning">
+                            <i class="fas fa-user-plus me-2"></i>Assign Drivers Now
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

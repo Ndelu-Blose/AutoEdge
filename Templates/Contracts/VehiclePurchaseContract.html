@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vehicle Purchase Agreement</title>
+    <style>
+        body {
+            font-family: 'Times New Roman', serif;
+            margin: 40px;
+            line-height: 1.6;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 3px solid #2c3e50;
+            padding-bottom: 20px;
+        }
+        .company-logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .contract-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px 0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .contract-number {
+            text-align: right;
+            margin-bottom: 30px;
+            font-weight: bold;
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        .section {
+            margin-bottom: 30px;
+            page-break-inside: avoid;
+        }
+        .section-title {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 8px;
+            text-transform: uppercase;
+        }
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .info-table td {
+            padding: 12px 15px;
+            border: 1px solid #bdc3c7;
+            vertical-align: top;
+        }
+        .info-table .label {
+            background-color: #ecf0f1;
+            font-weight: bold;
+            width: 35%;
+            color: #2c3e50;
+        }
+        .info-table .value {
+            background-color: #fff;
+        }
+        .terms {
+            font-size: 13px;
+            margin-top: 30px;
+            text-align: justify;
+        }
+        .terms ol {
+            padding-left: 20px;
+        }
+        .terms li {
+            margin-bottom: 10px;
+        }
+        .signature-section {
+            margin-top: 60px;
+            page-break-inside: avoid;
+        }
+        .signature-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+        }
+        .signature-block {
+            width: 45%;
+            text-align: center;
+        }
+        .signature-line {
+            border-bottom: 2px solid #2c3e50;
+            width: 100%;
+            margin: 30px 0 10px 0;
+            height: 40px;
+        }
+        .signature-label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .date-line {
+            border-bottom: 1px solid #7f8c8d;
+            width: 150px;
+            margin: 10px auto;
+            text-align: center;
+        }
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 12px;
+            color: #7f8c8d;
+            border-top: 1px solid #bdc3c7;
+            padding-top: 20px;
+        }
+        .warranty-section {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-left: 4px solid #3498db;
+            margin: 20px 0;
+        }
+        .important-notice {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        @media print {
+            body { margin: 20px; }
+            .signature-container { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="company-logo">AutoEdge Dealership</div>
+        <div style="font-size: 14px; color: #7f8c8d;">Premium Vehicle Sales & Service</div>
+        <div class="contract-title">Vehicle Purchase Agreement</div>
+    </div>
+    
+    <div class="contract-number">
+        Contract Number: {{ContractNumber}}<br>
+        Generated: {{CurrentDate}}
+    </div>
+    
+    <div class="section">
+        <div class="section-title">Buyer Information</div>
+        <table class="info-table">
+            <tr>
+                <td class="label">Full Legal Name:</td>
+                <td class="value">{{CustomerName}}</td>
+            </tr>
+            <tr>
+                <td class="label">Email Address:</td>
+                <td class="value">{{CustomerEmail}}</td>
+            </tr>
+            <tr>
+                <td class="label">Phone Number:</td>
+                <td class="value">{{CustomerPhone}}</td>
+            </tr>
+            <tr>
+                <td class="label">Mailing Address:</td>
+                <td class="value">{{CustomerAddress}}</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div class="section">
+        <div class="section-title">Vehicle Information</div>
+        <table class="info-table">
+            <tr>
+                <td class="label">Make:</td>
+                <td class="value">{{VehicleMake}}</td>
+            </tr>
+            <tr>
+                <td class="label">Model:</td>
+                <td class="value">{{VehicleModel}}</td>
+            </tr>
+            <tr>
+                <td class="label">Year:</td>
+                <td class="value">{{VehicleYear}}</td>
+            </tr>
+            <tr>
+                <td class="label">Vehicle Identification Number (VIN):</td>
+                <td class="value">{{VehicleVIN}}</td>
+            </tr>
+            <tr>
+                <td class="label">Odometer Reading:</td>
+                <td class="value">{{VehicleMileage}} miles</td>
+            </tr>
+            <tr>
+                <td class="label">Condition:</td>
+                <td class="value">Used Vehicle - Sold As-Is</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div class="section">
+        <div class="section-title">Purchase Details</div>
+        <table class="info-table">
+            <tr>
+                <td class="label">Purchase Date:</td>
+                <td class="value">{{PurchaseDate}}</td>
+            </tr>
+            <tr>
+                <td class="label">Vehicle Purchase Price:</td>
+                <td class="value">{{VehiclePrice}}</td>
+            </tr>
+            <tr>
+                <td class="label">Sales Tax:</td>
+                <td class="value">To be calculated based on local rates</td>
+            </tr>
+            <tr>
+                <td class="label">Documentation Fee:</td>
+                <td class="value">$299.00</td>
+            </tr>
+            <tr>
+                <td class="label"><strong>Total Amount Due:</strong></td>
+                <td class="value"><strong>{{TotalAmount}} (plus applicable taxes and fees)</strong></td>
+            </tr>
+        </table>
+    </div>
+    
+    <div class="important-notice">
+        <strong>Important Notice:</strong> This vehicle is sold "AS-IS" without any warranty, express or implied. The buyer acknowledges that they have inspected the vehicle and accepts it in its current condition.
+    </div>
+    
+    <div class="section">
+        <div class="section-title">Terms and Conditions</div>
+        <div class="terms">
+            <ol>
+                <li><strong>Purchase Agreement:</strong> The buyer agrees to purchase the above-described vehicle for the stated purchase price, subject to the terms and conditions set forth in this agreement.</li>
+                
+                <li><strong>Vehicle Condition:</strong> The vehicle is sold in "AS-IS" condition. The buyer acknowledges that they have had the opportunity to inspect the vehicle and accepts it in its current condition with all faults, if any.</li>
+                
+                <li><strong>Title and Registration:</strong> AutoEdge will provide a clear title to the vehicle upon full payment. The buyer is responsible for vehicle registration and obtaining proper insurance coverage.</li>
+                
+                <li><strong>Payment Terms:</strong> Full payment is due upon signing of this agreement unless other arrangements have been made in writing. Accepted payment methods include cash, certified check, or approved financing.</li>
+                
+                <li><strong>Delivery:</strong> The vehicle will be available for pickup within 3 business days of full payment and completion of all required documentation.</li>
+                
+                <li><strong>Cancellation:</strong> This agreement may only be cancelled by mutual written consent of both parties. Any cancellation fees will be determined at the time of cancellation.</li>
+                
+                <li><strong>Warranty Disclaimer:</strong> AutoEdge makes no warranties, express or implied, regarding the vehicle's condition, merchantability, or fitness for a particular purpose.</li>
+                
+                <li><strong>Limitation of Liability:</strong> AutoEdge's liability is limited to the purchase price of the vehicle. AutoEdge shall not be liable for any consequential, incidental, or special damages.</li>
+                
+                <li><strong>Governing Law:</strong> This agreement shall be governed by the laws of the state where the sale takes place.</li>
+                
+                <li><strong>Entire Agreement:</strong> This document constitutes the entire agreement between the parties. Any modifications must be made in writing and signed by both parties.</li>
+            </ol>
+        </div>
+    </div>
+    
+    <div class="warranty-section">
+        <h4>Extended Warranty Options</h4>
+        <p>Extended warranty coverage is available for purchase separately. Please contact our service department for details on available warranty plans and pricing.</p>
+    </div>
+    
+    <div class="signature-section">
+        <div class="section-title">Signatures</div>
+        <p>By signing below, both parties acknowledge that they have read, understood, and agree to be bound by the terms and conditions of this agreement.</p>
+        
+        <div class="signature-container">
+            <div class="signature-block">
+                <div class="signature-line"></div>
+                <div class="signature-label">Buyer Signature</div>
+                <div>{{CustomerName}}</div>
+                <div class="date-line">Date: _______________</div>
+            </div>
+            
+            <div class="signature-block">
+                <div class="signature-line"></div>
+                <div class="signature-label">AutoEdge Representative</div>
+                <div>Authorized Dealer Representative</div>
+                <div class="date-line">Date: {{CurrentDate}}</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>AutoEdge Dealership | Licensed Vehicle Dealer | Contract #{{ContractNumber}}</p>
+        <p>This document was electronically generated on {{CurrentDate}}</p>
+    </div>
+</body>
+</html>

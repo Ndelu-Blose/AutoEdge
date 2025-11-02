@@ -1,0 +1,336 @@
+@model AutoEdge.Models.Entities.Application
+
+@{
+    ViewData["Title"] = "Apply for Position";
+    var jobPosting = ViewBag.JobPosting as AutoEdge.Models.Entities.JobPosting;
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-file-alt mr-2"></i>
+                        Apply for: @jobPosting.JobTitle
+                    </h3>
+                    <div class="card-tools">
+                        <a href="@Url.Action("JobDetails", new { id = jobPosting.JobId })" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-arrow-left mr-1"></i>Back to Job Details
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Progress Bar -->
+                    <div class="progress mb-4" style="height: 25px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 33%" id="progressBar">
+                            Step 1 of 3: Personal Information
+                        </div>
+                    </div>
+
+                    <form asp-action="Apply" method="post" enctype="multipart/form-data" id="applicationForm">
+                        <input type="hidden" name="jobId" value="@jobPosting.JobId" />
+                        
+                        <!-- Step 1: Personal Information -->
+                        <div class="step" id="step1" style="display: block;">
+                            <h4 class="mb-3">
+                                <i class="fas fa-user mr-2"></i>Personal Information
+                            </h4>
+                            
+                            <div class="form-group mb-3" style="display: block !important; width: 100%;">
+                                <label asp-for="FirstName" class="control-label">First Name *</label>
+                                <input asp-for="FirstName" class="form-control" required style="width: 100%;" />
+                                <span asp-validation-for="FirstName" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-group mb-3" style="display: block !important; width: 100%;">
+                                <label asp-for="LastName" class="control-label">Last Name *</label>
+                                <input asp-for="LastName" class="form-control" required style="width: 100%;" />
+                                <span asp-validation-for="LastName" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-group mb-3" style="display: block !important; width: 100%;">
+                                <label asp-for="Email" class="control-label">Email Address *</label>
+                                <input asp-for="Email" type="email" class="form-control" required style="width: 100%;" />
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-group mb-3" style="display: block !important; width: 100%;">
+                                <label asp-for="PhoneNumber" class="control-label">Phone Number *</label>
+                                <input asp-for="PhoneNumber" class="form-control" required style="width: 100%;" />
+                                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-group mb-3" style="display: block !important; width: 100%;">
+                                <label asp-for="Address" class="control-label">Physical Address *</label>
+                                <textarea asp-for="Address" class="form-control" rows="3" required style="width: 100%;"></textarea>
+                                <span asp-validation-for="Address" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-group mb-3" style="display: block !important; width: 100%;">
+                                <label asp-for="YearsOfExperience" class="control-label">Years of Experience *</label>
+                                <input asp-for="YearsOfExperience" type="number" class="form-control" min="0" max="50" required style="width: 100%;" />
+                                <span asp-validation-for="YearsOfExperience" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-group mb-3" style="display: block !important; width: 100%;">
+                                <label asp-for="HighestQualification" class="control-label">Highest Qualification *</label>
+                                <select asp-for="HighestQualification" class="form-control" required style="width: 100%;">
+                                    <option value="">Select Qualification</option>
+                                    <option value="High School">High School</option>
+                                    <option value="Diploma">Diploma</option>
+                                    <option value="Bachelor's Degree">Bachelor's Degree</option>
+                                    <option value="Master's Degree">Master's Degree</option>
+                                    <option value="PhD">PhD</option>
+                                    <option value="Professional Certificate">Professional Certificate</option>
+                                </select>
+                                <span asp-validation-for="HighestQualification" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-group mb-3" style="display: block !important; width: 100%;">
+                                <label asp-for="WhySuitableForRole" class="control-label">Why are you suitable for this role? *</label>
+                                <textarea asp-for="WhySuitableForRole" class="form-control" rows="4" required placeholder="Tell us why you're the right fit for this position..." style="width: 100%;"></textarea>
+                                <span asp-validation-for="WhySuitableForRole" class="text-danger"></span>
+                            </div>
+
+                            <div class="text-right">
+                                <button type="button" class="btn btn-primary" onclick="nextStep()">
+                                    Next Step <i class="fas fa-arrow-right ml-1"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Document Upload -->
+                        <div class="step" id="step2" style="display: none;">
+                            <h4 class="mb-3">
+                                <i class="fas fa-upload mr-2"></i>Document Upload
+                            </h4>
+
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                Please upload your documents in PDF format. Maximum file size: 10MB per file.
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label">Resume/CV *</label>
+                                <div class="custom-file">
+                                    <input type="file" name="resumeFile" class="custom-file-input" id="resumeFile" accept=".pdf" required>
+                                    <label class="custom-file-label" for="resumeFile">Choose Resume/CV file...</label>
+                                </div>
+                                <small class="form-text text-muted">Upload your most recent resume or CV in PDF format.</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label">Cover Letter</label>
+                                <div class="custom-file">
+                                    <input type="file" name="coverLetterFile" class="custom-file-input" id="coverLetterFile" accept=".pdf">
+                                    <label class="custom-file-label" for="coverLetterFile">Choose Cover Letter file...</label>
+                                </div>
+                                <small class="form-text text-muted">Optional: Upload a cover letter specific to this position.</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label">ID Document *</label>
+                                <div class="custom-file">
+                                    <input type="file" name="idDocumentFile" class="custom-file-input" id="idDocumentFile" accept=".pdf" required>
+                                    <label class="custom-file-label" for="idDocumentFile">Choose ID Document file...</label>
+                                </div>
+                                <small class="form-text text-muted">Upload a copy of your ID document (passport, driver's license, etc.).</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label">Certificates/Qualifications</label>
+                                <div class="custom-file">
+                                    <input type="file" name="certificatesFile" class="custom-file-input" id="certificatesFile" accept=".pdf">
+                                    <label class="custom-file-label" for="certificatesFile">Choose Certificates file...</label>
+                                </div>
+                                <small class="form-text text-muted">Optional: Upload relevant certificates or qualifications.</small>
+                            </div>
+
+                            <div class="text-right">
+                                <button type="button" class="btn btn-secondary mr-2" onclick="prevStep()">
+                                    <i class="fas fa-arrow-left mr-1"></i>Previous
+                                </button>
+                                <button type="button" class="btn btn-primary" onclick="nextStep()">
+                                    Next Step <i class="fas fa-arrow-right ml-1"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Step 3: Review & Submit -->
+                        <div class="step" id="step3" style="display: none;">
+                            <h4 class="mb-3">
+                                <i class="fas fa-check-circle mr-2"></i>Review & Submit
+                            </h4>
+
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle mr-2"></i>
+                                Please review all information carefully before submitting. You will not be able to edit your application after submission.
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Application Summary</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h6>Personal Information</h6>
+                                            <p><strong>Name:</strong> <span id="reviewName"></span></p>
+                                            <p><strong>Email:</strong> <span id="reviewEmail"></span></p>
+                                            <p><strong>Phone:</strong> <span id="reviewPhone"></span></p>
+                                            <p><strong>Experience:</strong> <span id="reviewExperience"></span> years</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6>Documents</h6>
+                                            <p><strong>Resume:</strong> <span id="reviewResume"></span></p>
+                                            <p><strong>Cover Letter:</strong> <span id="reviewCoverLetter"></span></p>
+                                            <p><strong>ID Document:</strong> <span id="reviewIdDocument"></span></p>
+                                            <p><strong>Certificates:</strong> <span id="reviewCertificates"></span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="text-right">
+                                <button type="button" class="btn btn-secondary mr-2" onclick="prevStep()">
+                                    <i class="fas fa-arrow-left mr-1"></i>Previous
+                                </button>
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-paper-plane mr-2"></i>Submit Application
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    #step1 .form-group {
+        display: block !important;
+        width: 100% !important;
+        margin-bottom: 1rem !important;
+    }
+    
+    #step1 .form-group .form-control,
+    #step1 .form-group select,
+    #step1 .form-group textarea {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    
+    #step1 .form-group label {
+        display: block !important;
+        width: 100% !important;
+        margin-bottom: 0.5rem;
+    }
+</style>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        let currentStep = 1;
+        const totalSteps = 3;
+
+        function nextStep() {
+            if (validateCurrentStep()) {
+                if (currentStep < totalSteps) {
+                    document.getElementById('step' + currentStep).style.display = 'none';
+                    currentStep++;
+                    document.getElementById('step' + currentStep).style.display = 'block';
+                    updateProgressBar();
+                    
+                    if (currentStep === 3) {
+                        updateReviewSection();
+                    }
+                }
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 1) {
+                document.getElementById('step' + currentStep).style.display = 'none';
+                currentStep--;
+                document.getElementById('step' + currentStep).style.display = 'block';
+                updateProgressBar();
+            }
+        }
+
+        function updateProgressBar() {
+            const progressBar = document.getElementById('progressBar');
+            const percentage = (currentStep / totalSteps) * 100;
+            progressBar.style.width = percentage + '%';
+            
+            const stepTexts = [
+                'Step 1 of 3: Personal Information',
+                'Step 2 of 3: Document Upload',
+                'Step 3 of 3: Review & Submit'
+            ];
+            
+            progressBar.textContent = stepTexts[currentStep - 1];
+        }
+
+        function validateCurrentStep() {
+            const currentStepElement = document.getElementById('step' + currentStep);
+            const requiredFields = currentStepElement.querySelectorAll('[required]');
+            
+            for (let field of requiredFields) {
+                if (!field.value.trim()) {
+                    field.focus();
+                    alert('Please fill in all required fields before proceeding.');
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+
+        function updateReviewSection() {
+            document.getElementById('reviewName').textContent = 
+                document.querySelector('[name="FirstName"]').value + ' ' + 
+                document.querySelector('[name="LastName"]').value;
+            document.getElementById('reviewEmail').textContent = 
+                document.querySelector('[name="Email"]').value;
+            document.getElementById('reviewPhone').textContent = 
+                document.querySelector('[name="PhoneNumber"]').value;
+            document.getElementById('reviewExperience').textContent = 
+                document.querySelector('[name="YearsOfExperience"]').value;
+            
+            // Update file names
+            document.getElementById('reviewResume').textContent = 
+                document.getElementById('resumeFile').files[0]?.name || 'Not selected';
+            document.getElementById('reviewCoverLetter').textContent = 
+                document.getElementById('coverLetterFile').files[0]?.name || 'Not selected';
+            document.getElementById('reviewIdDocument').textContent = 
+                document.getElementById('idDocumentFile').files[0]?.name || 'Not selected';
+            document.getElementById('reviewCertificates').textContent = 
+                document.getElementById('certificatesFile').files[0]?.name || 'Not selected';
+        }
+
+        // File input labels
+        document.querySelectorAll('.custom-file-input').forEach(function(input) {
+            input.addEventListener('change', function() {
+                const label = this.nextElementSibling;
+                label.textContent = this.files[0]?.name || 'Choose file...';
+            });
+        });
+
+        // Form submission
+        document.getElementById('applicationForm').addEventListener('submit', function(e) {
+            if (!validateCurrentStep()) {
+                e.preventDefault();
+                return false;
+            }
+            
+            if (!confirm('Are you sure you want to submit your application? You will not be able to edit it after submission.')) {
+                e.preventDefault();
+                return false;
+            }
+        });
+    </script>
+}

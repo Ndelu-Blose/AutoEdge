@@ -1,0 +1,148 @@
+@model AutoEdge.Models.Entities.ServicePayment
+@{
+    ViewData["Title"] = "Payment Successful";
+}
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-success">
+                <div class="card-header bg-success text-white text-center">
+                    <h3 class="mb-0">
+                        <i class="fas fa-check-circle fa-2x"></i><br>
+                        Payment Successful!
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <!-- Success Message -->
+                    <div class="text-center mb-4">
+                        <div class="alert alert-success">
+                            <h4><i class="fas fa-thumbs-up"></i> Thank You!</h4>
+                            <p class="mb-0">Your payment has been processed successfully. You will receive a confirmation email shortly.</p>
+                        </div>
+                    </div>
+
+                    <!-- Payment Details -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-receipt text-primary"></i> Payment Details</h5>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><strong>Transaction ID:</strong></td>
+                                    <td>@Model.TransactionId</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Amount Paid:</strong></td>
+                                    <td class="text-success"><strong>R @Model.Amount.ToString("F2")</strong></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Payment Method:</strong></td>
+                                    <td>@Model.PaymentMethod</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Payment Date:</strong></td>
+                                    <td>@Model.PaymentDate.ToString("MMMM dd, yyyy 'at' h:mm tt")</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Status:</strong></td>
+                                    <td>
+                                        @if (Model.Status == "Completed")
+                                        {
+                                            <span class="badge bg-success">Completed</span>
+                                        }
+                                        else if (Model.Status == "Pending")
+                                        {
+                                            <span class="badge bg-warning">Pending</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">@Model.Status</span>
+                                        }
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-car text-primary"></i> Service Information</h5>
+                            @if (Model.ServiceInvoice?.ServiceBooking != null)
+                            {
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td><strong>Invoice #:</strong></td>
+                                        <td>@Model.ServiceInvoice.InvoiceNumber</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Vehicle:</strong></td>
+                                        <td>@Model.ServiceInvoice.ServiceBooking.Year @Model.ServiceInvoice.ServiceBooking.Make @Model.ServiceInvoice.ServiceBooking.Model</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Service Type:</strong></td>
+                                        <td>@Model.ServiceInvoice.ServiceBooking.ServiceType</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Customer:</strong></td>
+                                        <td>@Model.ServiceInvoice.ServiceBooking.CustomerName</td>
+                                    </tr>
+                                </table>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Next Steps -->
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <h5><i class="fas fa-info-circle text-primary"></i> What's Next?</h5>
+                            <div class="alert alert-info">
+                                <ul class="mb-0">
+                                    <li><strong>Email Confirmation:</strong> You will receive a payment confirmation email with your receipt.</li>
+                                    <li><strong>Service Complete:</strong> Your vehicle service has been completed and is ready for pickup.</li>
+                                    <li><strong>Pickup:</strong> You can now arrange to collect your vehicle from our service center.</li>
+                                    <li><strong>Questions:</strong> If you have any questions, please contact our customer service team.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <a asp-controller="ServiceInvoice" asp-action="CustomerView" asp-route-id="@Model.ServiceInvoiceId" class="btn btn-primary btn-lg">
+                                <i class="fas fa-file-invoice"></i> View Full Invoice
+                            </a>
+                            <a asp-controller="ServiceInvoice" asp-action="DownloadPDF" asp-route-id="@Model.ServiceInvoiceId" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-download"></i> Download Receipt
+                            </a>
+                            <a asp-controller="CustomerServicePortal" asp-action="MyServices" class="btn btn-outline-primary btn-lg">
+                                <i class="fas fa-list"></i> View All Services
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Contact Information -->
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h6><i class="fas fa-headset text-primary"></i> Need Help?</h6>
+                                    <p class="mb-0">
+                                        Contact our customer service team at <strong>support@autoedge.com</strong> or call <strong>(555) 123-4567</strong>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Auto-refresh page after 30 seconds to check for any status updates
+    setTimeout(function() {
+        if ('@Model.Status' === 'Pending') {
+            location.reload();
+        }
+    }, 30000);
+</script>
+

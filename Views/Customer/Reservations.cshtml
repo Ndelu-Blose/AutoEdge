@@ -1,0 +1,335 @@
+@model IEnumerable<AutoEdge.Models.Entities.Reservation>
+@{
+    ViewData["Title"] = "My Reservations";
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-0">My Reservations</h1>
+                    <p class="text-muted">Manage your vehicle reservations</p>
+                </div>
+                <div>
+                    <a href="@Url.Action("Index", "VehicleBrowse")" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Reserve Vehicle
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="status" class="form-label">Status</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="">All Statuses</option>
+                                <option value="Active" selected="@(ViewBag.CurrentStatus == "Active")">Active</option>
+                                <option value="Cancelled" selected="@(ViewBag.CurrentStatus == "Cancelled")">Cancelled</option>
+                                <option value="Completed" selected="@(ViewBag.CurrentStatus == "Completed")">Completed</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="dateFrom" class="form-label">From Date</label>
+                            <input type="date" class="form-control" id="dateFrom" name="dateFrom" value="@ViewBag.DateFrom">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="dateTo" class="form-label">To Date</label>
+                            <input type="date" class="form-control" id="dateTo" name="dateTo" value="@ViewBag.DateTo">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="search" class="form-label">Search</label>
+                            <input type="text" class="form-control" id="search" name="search" placeholder="Vehicle..." value="@ViewBag.SearchTerm">
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search"></i> Filter
+                            </button>
+                            <a href="@Url.Action("Reservations")" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> Clear
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reservations List -->
+    <div class="row">
+        <div class="col-12">
+            @if (Model != null && Model.Any())
+            {
+                <div class="row g-4">
+                    @foreach (var reservation in Model)
+                    {
+                        var isExpired = reservation.ExpiryDate < DateTime.Now && reservation.Status == "Active";
+                        var daysLeft = (reservation.ExpiryDate - DateTime.Now).Days;
+                        
+                        <div class="col-lg-6 col-xl-4">
+                            <div class="card h-100 shadow-sm @(isExpired ? "border-danger" : reservation.Status == "Active" ? "border-success" : "")">
+                                @if (reservation.Vehicle?.VehicleImages != null && reservation.Vehicle.VehicleImages.Any())
+                {
+                    var firstImage = reservation.Vehicle.VehicleImages.First().ImagePath;
+                                    <img src="@firstImage" class="card-img-top" alt="Vehicle" style="height: 200px; object-fit: cover;">
+                                }
+                                else
+                                {
+                                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                                        <i class="fas fa-car fa-3x text-muted"></i>
+                                    </div>
+                                }
+                                
+                                <!-- Status Badge -->
+                                <div class="position-absolute top-0 end-0 m-2">
+                                    @if (isExpired)
+                                    {
+                                        <span class="badge bg-danger">Expired</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-@(reservation.Status == "Active" ? "success" : reservation.Status == "Cancelled" ? "danger" : "secondary")">@reservation.Status</span>
+                                    }
+                                </div>
+
+                                <div class="card-body">
+                                    <h5 class="card-title">@reservation.Vehicle?.Year @reservation.Vehicle?.Make @reservation.Vehicle?.Model</h5>
+                                    <p class="card-text">
+                                        <strong class="text-primary">@reservation.Vehicle?.SellingPrice.ToString("C")</strong>
+                                    </p>
+                                    
+                                    <div class="row text-center mb-3">
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">Reserved</small>
+                                            <strong>@reservation.ReservationDate.ToString("MMM dd")</strong>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">Expires</small>
+                                            <strong class="@(isExpired ? "text-danger" : daysLeft <= 1 ? "text-warning" : "")">@reservation.ExpiryDate.ToString("MMM dd")</strong>
+                                        </div>
+                                    </div>
+
+                                    @if (reservation.Status == "Active")
+                                    {
+                                        @if (isExpired)
+                                        {
+                                            <div class="alert alert-danger alert-sm mb-3">
+                                                <i class="fas fa-exclamation-triangle me-1"></i>
+                                                <small>This reservation has expired</small>
+                                            </div>
+                                        }
+                                        else if (daysLeft <= 1)
+                                        {
+                                            <div class="alert alert-warning alert-sm mb-3">
+                                                <i class="fas fa-clock me-1"></i>
+                                                <small>Expires @(daysLeft == 0 ? "today" : "tomorrow")</small>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="alert alert-info alert-sm mb-3">
+                                                <i class="fas fa-info-circle me-1"></i>
+                                                <small>@daysLeft days remaining</small>
+                                            </div>
+                                        }
+                                    }
+
+                                    @if (!string.IsNullOrEmpty(reservation.Notes))
+                                    {
+                                        <div class="mb-3">
+                                            <small class="text-muted">Notes:</small>
+                                            <p class="small mb-0">@reservation.Notes</p>
+                                        </div>
+                                    }
+                                </div>
+
+                                <div class="card-footer bg-transparent">
+                                    <div class="d-flex gap-2">
+                                        <a href="@Url.Action("ReservationDetails", new { id = reservation.Id })" class="btn btn-sm btn-outline-primary flex-fill">
+                                            <i class="fas fa-eye"></i> Details
+                                        </a>
+                                        <a href="@Url.Action("Details", "VehicleBrowse", new { id = reservation.VehicleId })" class="btn btn-sm btn-outline-info flex-fill">
+                                            <i class="fas fa-car"></i> Vehicle
+                                        </a>
+                                        @if (reservation.Status == "Active" && !isExpired)
+                                        {
+                                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="cancelReservation(@reservation.Id)">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Pagination -->
+                @if (ViewBag.TotalPages > 1)
+                {
+                    <nav aria-label="Reservations pagination" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            @if (ViewBag.CurrentPage > 1)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="@Url.Action("Reservations", new { page = ViewBag.CurrentPage - 1, status = ViewBag.CurrentStatus, dateFrom = ViewBag.DateFrom, dateTo = ViewBag.DateTo, search = ViewBag.SearchTerm })">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                </li>
+                            }
+
+                            @for (int i = Math.Max(1, ViewBag.CurrentPage - 2); i <= Math.Min(ViewBag.TotalPages, ViewBag.CurrentPage + 2); i++)
+                            {
+                                <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                                    <a class="page-link" href="@Url.Action("Reservations", new { page = i, status = ViewBag.CurrentStatus, dateFrom = ViewBag.DateFrom, dateTo = ViewBag.DateTo, search = ViewBag.SearchTerm })">@i</a>
+                                </li>
+                            }
+
+                            @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="@Url.Action("Reservations", new { page = ViewBag.CurrentPage + 1, status = ViewBag.CurrentStatus, dateFrom = ViewBag.DateFrom, dateTo = ViewBag.DateTo, search = ViewBag.SearchTerm })">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </nav>
+                }
+            }
+            else
+            {
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-bookmark fa-4x text-muted mb-4"></i>
+                        <h4>No Reservations Found</h4>
+                        <p class="text-muted mb-4">You haven't made any vehicle reservations yet, or no reservations match your current filters.</p>
+                        <div class="d-flex justify-content-center gap-2">
+                            <a href="@Url.Action("Index", "VehicleBrowse")" class="btn btn-primary">
+                                <i class="fas fa-search"></i> Browse Vehicles
+                            </a>
+                            @if (!string.IsNullOrEmpty(ViewBag.CurrentStatus) || !string.IsNullOrEmpty(ViewBag.SearchTerm) || !string.IsNullOrEmpty(ViewBag.DateFrom))
+                            {
+                                <a href="@Url.Action("Reservations")" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times"></i> Clear Filters
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Reservation Modal -->
+<div class="modal fade" id="cancelReservationModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Cancel Reservation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Are you sure you want to cancel this reservation?</strong>
+                </div>
+                <p>This action cannot be undone. You will lose your hold on this vehicle and will need to make a new reservation if you change your mind.</p>
+                <div class="form-group">
+                    <label for="cancellationReason" class="form-label">Reason for cancellation (optional):</label>
+                    <textarea class="form-control" id="cancellationReason" rows="3" placeholder="Please let us know why you're cancelling..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Keep Reservation</button>
+                <button type="button" class="btn btn-danger" id="confirmCancelBtn">
+                    <i class="fas fa-times"></i> Cancel Reservation
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let reservationToCancel = null;
+
+        function cancelReservation(reservationId) {
+            reservationToCancel = reservationId;
+            const modal = new bootstrap.Modal(document.getElementById('cancelReservationModal'));
+            modal.show();
+        }
+
+        document.getElementById('confirmCancelBtn').addEventListener('click', function() {
+            if (reservationToCancel) {
+                const reason = document.getElementById('cancellationReason').value;
+                
+                // Show loading state
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cancelling...';
+                this.disabled = true;
+
+                // Submit cancellation
+                fetch('@Url.Action("CancelReservation")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                    },
+                    body: JSON.stringify({
+                        reservationId: reservationToCancel,
+                        reason: reason
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error cancelling reservation: ' + data.message);
+                        this.innerHTML = '<i class="fas fa-times"></i> Cancel Reservation';
+                        this.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while cancelling the reservation.');
+                    this.innerHTML = '<i class="fas fa-times"></i> Cancel Reservation';
+                    this.disabled = false;
+                });
+            }
+        });
+
+        // Auto-submit form on filter change
+        document.getElementById('status').addEventListener('change', function() {
+            this.form.submit();
+        });
+    </script>
+
+    <style>
+        .card {
+            transition: transform 0.2s ease-in-out;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .alert-sm {
+            padding: 0.5rem 0.75rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .position-absolute {
+            z-index: 10;
+        }
+    </style>
+}

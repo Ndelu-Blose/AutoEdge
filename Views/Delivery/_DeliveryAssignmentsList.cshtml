@@ -1,0 +1,179 @@
+@model IEnumerable<AutoEdge.Models.Entities.Delivery>
+
+@if (Model.Any())
+{
+    <div class="row">
+        @foreach (var delivery in Model)
+        {
+            <div class="col-lg-6 col-xl-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">
+                            <i class="fas fa-truck"></i> @delivery.TrackingNumber
+                        </h6>
+                        <span class="badge @GetStatusBadgeClass(delivery.Status)">@delivery.Status</span>
+                    </div>
+                    <div class="card-body">
+                        <!-- Vehicle Information -->
+                        <div class="mb-3">
+                            <h6 class="text-muted mb-1">Vehicle</h6>
+                            <p class="mb-0">
+                                <strong>@delivery.Contract?.Vehicle?.Make @delivery.Contract?.Vehicle?.Model</strong><br>
+                                <small class="text-muted">@delivery.Contract?.Vehicle?.Year • @delivery.VehicleLicensePlate</small>
+                            </p>
+                        </div>
+
+                        <!-- Customer Information -->
+                        <div class="mb-3">
+                            <h6 class="text-muted mb-1">Customer</h6>
+                            <p class="mb-0">
+                                <strong>@delivery.ContactPersonName</strong><br>
+                                <small class="text-muted">
+                                    <i class="fas fa-phone"></i> @delivery.ContactPersonPhone<br>
+                                    <i class="fas fa-envelope"></i> @delivery.ContactPersonEmail
+                                </small>
+                            </p>
+                        </div>
+
+                        <!-- Delivery Details -->
+                        <div class="mb-3">
+                            <h6 class="text-muted mb-1">Delivery Details</h6>
+                            <p class="mb-1">
+                                <strong>Type:</strong> @delivery.DeliveryType<br>
+                                <strong>Scheduled:</strong> @delivery.ScheduledDate.ToString("MMM dd, yyyy HH:mm")<br>
+                                @if (delivery.EstimatedArrival.HasValue)
+                                {
+                                    <strong>ETA:</strong> @delivery.EstimatedArrival?.ToString("MMM dd, yyyy HH:mm")<br>
+                                }
+                                @if (delivery.DeliveryFee > 0)
+                                {
+                                    <strong>Fee:</strong> <span>R</span>@delivery.DeliveryFee.ToString("N2")<br>
+                                }
+                            </p>
+                        </div>
+
+                        <!-- Address -->
+                        <div class="mb-3">
+                            <h6 class="text-muted mb-1">Address</h6>
+                            <p class="mb-0 small">
+                                @delivery.DeliveryAddress<br>
+                                @delivery.City, @delivery.State @delivery.ZipCode
+                            </p>
+                        </div>
+
+                        <!-- Driver Assignment -->
+                        @if (delivery.Driver != null)
+                        {
+                            <div class="mb-3">
+                                <h6 class="text-muted mb-1">Assigned Driver</h6>
+                                <p class="mb-0">
+                                    <strong>@delivery.Driver.FirstName @delivery.Driver.LastName</strong><br>
+                                    <small class="text-muted">
+                                        <i class="fas fa-phone"></i> @delivery.Driver.PhoneNumber
+                                    </small>
+                                </p>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="mb-3">
+                                <span class="badge bg-warning">No Driver Assigned</span>
+                            </div>
+                        }
+
+                        <!-- GPS Tracking (if available) -->
+                        @if (delivery.CurrentLatitude.HasValue && delivery.CurrentLongitude.HasValue)
+                        {
+                            <div class="mb-3">
+                                <h6 class="text-muted mb-1">Current Location</h6>
+                                <p class="mb-0 small">
+                                    <i class="fas fa-map-marker-alt"></i> 
+                                    Lat: @delivery.CurrentLatitude?.ToString("F6"), 
+                                    Lng: @delivery.CurrentLongitude?.ToString("F6")<br>
+                                    <small class="text-muted">
+                                        Last updated: @delivery.LastLocationUpdate?.ToString("MMM dd, HH:mm")
+                                    </small>
+                                </p>
+                            </div>
+                        }
+
+                        <!-- Progress Information -->
+                        @if (delivery.DistanceRemaining.HasValue || delivery.EstimatedMinutesRemaining.HasValue)
+                        {
+                            <div class="mb-3">
+                                <h6 class="text-muted mb-1">Progress</h6>
+                                <p class="mb-0 small">
+                                    @if (delivery.DistanceRemaining.HasValue)
+                                    {
+                                        <i class="fas fa-route"></i> @delivery.DistanceRemaining <span>km left</span><br>
+                                    }
+                                    @if (delivery.EstimatedMinutesRemaining.HasValue)
+                                    {
+                                        <i class="fas fa-clock"></i> @delivery.EstimatedMinutesRemaining <span>minutes ETA</span><br>
+                                    }
+                                </p>
+                            </div>
+                        }
+                    </div>
+                    <div class="card-footer">
+                        <div class="d-flex flex-wrap gap-2">
+                            <!-- Quick Status Updates -->
+                            @if (delivery.Status == "Scheduled")
+                            {
+                                <button class="btn btn-sm btn-warning" onclick="quickStatusUpdate(@delivery.Id, 'InTransit')">
+                                    <i class="fas fa-play"></i> Start Delivery
+                                </button>
+                            }
+                            @if (delivery.Status == "InTransit")
+                            {
+                                <button class="btn btn-sm btn-success" onclick="quickStatusUpdate(@delivery.Id, 'Delivered')">
+                                    <i class="fas fa-check"></i> Mark Delivered
+                                </button>
+                            }
+                            
+                            <!-- More Options -->
+                            <button class="btn btn-sm btn-outline-primary" 
+                                    onclick="showStatusModal(@delivery.Id, '@delivery.TrackingNumber', '@delivery.Contract?.Vehicle?.Make @delivery.Contract?.Vehicle?.Model', '@delivery.Status')">
+                                <i class="fas fa-edit"></i> Update Status
+                            </button>
+                            
+                            <a href="@Url.Action("Track", new { id = delivery.Id })" class="btn btn-sm btn-outline-info">
+                                <i class="fas fa-eye"></i> View Details
+                            </a>
+                            
+                            @if (User.IsInRole("Admin") && delivery.Driver == null)
+                            {
+                                <a href="@Url.Action("AssignDriver", new { id = delivery.Id })" class="btn btn-sm btn-outline-secondary">
+                                    <i class="fas fa-user-plus"></i> Assign Driver
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="text-center py-5">
+        <i class="fas fa-truck fa-3x text-muted mb-3"></i>
+        <h4 class="text-muted">No deliveries found</h4>
+        <p class="text-muted">There are no deliveries matching the current filter.</p>
+    </div>
+}
+
+@functions {
+    private string GetStatusBadgeClass(string status)
+    {
+        return status switch
+        {
+            "Scheduled" => "bg-info",
+            "InTransit" => "bg-warning",
+            "Delivered" => "bg-success",
+            "Failed" => "bg-danger",
+            "Cancelled" => "bg-secondary",
+            _ => "bg-secondary"
+        };
+    }
+}

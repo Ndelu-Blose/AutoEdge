@@ -1,0 +1,224 @@
+@model IEnumerable<AutoEdge.Models.Entities.Contract>
+@{
+    ViewData["Title"] = "Post-Purchase Support";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-headset"></i> Post-Purchase Support</h2>
+        <a href="@Url.Action("Index", "Home")" class="btn btn-outline-secondary">
+            <i class="fas fa-home"></i> Back to Home
+        </a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (Model.Any())
+    {
+        <div class="row">
+            @foreach (var contract in Model)
+            {
+                <div class="col-lg-6 col-xl-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h6 class="mb-0">
+                                <i class="fas fa-car"></i> @contract.Vehicle.Year @contract.Vehicle.Make @contract.Vehicle.Model
+                            </h6>
+                            <small>Contract #@contract.Id • @(contract.SignedDate?.ToString("MMM dd, yyyy") ?? contract.CreatedDate.ToString("MMM dd, yyyy"))</small>
+                        </div>
+                        <div class="card-body">
+                            <!-- Vehicle Details -->
+                            <div class="mb-3">
+                                <h6 class="text-muted mb-1">Vehicle Information</h6>
+                                <p class="mb-0">
+                                    <strong>VIN:</strong> @contract.Vehicle.VIN<br>
+                                    <strong>License:</strong> @contract.Vehicle.LicensePlate<br>
+                                    <strong>Mileage:</strong> @contract.Vehicle.Mileage.ToString("N0") km
+                                </p>
+                            </div>
+
+                            <!-- Contract Details -->
+                            <div class="mb-3">
+                                <h6 class="text-muted mb-1">Purchase Details</h6>
+                                <p class="mb-0">
+                                    <strong>Total:</strong> R@contract.TotalAmount.ToString("N2")<br>
+                                    <strong>Status:</strong> <span class="badge bg-success">@contract.Status</span>
+                                </p>
+                            </div>
+
+                            <!-- Warranty Status -->
+                            <div class="mb-3">
+                                <h6 class="text-muted mb-1">Warranty Status</h6>
+                                @if (contract.Warranties.Any(w => w.IsActive))
+                                {
+                                    var activeWarranties = contract.Warranties.Where(w => w.IsActive).ToList();
+                                    <p class="mb-0">
+                                        <span class="badge bg-success">@activeWarranties.Count Active Warranty(ies)</span><br>
+                                        <small class="text-muted">
+                                            Latest expires: @activeWarranties.Max(w => w.EndDate).ToString("MMM dd, yyyy")
+                                        </small>
+                                    </p>
+                                }
+                                else
+                                {
+                                    <p class="mb-0">
+                                        <span class="badge bg-warning">No Active Warranties</span>
+                                    </p>
+                                }
+                            </div>
+
+                            <!-- Service Reminders -->
+                            <div class="mb-3">
+                                <h6 class="text-muted mb-1">Service Status</h6>
+                                @if (contract.ServiceReminders.Any(s => s.IsActive))
+                                {
+                                    var upcomingServices = contract.ServiceReminders.Where(s => s.IsActive && s.ScheduledDate >= DateTime.Now).ToList();
+                                    @if (upcomingServices.Any())
+                                    {
+                                        <p class="mb-0">
+                                            <span class="badge bg-info">@upcomingServices.Count Upcoming Service(s)</span><br>
+                                            <small class="text-muted">
+                                                Next: @upcomingServices.Min(s => s.ScheduledDate).ToString("MMM dd, yyyy")
+                                            </small>
+                                        </p>
+                                    }
+                                    else
+                                    {
+                                        <p class="mb-0">
+                                            <span class="badge bg-secondary">No Upcoming Services</span>
+                                        </p>
+                                    }
+                                }
+                                else
+                                {
+                                    <p class="mb-0">
+                                        <span class="badge bg-light text-dark">No Services Scheduled</span>
+                                    </p>
+                                }
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="d-flex flex-wrap gap-2">
+                                <!-- Warranty Actions -->
+                                <a href="@Url.Action("ActivateWarranty", new { id = contract.Id })" 
+                                   class="btn btn-sm btn-primary">
+                                    <i class="fas fa-shield-alt"></i> Warranty
+                                </a>
+                                
+                                <!-- Service Reminders -->
+                                <a href="@Url.Action("ServiceReminders", new { id = contract.Id })" 
+                                   class="btn btn-sm btn-info">
+                                    <i class="fas fa-wrench"></i> Service
+                                </a>
+                                
+                                <!-- Manual Delivery -->
+                                <a href="@Url.Action("ManualDelivery", new { id = contract.Id })" 
+                                   class="btn btn-sm btn-warning">
+                                    <i class="fas fa-truck"></i> Delivery
+                                </a>
+                                
+                                <!-- Feedback -->
+                                <a href="@Url.Action("Feedback", new { id = contract.Id })" 
+                                   class="btn btn-sm btn-success">
+                                    <i class="fas fa-star"></i> Feedback
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        
+        <!-- Quick Actions Section -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <h4><i class="fas fa-bolt"></i> Quick Actions</h4>
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <i class="fas fa-file-download fa-2x text-primary mb-2"></i>
+                                <h6>Download Manuals</h6>
+                                <p class="small text-muted">Access vehicle manuals and documentation</p>
+                                <button class="btn btn-sm btn-outline-primary" onclick="downloadManuals()">
+                                    Download
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <i class="fas fa-phone fa-2x text-success mb-2"></i>
+                                <h6>Contact Support</h6>
+                                <p class="small text-muted">Get help from our support team</p>
+                                <a href="tel:+27123456789" class="btn btn-sm btn-outline-success">
+                                    Call Now
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <i class="fas fa-calendar-check fa-2x text-info mb-2"></i>
+                                <h6>Book Service</h6>
+                                <p class="small text-muted">Schedule maintenance or repairs</p>
+                                <button class="btn btn-sm btn-outline-info" onclick="bookService()">
+                                    Book Now
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <i class="fas fa-question-circle fa-2x text-warning mb-2"></i>
+                                <h6>FAQ</h6>
+                                <p class="small text-muted">Find answers to common questions</p>
+                                <button class="btn btn-sm btn-outline-warning" onclick="showFAQ()">
+                                    View FAQ
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <i class="fas fa-car fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">No Completed Purchases Found</h4>
+            <p class="text-muted">You don't have any completed vehicle purchases yet.</p>
+            <a href="@Url.Action("Browse", "Vehicle")" class="btn btn-primary">
+                <i class="fas fa-search"></i> Browse Vehicles
+            </a>
+        </div>
+    }
+</div>
+
+<script>
+function downloadManuals() {
+    alert('Manual download feature will be available soon!');
+}
+
+function bookService() {
+    alert('Service booking feature will be available soon!');
+}
+
+function showFAQ() {
+    alert('FAQ section will be available soon!');
+}
+</script>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,455 @@
+@model AutoEdge.Models.Entities.Vehicle
+
+@{
+    ViewData["Title"] = $"{Model.Year} {Model.Make} {Model.Model}";
+}
+
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">Home</a></li>
+            <li class="breadcrumb-item"><a href="@Url.Action("Index")">Browse Vehicles</a></li>
+            <li class="breadcrumb-item active">@Model.Year @Model.Make @Model.Model</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Vehicle Images -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body p-0">
+                    @if (Model.VehicleImages != null && Model.VehicleImages.Any())
+    {
+        var images = Model.VehicleImages.Select(vi => vi.ImagePath).ToArray();
+                        if (images.Length > 1)
+                        {
+                            <!-- Image Carousel -->
+                            <div id="vehicleCarousel" class="carousel slide" data-bs-ride="carousel">
+                                <div class="carousel-indicators">
+                                    @for (int i = 0; i < images.Length; i++)
+                                    {
+                                        <button type="button" data-bs-target="#vehicleCarousel" data-bs-slide-to="@i" 
+                                                class="@(i == 0 ? "active" : "")" aria-label="Slide @(i + 1)"></button>
+                                    }
+                                </div>
+                                <div class="carousel-inner">
+                                    @for (int i = 0; i < images.Length; i++)
+                                    {
+                                        <div class="carousel-item @(i == 0 ? "active" : "")">
+                                            <img src="@images[i]" class="d-block w-100" alt="@Model.Make @Model.Model" 
+                                                 style="height: 400px; object-fit: cover;" data-bs-toggle="modal" data-bs-target="#imageModal" data-image="@images[i]">
+                                        </div>
+                                    }
+                                </div>
+                                <button class="carousel-control-prev" type="button" data-bs-target="#vehicleCarousel" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon"></span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#vehicleCarousel" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon"></span>
+                                </button>
+                            </div>
+                        }
+                        else
+                        {
+                            <!-- Single Image -->
+                            <img src="@images[0]" class="img-fluid w-100" alt="@Model.Make @Model.Model" 
+                                 style="height: 400px; object-fit: cover;" data-bs-toggle="modal" data-bs-target="#imageModal" data-image="@images[0]">
+                        }
+                    }
+                    else
+                    {
+                        <!-- No Image Placeholder -->
+                        <div class="d-flex align-items-center justify-content-center bg-light" style="height: 400px;">
+                            <div class="text-center">
+                                <i class="fas fa-car fa-5x text-muted mb-3"></i>
+                                <p class="text-muted">No images available</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Vehicle Features -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Features</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0">@(string.IsNullOrEmpty(Model.Features) ? "No features available." : Model.Features)</p>
+                </div>
+            </div>
+
+            <!-- Features -->
+            @if (!string.IsNullOrEmpty(Model.Features))
+            {
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-star me-2"></i>Features</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            @foreach (var feature in Model.Features.Split(',').Where(f => !string.IsNullOrEmpty(f.Trim())))
+                            {
+                                <div class="col-md-6 mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>@feature.Trim()
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Vehicle Details Sidebar -->
+        <div class="col-lg-4">
+            <!-- Price and Status -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body text-center">
+                    <h2 class="text-primary mb-3">@Model.SellingPrice.ToString("C")</h2>
+                    <span class="badge bg-success fs-6 mb-3">@Model.Status</span>
+                    
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <div class="d-grid gap-2">
+                            @if (Model.Status == "Available")
+                            {
+                                <button type="button" class="btn btn-success btn-lg" onclick="buyVehicle(@Model.Id)">
+                                    <i class="fas fa-shopping-cart"></i> Buy Now
+                                </button>
+                            }
+                            <button type="button" class="btn btn-primary btn-lg" onclick="inquireVehicle(@Model.Id)">
+                                <i class="fas fa-question-circle"></i> Send Inquiry
+                            </button>
+                            @if (Model.Status == "Available")
+                            {
+                                <button type="button" class="btn btn-warning" onclick="reserveVehicle(@Model.Id)">
+                                    <i class="fas fa-bookmark"></i> Reserve Vehicle
+                                </button>
+                            }
+                            <button type="button" class="btn btn-outline-secondary" onclick="shareVehicle()">
+                                <i class="fas fa-share"></i> Share
+                            </button>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="d-grid gap-2">
+                            <a href="/Identity/Account/Login" class="btn btn-success btn-lg">
+                                <i class="fas fa-shopping-cart"></i> Login to Buy
+                            </a>
+                            <a href="/Identity/Account/Login" class="btn btn-primary btn-lg">
+                                <i class="fas fa-sign-in-alt"></i> Login to Inquire
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Vehicle Specifications -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>Specifications</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-2">
+                        <div class="col-6"><strong>Year:</strong></div>
+                        <div class="col-6">@Model.Year</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-6"><strong>Make:</strong></div>
+                        <div class="col-6">@Model.Make</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-6"><strong>Model:</strong></div>
+                        <div class="col-6">@Model.Model</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-6"><strong>Mileage:</strong></div>
+                        <div class="col-6">@Model.Mileage.ToString("N0") miles</div>
+                    </div>
+                    <div class="row mb-2">
+                            <div class="col-6"><strong>Engine Type:</strong></div>
+                            <div class="col-6">@(string.IsNullOrEmpty(Model.EngineType) ? "N/A" : Model.EngineType)</div>
+                        </div>
+                    <div class="row mb-2">
+                        <div class="col-6"><strong>Transmission:</strong></div>
+                        <div class="col-6">@(string.IsNullOrEmpty(Model.Transmission) ? "N/A" : Model.Transmission)</div>
+                    </div>
+                    <div class="row mb-2">
+                            <div class="col-6"><strong>Exterior Color:</strong></div>
+                            <div class="col-6">@(string.IsNullOrEmpty(Model.ExteriorColor) ? "N/A" : Model.ExteriorColor)</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-6"><strong>Interior Color:</strong></div>
+                            <div class="col-6">@(string.IsNullOrEmpty(Model.InteriorColor) ? "N/A" : Model.InteriorColor)</div>
+                        </div>
+                    @if (!string.IsNullOrEmpty(Model.VIN))
+                    {
+                        <div class="row mb-2">
+                            <div class="col-6"><strong>VIN:</strong></div>
+                            <div class="col-6"><small>@Model.VIN</small></div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-phone me-2"></i>Contact Us</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2"><i class="fas fa-phone text-primary me-2"></i><strong>Phone:</strong> (555) 123-4567</p>
+                    <p class="mb-2"><i class="fas fa-envelope text-primary me-2"></i><strong>Email:</strong> sales@autoedge.com</p>
+                    <p class="mb-0"><i class="fas fa-map-marker-alt text-primary me-2"></i><strong>Address:</strong> 123 Auto Street, Car City, CC 12345</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Similar Vehicles -->
+    @if (ViewBag.SimilarVehicles != null && ((IEnumerable<AutoEdge.Models.Entities.Vehicle>)ViewBag.SimilarVehicles).Any())
+    {
+        <div class="row mt-5">
+            <div class="col-12">
+                <h3 class="mb-4">Similar Vehicles</h3>
+                <div class="row">
+                    @foreach (var similar in (IEnumerable<AutoEdge.Models.Entities.Vehicle>)ViewBag.SimilarVehicles)
+                    {
+                        <div class="col-lg-3 col-md-6 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                <div class="position-relative">
+                                    @if (similar.VehicleImages != null && similar.VehicleImages.Any())
+                        {
+                            var firstImage = similar.VehicleImages.First().ImagePath;
+                                        <img src="@firstImage" class="card-img-top" alt="@similar.Make @similar.Model" style="height: 150px; object-fit: cover;">
+                                    }
+                                    else
+                                    {
+                                        <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 150px;">
+                                            <i class="fas fa-car fa-2x text-muted"></i>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="card-body">
+                                    <h6 class="card-title">@similar.Year @similar.Make @similar.Model</h6>
+                                    <p class="card-text small text-muted mb-2">
+                                        <i class="fas fa-road me-1"></i>@similar.Mileage.ToString("N0") miles
+                                    </p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="text-primary mb-0">@similar.SellingPrice.ToString("C")</h6>
+                                        <a href="@Url.Action("Details", new { id = similar.Id })" class="btn btn-sm btn-outline-primary">
+                                            View
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Image Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@Model.Year @Model.Make @Model.Model</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0">
+                <img id="modalImage" src="" class="img-fluid w-100" alt="Vehicle Image">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Inquiry Modal -->
+<div class="modal fade" id="inquiryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Inquire About @Model.Year @Model.Make @Model.Model</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="inquiryForm">
+                    <input type="hidden" id="inquiryVehicleId" name="vehicleId" value="@Model.Id">
+                    <div class="mb-3">
+                        <label for="inquiryMessage" class="form-label">Your Message</label>
+                        <textarea class="form-control" id="inquiryMessage" name="message" rows="4" 
+                                  placeholder="I'm interested in this @Model.Year @Model.Make @Model.Model. Please provide more information about..."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Our sales team will respond to your inquiry within 24 hours.
+                        </small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitInquiry()">
+                    <i class="fas fa-paper-plane"></i> Send Inquiry
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Share Modal -->
+<div class="modal fade" id="shareModal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Share Vehicle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-primary" onclick="shareOnFacebook()">
+                        <i class="fab fa-facebook-f me-2"></i>Facebook
+                    </button>
+                    <button type="button" class="btn btn-info" onclick="shareOnTwitter()">
+                        <i class="fab fa-twitter me-2"></i>Twitter
+                    </button>
+                    <button type="button" class="btn btn-success" onclick="shareOnWhatsApp()">
+                        <i class="fab fa-whatsapp me-2"></i>WhatsApp
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="copyLink()">
+                        <i class="fas fa-link me-2"></i>Copy Link
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Image modal functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const imageModal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            
+            imageModal.addEventListener('show.bs.modal', function(event) {
+                const trigger = event.relatedTarget;
+                const imageSrc = trigger.getAttribute('data-image');
+                modalImage.src = imageSrc;
+            });
+        });
+
+        function inquireVehicle(vehicleId) {
+            new bootstrap.Modal(document.getElementById('inquiryModal')).show();
+        }
+
+        function submitInquiry() {
+            const vehicleId = document.getElementById('inquiryVehicleId').value;
+            const message = document.getElementById('inquiryMessage').value;
+
+            if (!message.trim()) {
+                alert('Please enter a message.');
+                return;
+            }
+
+            fetch('@Url.Action("Inquire")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                },
+                body: `vehicleId=${vehicleId}&message=${encodeURIComponent(message)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('inquiryModal')).hide();
+                    alert(data.message);
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            });
+        }
+
+        function reserveVehicle(vehicleId) {
+            if (confirm('Are you sure you want to reserve this vehicle? This will hold it for 7 days.')) {
+                fetch('@Url.Action("Reserve")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                    },
+                    body: `vehicleId=${vehicleId}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    if (data.success) {
+                        location.reload();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred. Please try again.');
+                });
+            }
+        }
+
+        function buyVehicle(vehicleId) {
+            if (confirm('Are you sure you want to start the purchase process for this vehicle?')) {
+                // Redirect to purchase controller
+                window.location.href = '@Url.Action("InitiatePurchase", "Purchase")' + '?vehicleId=' + vehicleId;
+            }
+        }
+
+        function shareVehicle() {
+            new bootstrap.Modal(document.getElementById('shareModal')).show();
+        }
+
+        function shareOnFacebook() {
+            const url = encodeURIComponent(window.location.href);
+            const title = encodeURIComponent('@Model.Year @Model.Make @Model.Model');
+            window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank', 'width=600,height=400');
+        }
+
+        function shareOnTwitter() {
+            const url = encodeURIComponent(window.location.href);
+            const text = encodeURIComponent('Check out this @Model.Year @Model.Make @Model.Model for @Model.SellingPrice.ToString("C")');
+            window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank', 'width=600,height=400');
+        }
+
+        function shareOnWhatsApp() {
+            const url = encodeURIComponent(window.location.href);
+            const text = encodeURIComponent('Check out this @Model.Year @Model.Make @Model.Model for @Model.SellingPrice.ToString("C")');
+            window.open(`https://wa.me/?text=${text} ${url}`, '_blank');
+        }
+
+        function copyLink() {
+            navigator.clipboard.writeText(window.location.href).then(function() {
+                alert('Link copied to clipboard!');
+                bootstrap.Modal.getInstance(document.getElementById('shareModal')).hide();
+            }, function() {
+                alert('Failed to copy link. Please copy manually: ' + window.location.href);
+            });
+        }
+    </script>
+
+    <style>
+        .carousel-item img {
+            cursor: pointer;
+        }
+        
+        .carousel-item img:hover {
+            opacity: 0.9;
+        }
+    </style>
+}

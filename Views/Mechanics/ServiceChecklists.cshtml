@@ -1,0 +1,90 @@
+@model IEnumerable<AutoEdge.Models.Entities.ServiceChecklist>
+@using AutoEdge.Models.Entities
+@{
+    ViewData["Title"] = "My Service Checklists";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-clipboard-list me-2"></i>My Service Checklists</h2>
+                <a href="/Mechanics/Dashboard" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+
+            @if (Model != null && Model.Any())
+            {
+                <div class="row">
+                    @foreach (var checklist in Model)
+                    {
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card h-100 @(checklist.IsCompleted ? "border-success" : "border-warning")">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-wrench me-2"></i>@checklist.ServiceType
+                                    </h6>
+                                    <span class="badge @(checklist.IsCompleted ? "bg-success" : "bg-warning")">
+                                        @(checklist.IsCompleted ? "Completed" : "In Progress")
+                                    </span>
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title">@checklist.ServiceJob.ServiceBooking.Make @checklist.ServiceJob.ServiceBooking.Model</h5>
+                                    <p class="card-text">
+                                        <strong>Customer:</strong> @checklist.ServiceJob.ServiceBooking.CustomerName<br/>
+                                        <strong>Reference:</strong> <code>@checklist.ServiceJob.ServiceBooking.Reference</code><br/>
+                                        <strong>Started:</strong> @checklist.StartedAt.ToString("MMM dd, yyyy HH:mm")<br/>
+                                        @if (checklist.CompletedAt.HasValue)
+                                        {
+                                            <strong>Completed:</strong> @checklist.CompletedAt.Value.ToString("MMM dd, yyyy HH:mm")<br/>
+                                        }
+                                        <strong>Items:</strong> @checklist.Items.Count(i => i.IsCompleted)/@checklist.Items.Count completed<br/>
+                                        <strong>Photos:</strong> @checklist.Photos.Count photos
+                                    </p>
+                                    
+                                    @if (!string.IsNullOrEmpty(checklist.Notes))
+                                    {
+                                        <div class="alert alert-info mb-3">
+                                            <strong>Notes:</strong> @checklist.Notes
+                                        </div>
+                                    }
+                                </div>
+                                <div class="card-footer">
+                                    <div class="d-flex justify-content-between">
+                                        <a href="/Mechanics/ServiceChecklist/@checklist.Id" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-eye me-1"></i>View Details
+                                        </a>
+                                        @if (!checklist.IsCompleted)
+                                        {
+                                            <span class="text-muted">
+                                                <i class="fas fa-clock me-1"></i>In Progress
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-success">
+                                                <i class="fas fa-check me-1"></i>Completed
+                                            </span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">No Service Checklists Found</h4>
+                    <p class="text-muted">You haven't created any service checklists yet.</p>
+                    <a href="/Mechanics/Dashboard" class="btn btn-primary">
+                        <i class="fas fa-arrow-left me-2"></i>Go to Dashboard
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>

@@ -1,0 +1,300 @@
+@model AutoEdge.Models.Entities.ServiceBooking
+@{
+    ViewData["Title"] = "Booking Details";
+    var mechanics = ViewBag.Mechanics as List<AutoEdge.Models.Entities.Mechanic>;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Booking Details</h2>
+    <a href="@Url.Action("Bookings", "Admin")" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Bookings
+    </a>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <!-- Booking Information -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Booking Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">Reference:</dt>
+                            <dd class="col-sm-8"><strong>@Model.Reference</strong></dd>
+                            
+                            <dt class="col-sm-4">Status:</dt>
+                            <dd class="col-sm-8">
+                                @switch (Model.Status)
+                                {
+                                    case AutoEdge.Models.Entities.ServiceBookingStatus.Pending:
+                                        <span class="badge bg-warning">Pending</span>
+                                        break;
+                                    case AutoEdge.Models.Entities.ServiceBookingStatus.Confirmed:
+                                        <span class="badge bg-success">Confirmed</span>
+                                        break;
+                                    case AutoEdge.Models.Entities.ServiceBookingStatus.Waitlisted:
+                                        <span class="badge bg-info">Waitlisted</span>
+                                        break;
+                                    case AutoEdge.Models.Entities.ServiceBookingStatus.Canceled:
+                                        <span class="badge bg-danger">Canceled</span>
+                                        break;
+                                    case AutoEdge.Models.Entities.ServiceBookingStatus.Completed:
+                                        <span class="badge bg-primary">Completed</span>
+                                        break;
+                                    default:
+                                        <span class="badge bg-secondary">@Model.Status</span>
+                                        break;
+                                }
+                                @if (Model.IsCheckedIn)
+                                {
+                                    <br><small class="text-success">✓ Checked In at @Model.CheckedInDate?.ToString("yyyy-MM-dd HH:mm")</small>
+                                }
+                            </dd>
+                            
+                            <dt class="col-sm-4">Service Type:</dt>
+                            <dd class="col-sm-8"><span class="badge bg-secondary">@Model.ServiceType</span></dd>
+                            
+                            <dt class="col-sm-4">Scheduled:</dt>
+                            <dd class="col-sm-8">
+                                <strong>@Model.PreferredDate.ToString("MMM dd, yyyy")</strong><br>
+                                <small class="text-muted">@Model.PreferredStart.ToString("HH:mm")</small>
+                            </dd>
+                            
+                            <dt class="col-sm-4">Duration:</dt>
+                            <dd class="col-sm-8">@Model.EstimatedDurationMin minutes</dd>
+                            
+                            <dt class="col-sm-4">Cost:</dt>
+                            <dd class="col-sm-8"><strong>R @Model.EstimatedCost.ToString("F2")</strong></dd>
+                        </dl>
+                    </div>
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">Delivery:</dt>
+                            <dd class="col-sm-8"><span class="badge bg-info">@Model.DeliveryMethod</span></dd>
+                            
+                            <dt class="col-sm-4">Created:</dt>
+                            <dd class="col-sm-8">@Model.CreatedAtUtc.ToString("MMM dd, yyyy HH:mm")</dd>
+                            
+                            <dt class="col-sm-4">Created By:</dt>
+                            <dd class="col-sm-8">@Model.CreatedBy</dd>
+                            
+                            @if (!string.IsNullOrEmpty(Model.QRCode))
+                            {
+                                <dt class="col-sm-4">QR Code:</dt>
+                                <dd class="col-sm-8"><span class="text-success">✓ Generated</span></dd>
+                            }
+                        </dl>
+                    </div>
+                </div>
+                
+                @if (!string.IsNullOrEmpty(Model.Notes))
+                {
+                    <div class="mt-3">
+                        <h6>Notes:</h6>
+                        <p class="text-muted">@Model.Notes</p>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Customer Information -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Customer Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">Name:</dt>
+                            <dd class="col-sm-8"><strong>@Model.CustomerName</strong></dd>
+                            
+                            <dt class="col-sm-4">Email:</dt>
+                            <dd class="col-sm-8">@Model.CustomerEmail</dd>
+                            
+                            <dt class="col-sm-4">Phone:</dt>
+                            <dd class="col-sm-8">@(Model.CustomerPhone ?? "Not provided")</dd>
+                        </dl>
+                    </div>
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">Customer ID:</dt>
+                            <dd class="col-sm-8">@(Model.CustomerId ?? "Guest")</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vehicle Information -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Vehicle Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">Make:</dt>
+                            <dd class="col-sm-8"><strong>@Model.Make</strong></dd>
+                            
+                            <dt class="col-sm-4">Model:</dt>
+                            <dd class="col-sm-8"><strong>@Model.Model</strong></dd>
+                            
+                            <dt class="col-sm-4">Year:</dt>
+                            <dd class="col-sm-8"><strong>@Model.Year</strong></dd>
+                        </dl>
+                    </div>
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">VIN:</dt>
+                            <dd class="col-sm-8">@(Model.VIN ?? "Not provided")</dd>
+                            
+                            <dt class="col-sm-4">Mileage:</dt>
+                            <dd class="col-sm-8">@(Model.Mileage?.ToString("N0") ?? "Not provided") km</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <!-- Assignment Management -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Technician Assignment</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.ServiceJob?.Mechanic != null)
+                {
+                    <div class="mb-3">
+                        <h6>Currently Assigned:</h6>
+                        <div class="alert alert-info">
+                            <strong>@Model.ServiceJob.Mechanic.Name</strong><br>
+                            <small>Rating: @Model.ServiceJob.Mechanic.Rating ⭐</small><br>
+                            <small>Skills: @string.Join(", ", Model.ServiceJob.Mechanic.Skills)</small>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-warning">
+                        <strong>No technician assigned</strong>
+                    </div>
+                }
+
+                @if (Model.Status != AutoEdge.Models.Entities.ServiceBookingStatus.Completed)
+                {
+                    <form asp-action="ReassignBooking" method="post">
+                        <input type="hidden" name="bookingId" value="@Model.Id" />
+                        <div class="mb-3">
+                            <label for="mechanicId" class="form-label">Reassign to:</label>
+                            <select name="mechanicId" id="mechanicId" class="form-select" required>
+                                <option value="">Select a technician...</option>
+                                @if (mechanics != null)
+                                {
+                                    @foreach (var mechanic in mechanics)
+                                    {
+                                        var isSelected = Model.ServiceJob?.MechanicId == mechanic.Id;
+                                        <option value="@mechanic.Id" selected="@isSelected">
+                                            @mechanic.Name (⭐ @mechanic.Rating) - @string.Join(", ", mechanic.Skills)
+                                        </option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-warning btn-sm">
+                            <i class="fas fa-exchange-alt me-2"></i>Reassign Technician
+                        </button>
+                    </form>
+                }
+            </div>
+        </div>
+
+        <!-- Status Management -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Status Management</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.Status != AutoEdge.Models.Entities.ServiceBookingStatus.Completed)
+                {
+                    <form asp-action="UpdateBookingStatus" method="post">
+                        <input type="hidden" name="bookingId" value="@Model.Id" />
+                        <div class="mb-3">
+                            <label for="status" class="form-label">Update Status:</label>
+                            <select name="status" id="status" class="form-select">
+                                @{
+                                    var pendingStatus = (int)AutoEdge.Models.Entities.ServiceBookingStatus.Pending;
+                                    var confirmedStatus = (int)AutoEdge.Models.Entities.ServiceBookingStatus.Confirmed;
+                                    var waitlistedStatus = (int)AutoEdge.Models.Entities.ServiceBookingStatus.Waitlisted;
+                                    var canceledStatus = (int)AutoEdge.Models.Entities.ServiceBookingStatus.Canceled;
+                                    var completedStatus = (int)AutoEdge.Models.Entities.ServiceBookingStatus.Completed;
+                                    var currentStatus = (int)Model.Status;
+                                }
+                                <option value="@pendingStatus" selected="@(currentStatus == pendingStatus)">Pending</option>
+                                <option value="@confirmedStatus" selected="@(currentStatus == confirmedStatus)">Confirmed</option>
+                                <option value="@waitlistedStatus" selected="@(currentStatus == waitlistedStatus)">Waitlisted</option>
+                                <option value="@canceledStatus" selected="@(currentStatus == canceledStatus)">Canceled</option>
+                                <option value="@completedStatus" selected="@(currentStatus == completedStatus)">Completed</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="fas fa-save me-2"></i>Update Status
+                        </button>
+                    </form>
+                }
+                else
+                {
+                    <div class="alert alert-success">
+                        <strong>Service Completed</strong><br>
+                        This booking has been marked as completed.
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="mailto:@Model.CustomerEmail" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-envelope me-2"></i>Email Customer
+                    </a>
+                    @if (!string.IsNullOrEmpty(Model.CustomerPhone))
+                    {
+                        <a href="tel:@Model.CustomerPhone" class="btn btn-outline-success btn-sm">
+                            <i class="fas fa-phone me-2"></i>Call Customer
+                        </a>
+                    }
+                    <a href="@Url.Action("Bookings", "Admin")" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-list me-2"></i>View All Bookings
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

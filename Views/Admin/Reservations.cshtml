@@ -1,0 +1,200 @@
+@model IEnumerable<AutoEdge.Models.Entities.Reservation>
+@{
+    ViewData["Title"] = "Manage Reservations";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-bookmark me-2"></i>Manage Customer Reservations</h2>
+                <div class="d-flex gap-2">
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-filter me-1"></i>Filter by Status: @ViewBag.CurrentStatus
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="@Url.Action("Reservations", new { status = "All" })">All</a></li>
+                            <li><a class="dropdown-item" href="@Url.Action("Reservations", new { status = "Active" })">Active</a></li>
+                            <li><a class="dropdown-item" href="@Url.Action("Reservations", new { status = "Confirmed" })">Confirmed</a></li>
+                            <li><a class="dropdown-item" href="@Url.Action("Reservations", new { status = "Expired" })">Expired</a></li>
+                            <li><a class="dropdown-item" href="@Url.Action("Reservations", new { status = "Cancelled" })">Cancelled</a></li>
+                            <li><a class="dropdown-item" href="@Url.Action("Reservations", new { status = "Completed" })">Completed</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>Reservations List
+                        <span class="badge bg-light text-dark ms-2">@ViewBag.TotalReservations Total</span>
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Reservation #</th>
+                                        <th>Customer</th>
+                                        <th>Vehicle</th>
+                                        <th>Deposit</th>
+                                        <th>Status</th>
+                                        <th>Expiry Date</th>
+                                        <th>Created Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var reservation in Model)
+                                    {
+                                        <tr class="@(reservation.ExpiryDate < DateTime.UtcNow && reservation.Status == "Active" ? "table-warning" : "")">
+                                            <td><strong>@reservation.ReservationNumber</strong></td>
+                                            <td>
+                                                <div>
+                                                    <strong>@reservation.Customer.User.FirstName @reservation.Customer.User.LastName</strong>
+                                                    <br>
+                                                    <small class="text-muted">@reservation.Customer.User.Email</small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <strong>@reservation.Vehicle.Year @reservation.Vehicle.Make @reservation.Vehicle.Model</strong>
+                                                    <br>
+                                                    <small class="text-muted">@reservation.Vehicle.SellingPrice.ToString("C")</small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <strong>@reservation.DepositAmount.ToString("C")</strong>
+                                                @if (reservation.RefundAmount.HasValue && reservation.RefundAmount > 0)
+                                                {
+                                                    <br>
+                                                    <small class="text-danger">Refund: @reservation.RefundAmount.Value.ToString("C")</small>
+                                                }
+                                            </td>
+                                            <td>
+                                                @switch (reservation.Status)
+                                                {
+                                                    case "Active":
+                                                        @if (reservation.ExpiryDate < DateTime.UtcNow)
+                                                        {
+                                                            <span class="badge bg-warning">Expired</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="badge bg-success">@reservation.Status</span>
+                                                        }
+                                                        break;
+                                                    case "Confirmed":
+                                                        <span class="badge bg-primary">@reservation.Status</span>
+                                                        break;
+                                                    case "Expired":
+                                                        <span class="badge bg-warning">@reservation.Status</span>
+                                                        break;
+                                                    case "Cancelled":
+                                                        <span class="badge bg-danger">@reservation.Status</span>
+                                                        break;
+                                                    case "Completed":
+                                                        <span class="badge bg-success">@reservation.Status</span>
+                                                        break;
+                                                    default:
+                                                        <span class="badge bg-light text-dark">@reservation.Status</span>
+                                                        break;
+                                                }
+                                            </td>
+                                            <td>
+                                                <small>@reservation.ExpiryDate.ToString("MMM dd, yyyy")</small>
+                                                <br>
+                                                @if (reservation.ExpiryDate < DateTime.UtcNow && reservation.Status == "Active")
+                                                {
+                                                    <small class="text-danger">Expired</small>
+                                                }
+                                                else
+                                                {
+                                                    <small class="text-muted">@((reservation.ExpiryDate - DateTime.UtcNow).Days) days left</small>
+                                                }
+                                            </td>
+                                            <td>
+                                                <small>@reservation.CreatedDate.ToString("MMM dd, yyyy")</small>
+                                                <br>
+                                                <small class="text-muted">@reservation.CreatedDate.ToString("HH:mm")</small>
+                                            </td>
+                                            <td>
+                                                <a href="@Url.Action("ReservationDetails", new { id = reservation.Id })" 
+                                                   class="btn btn-sm btn-outline-primary" title="View Details">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        @if (ViewBag.TotalPages > 1)
+                        {
+                            <div class="card-footer">
+                                <nav aria-label="Reservations pagination">
+                                    <ul class="pagination justify-content-center mb-0">
+                                        @if (ViewBag.CurrentPage > 1)
+                                        {
+                                            <li class="page-item">
+                                                <a class="page-link" href="@Url.Action("Reservations", new { status = ViewBag.CurrentStatus, page = ViewBag.CurrentPage - 1 })">
+                                                    <i class="fas fa-chevron-left"></i>
+                                                </a>
+                                            </li>
+                                        }
+
+                                        @for (int i = Math.Max(1, ViewBag.CurrentPage - 2); i <= Math.Min(ViewBag.TotalPages, ViewBag.CurrentPage + 2); i++)
+                                        {
+                                            <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                                                <a class="page-link" href="@Url.Action("Reservations", new { status = ViewBag.CurrentStatus, page = i })">@i</a>
+                                            </li>
+                                        }
+
+                                        @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                                        {
+                                            <li class="page-item">
+                                                <a class="page-link" href="@Url.Action("Reservations", new { status = ViewBag.CurrentStatus, page = ViewBag.CurrentPage + 1 })">
+                                                    <i class="fas fa-chevron-right"></i>
+                                                </a>
+                                            </li>
+                                        }
+                                    </ul>
+                                </nav>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-bookmark fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No reservations found</h5>
+                            <p class="text-muted">@(ViewBag.CurrentStatus == "All" ? "There are no customer reservations yet." : $"No reservations with status '{ViewBag.CurrentStatus}' found.")</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.table-warning {
+    --bs-table-bg: #fff3cd;
+}
+</style>

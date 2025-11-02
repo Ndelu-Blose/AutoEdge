@@ -1,0 +1,364 @@
+@model AutoEdge.Models.Entities.VehiclePickup
+@{
+    ViewData["Title"] = "Pickup Details";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0">
+                        <i class="fas fa-truck"></i> Pickup Details #@Model.VehiclePickupId
+                    </h3>
+                    @{
+                        var statusClass = Model.PickupStatus switch
+                        {
+                            "Scheduled" => "bg-primary",
+                            "EnRoute" => "bg-info",
+                            "Collected" => "bg-success",
+                            "InService" => "bg-warning",
+                            "Completed" => "bg-success",
+                            "Delivered" => "bg-success",
+                            "Failed" => "bg-danger",
+                            _ => "bg-secondary"
+                        };
+                    }
+                    <span class="badge @statusClass fs-6">@Model.PickupStatus</span>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-car text-primary"></i> Vehicle Information</h5>
+                            @if (Model.ServiceBooking != null)
+                            {
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td><strong>Make:</strong></td>
+                                        <td>@Model.ServiceBooking.Make</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Model:</strong></td>
+                                        <td>@Model.ServiceBooking.Model</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Year:</strong></td>
+                                        <td>@Model.ServiceBooking.Year</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>VIN:</strong></td>
+                                        <td>@Model.ServiceBooking.VIN</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Service Type:</strong></td>
+                                        <td>@Model.ServiceBooking.ServiceType</td>
+                                    </tr>
+                                </table>
+                            }
+                        </div>
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-user text-success"></i> Customer Information</h5>
+                            @if (Model.ServiceBooking != null)
+                            {
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td><strong>Name:</strong></td>
+                                        <td>@Model.ServiceBooking.CustomerName</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Email:</strong></td>
+                                        <td>@Model.ServiceBooking.CustomerEmail</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Phone:</strong></td>
+                                        <td>@Model.ServiceBooking.CustomerPhone</td>
+                                    </tr>
+                                </table>
+                            }
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-map-marker-alt text-danger"></i> Pickup Information</h5>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><strong>Location:</strong></td>
+                                    <td>@Model.PickupLocation</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Date:</strong></td>
+                                    <td>@Model.PickupDate.ToString("MMMM dd, yyyy")</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Time:</strong></td>
+                                    <td>@Model.PickupTime.ToString(@"hh\:mm")</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Created:</strong></td>
+                                    <td>@Model.CreatedAt.ToString("MMMM dd, yyyy 'at' h:mm tt")</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-user-tie text-info"></i> Driver Information</h5>
+                            @if (Model.Driver != null)
+                            {
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td><strong>Name:</strong></td>
+                                        <td>@Model.Driver.Name</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Phone:</strong></td>
+                                        <td>@Model.Driver.Phone</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Vehicle:</strong></td>
+                                        <td>@Model.Driver.VehicleRegistration</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Rating:</strong></td>
+                                        <td>
+                                            @for (int i = 1; i <= 5; i++)
+                                            {
+                                                if (i <= Model.Driver.Rating)
+                                                {
+                                                    <i class="fas fa-star text-warning"></i>
+                                                }
+                                                else
+                                                {
+                                                    <i class="far fa-star text-muted"></i>
+                                                }
+                                            }
+                                            <span class="ms-1">(@Model.Driver.Rating.ToString("F1"))</span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            }
+                            else
+                            {
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    No driver assigned yet
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    
+                    @if (!string.IsNullOrEmpty(Model.ServiceBooking?.Notes))
+                    {
+                        <hr>
+                        <h5><i class="fas fa-sticky-note text-warning"></i> Service Notes</h5>
+                        <div class="alert alert-info">
+                            @Model.ServiceBooking.Notes
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <!-- Timeline -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history"></i> Status Timeline
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="timeline-item @(Model.PickupStatus == "Scheduled" ? "active" : "")">
+                            <div class="timeline-marker bg-primary"></div>
+                            <div class="timeline-content">
+                                <h6>Scheduled</h6>
+                                <small class="text-muted">Pickup request created</small>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item @(Model.PickupStatus == "EnRoute" ? "active" : "")">
+                            <div class="timeline-marker bg-info"></div>
+                            <div class="timeline-content">
+                                <h6>En Route</h6>
+                                <small class="text-muted">Driver on the way</small>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item @(Model.PickupStatus == "Collected" ? "active" : "")">
+                            <div class="timeline-marker bg-success"></div>
+                            <div class="timeline-content">
+                                <h6>Collected</h6>
+                                <small class="text-muted">Vehicle picked up</small>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item @(Model.PickupStatus == "InService" ? "active" : "")">
+                            <div class="timeline-marker bg-warning"></div>
+                            <div class="timeline-content">
+                                <h6>In Service</h6>
+                                <small class="text-muted">At service center</small>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item @(Model.PickupStatus == "Completed" ? "active" : "")">
+                            <div class="timeline-marker bg-success"></div>
+                            <div class="timeline-content">
+                                <h6>Completed</h6>
+                                <small class="text-muted">Service finished</small>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item @(Model.PickupStatus == "Delivered" ? "active" : "")">
+                            <div class="timeline-marker bg-success"></div>
+                            <div class="timeline-content">
+                                <h6>Delivered</h6>
+                                <small class="text-muted">Vehicle returned</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Actions -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-cogs"></i> Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        @if (User.IsInRole("Administrator") || User.IsInRole("ServiceManager"))
+                        {
+                            @if (Model.Driver == null)
+                            {
+                                <a asp-action="AssignDriver" asp-route-id="@Model.VehiclePickupId" 
+                                   class="btn btn-primary">
+                                    <i class="fas fa-user-plus"></i> Assign Driver
+                                </a>
+                            }
+                        }
+                        
+                        @if (User.IsInRole("Driver"))
+                        {
+                            @if (Model.PickupStatus == "Scheduled" || Model.PickupStatus == "Assigned")
+                            {
+                                <button type="button" class="btn btn-success" 
+                                        onclick="updateStatus(@Model.VehiclePickupId, 'EnRoute')">
+                                    <i class="fas fa-play"></i> Start Pickup
+                                </button>
+                            }
+                            
+                            @if (Model.PickupStatus == "EnRoute")
+                            {
+                                <button type="button" class="btn btn-warning" 
+                                        onclick="updateStatus(@Model.VehiclePickupId, 'Collected')">
+                                    <i class="fas fa-check-circle"></i> Mark Collected
+                                </button>
+                            }
+                            
+                            @if (Model.PickupStatus == "Collected" || Model.PickupStatus == "InService")
+                            {
+                                <a href="@Url.Action("PhotoUpload", "PickupDropoff", new { id = Model.VehiclePickupId })" 
+                                   class="btn btn-info">
+                                    <i class="fas fa-camera"></i> Upload Photos
+                                </a>
+                            }
+                            
+                            @if (Model.ServiceBooking != null && !string.IsNullOrEmpty(Model.ServiceBooking.CustomerPhone))
+                            {
+                                <a href="tel:@Model.ServiceBooking.CustomerPhone" 
+                                   class="btn btn-secondary">
+                                    <i class="fas fa-phone"></i> Call Customer
+                                </a>
+                            }
+                            
+                            @if (Model.PickupStatus == "Collected")
+                            {
+                                <button type="button" class="btn btn-primary" 
+                                        onclick="updateStatus(@Model.VehiclePickupId, 'Completed')">
+                                    <i class="fas fa-check-double"></i> Complete Pickup
+                                </button>
+                            }
+                        }
+                        
+                        @if (User.IsInRole("Driver"))
+                        {
+                            <a asp-controller="Driver" asp-action="Dashboard" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to Dashboard
+                            </a>
+                        }
+                        else
+                        {
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to List
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.timeline-item.active .timeline-marker {
+    box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.25);
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -25px;
+    top: 5px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+}
+
+.timeline-content h6 {
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+</style>
+
+@section Scripts {
+    <script>
+        function updateStatus(pickupId, status) {
+            if (confirm(`Update status to ${status}?`)) {
+                fetch('/PickupDropoff/UpdateStatus', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: `id=${pickupId}&status=${status}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error updating status: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while updating status');
+                });
+            }
+        }
+    </script>
+}

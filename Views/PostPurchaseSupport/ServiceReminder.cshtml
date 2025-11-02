@@ -1,0 +1,390 @@
+@model AutoEdge.Models.ViewModels.ServiceReminderViewModel
+@{
+    ViewData["Title"] = "Service Reminders";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-wrench"></i> Service Reminders</h2>
+        <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Support
+        </a>
+    </div>
+
+    <!-- Vehicle Information Card -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-car"></i> Vehicle Information</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <p><strong>Vehicle:</strong> @Model.VehicleInfo</p>
+                </div>
+                <div class="col-md-3">
+                    <p><strong>VIN:</strong> @Model.VIN</p>
+                </div>
+                <div class="col-md-3">
+                    <p><strong>Current Mileage:</strong> @Model.CurrentMileage.ToString("N0") km</p>
+                </div>
+                <div class="col-md-3">
+                    <p><strong>Purchase Date:</strong> @Model.PurchaseDate.ToString("MMM dd, yyyy")</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Current Service Status -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <h6 class="mb-0"><i class="fas fa-check-circle"></i> Last Service</h6>
+                </div>
+                <div class="card-body">
+                    @if (Model.LastServiceDate.HasValue)
+                    {
+                        <p><strong>Date:</strong> @Model.LastServiceDate.Value.ToString("MMM dd, yyyy")</p>
+                        <p><strong>Mileage:</strong> @Model.LastServiceMileage.ToString("N0") km</p>
+                        <p><strong>Type:</strong> @Model.LastServiceType</p>
+                    }
+                    else
+                    {
+                        <p class="text-muted">No service history recorded</p>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="mb-0"><i class="fas fa-calendar-check"></i> Next Service Due</h6>
+                </div>
+                <div class="card-body">
+                    @if (Model.NextServiceDue.HasValue)
+                    {
+                        <p><strong>Date:</strong> @Model.NextServiceDue.Value.ToString("MMM dd, yyyy")</p>
+                        <p><strong>Mileage:</strong> @Model.NextServiceMileage.ToString("N0") km</p>
+                        <p><strong>Type:</strong> @Model.NextServiceType</p>
+                        @if (Model.NextServiceDue.Value <= DateTime.Now.AddDays(30))
+                        {
+                            <div class="alert alert-warning mt-2 mb-0">
+                                <small><i class="fas fa-exclamation-triangle"></i> Service due soon!</small>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted">Service schedule will be calculated</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Reminders -->
+    @if (Model.ActiveReminders != null && Model.ActiveReminders.Any())
+    {
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-bell"></i> Active Reminders</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Service Type</th>
+                                <th>Due Date</th>
+                                <th>Due Mileage</th>
+                                <th>Reminder Method</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var reminder in Model.ActiveReminders)
+                            {
+                                <tr>
+                                    <td>@reminder.ServiceType</td>
+                                    <td>@reminder.DueDate.ToString("MMM dd, yyyy")</td>
+                                    <td>@reminder.DueMileage.ToString("N0") km</td>
+                                    <td>
+                                        @if (reminder.EmailReminder) { <span class="badge bg-primary me-1">Email</span> }
+                                        @if (reminder.SmsReminder) { <span class="badge bg-success me-1">SMS</span> }
+                                        @if (reminder.AppNotification) { <span class="badge bg-info">App</span> }
+                                    </td>
+                                    <td>
+                                        @if (reminder.DueDate <= DateTime.Now.AddDays(7))
+                                        {
+                                            <span class="badge bg-danger">Overdue</span>
+                                        }
+                                        else if (reminder.DueDate <= DateTime.Now.AddDays(30))
+                                        {
+                                            <span class="badge bg-warning">Due Soon</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success">Active</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="editReminder(@reminder.Id)">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteReminder(@reminder.Id)">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Create New Reminder -->
+    <div class="card">
+        <div class="card-header bg-warning text-dark">
+            <h5 class="mb-0"><i class="fas fa-plus"></i> Create Service Reminder</h5>
+        </div>
+        <div class="card-body">
+            <form asp-action="ServiceReminder" method="post">
+                <input asp-for="ContractId" type="hidden" />
+                <input asp-for="VehicleInfo" type="hidden" />
+                <input asp-for="VIN" type="hidden" />
+                <input asp-for="CurrentMileage" type="hidden" />
+                <input asp-for="PurchaseDate" type="hidden" />
+
+                <!-- Service Type Selection -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="ServiceType" class="form-label">Service Type</label>
+                        <select asp-for="ServiceType" class="form-select" id="serviceTypeSelect" required>
+                            <option value="">Select service type...</option>
+                            <option value="Oil Change">Oil Change</option>
+                            <option value="Tire Rotation">Tire Rotation</option>
+                            <option value="Brake Inspection">Brake Inspection</option>
+                            <option value="Engine Tune-up">Engine Tune-up</option>
+                            <option value="Transmission Service">Transmission Service</option>
+                            <option value="Air Filter Replacement">Air Filter Replacement</option>
+                            <option value="Battery Check">Battery Check</option>
+                            <option value="Coolant Flush">Coolant Flush</option>
+                            <option value="Spark Plug Replacement">Spark Plug Replacement</option>
+                            <option value="Annual Inspection">Annual Inspection</option>
+                            <option value="Custom Service">Custom Service</option>
+                        </select>
+                        <span asp-validation-for="ServiceType" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6" id="customServiceDiv" style="display: none;">
+                        <label asp-for="CustomServiceDescription" class="form-label">Custom Service Description</label>
+                        <input asp-for="CustomServiceDescription" class="form-control" 
+                               placeholder="Describe the custom service" />
+                        <span asp-validation-for="CustomServiceDescription" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <!-- Reminder Criteria -->
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label asp-for="ReminderDate" class="form-label">Reminder Date</label>
+                        <input asp-for="ReminderDate" type="date" class="form-control" 
+                               min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                        <span asp-validation-for="ReminderDate" class="text-danger"></span>
+                        <div class="form-text">When to send the reminder</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="ReminderMileage" class="form-label">Reminder Mileage (km)</label>
+                        <input asp-for="ReminderMileage" type="number" class="form-control" 
+                               min="@Model.CurrentMileage" step="1000" />
+                        <span asp-validation-for="ReminderMileage" class="text-danger"></span>
+                        <div class="form-text">Mileage threshold for reminder</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="DaysBeforeReminder" class="form-label">Days Before Service</label>
+                        <select asp-for="DaysBeforeReminder" class="form-select">
+                            <option value="7">7 days before</option>
+                            <option value="14">14 days before</option>
+                            <option value="30" selected>30 days before</option>
+                            <option value="60">60 days before</option>
+                            <option value="90">90 days before</option>
+                        </select>
+                        <div class="form-text">How early to remind you</div>
+                    </div>
+                </div>
+
+                <!-- Notification Preferences -->
+                <h6 class="mb-3"><i class="fas fa-bell"></i> Notification Preferences</h6>
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <div class="form-check">
+                            <input asp-for="EmailReminder" class="form-check-input" type="checkbox" checked>
+                            <label asp-for="EmailReminder" class="form-check-label">
+                                Email Reminder
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-check">
+                            <input asp-for="SmsReminder" class="form-check-input" type="checkbox">
+                            <label asp-for="SmsReminder" class="form-check-label">
+                                SMS Reminder
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-check">
+                            <input asp-for="AppNotification" class="form-check-input" type="checkbox" checked>
+                            <label asp-for="AppNotification" class="form-check-label">
+                                App Notification
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Notes -->
+                <div class="mb-3">
+                    <label asp-for="Notes" class="form-label">Additional Notes</label>
+                    <textarea asp-for="Notes" class="form-control" rows="3" 
+                              placeholder="Any additional information about this service reminder"></textarea>
+                    <span asp-validation-for="Notes" class="text-danger"></span>
+                </div>
+
+                <!-- Recurring Options -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="form-check">
+                            <input asp-for="IsRecurring" class="form-check-input" type="checkbox" id="recurringCheck">
+                            <label asp-for="IsRecurring" class="form-check-label">
+                                Set as recurring reminder
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-6" id="recurringOptions" style="display: none;">
+                        <label asp-for="RecurringInterval" class="form-label">Recurring Interval</label>
+                        <select asp-for="RecurringInterval" class="form-select">
+                            <option value="3">Every 3 months</option>
+                            <option value="6" selected>Every 6 months</option>
+                            <option value="12">Every 12 months</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a href="@Url.Action("Index")" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-bell"></i> Create Reminder
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Service Information -->
+    <div class="card mt-4">
+        <div class="card-header bg-light">
+            <h6 class="mb-0"><i class="fas fa-info-circle"></i> Service Information</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Recommended Service Intervals</h6>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-oil-can text-warning"></i> Oil Change: Every 10,000 km or 6 months</li>
+                        <li><i class="fas fa-circle text-dark"></i> Tire Rotation: Every 10,000 km</li>
+                        <li><i class="fas fa-car text-danger"></i> Brake Inspection: Every 20,000 km or 12 months</li>
+                        <li><i class="fas fa-cog text-primary"></i> Engine Tune-up: Every 30,000 km or 24 months</li>
+                        <li><i class="fas fa-battery-half text-success"></i> Battery Check: Every 12 months</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6>Contact Service Department</h6>
+                    <p><i class="fas fa-phone"></i> <strong>Phone:</strong> (011) 123-4567</p>
+                    <p><i class="fas fa-envelope"></i> <strong>Email:</strong> service@autoedge.co.za</p>
+                    <p><i class="fas fa-clock"></i> <strong>Hours:</strong> Mon-Fri 8:00 AM - 5:00 PM</p>
+                    <a href="#" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-calendar-plus"></i> Book Service Appointment
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Show/hide custom service description
+document.getElementById('serviceTypeSelect').addEventListener('change', function() {
+    const customDiv = document.getElementById('customServiceDiv');
+    if (this.value === 'Custom Service') {
+        customDiv.style.display = 'block';
+        document.getElementById('CustomServiceDescription').required = true;
+    } else {
+        customDiv.style.display = 'none';
+        document.getElementById('CustomServiceDescription').required = false;
+    }
+});
+
+// Show/hide recurring options
+document.getElementById('recurringCheck').addEventListener('change', function() {
+    const recurringOptions = document.getElementById('recurringOptions');
+    recurringOptions.style.display = this.checked ? 'block' : 'none';
+});
+
+// Auto-calculate reminder date based on mileage
+document.getElementById('ReminderMileage').addEventListener('input', function() {
+    const currentMileage = @Model.CurrentMileage;
+    const targetMileage = parseInt(this.value);
+    const averageKmPerMonth = 1500; // Estimate
+    
+    if (targetMileage > currentMileage) {
+        const monthsToTarget = Math.ceil((targetMileage - currentMileage) / averageKmPerMonth);
+        const targetDate = new Date();
+        targetDate.setMonth(targetDate.getMonth() + monthsToTarget);
+        
+        document.getElementById('ReminderDate').value = targetDate.toISOString().split('T')[0];
+    }
+});
+
+// Functions for managing existing reminders
+function editReminder(reminderId) {
+    // Implementation for editing reminder
+    console.log('Edit reminder:', reminderId);
+}
+
+function deleteReminder(reminderId) {
+    if (confirm('Are you sure you want to delete this reminder?')) {
+        // Implementation for deleting reminder
+        console.log('Delete reminder:', reminderId);
+    }
+}
+
+// Validate form before submission
+document.querySelector('form').addEventListener('submit', function(e) {
+    const reminderDate = document.getElementById('ReminderDate').value;
+    const reminderMileage = document.getElementById('ReminderMileage').value;
+    
+    if (!reminderDate && !reminderMileage) {
+        e.preventDefault();
+        alert('Please specify either a reminder date or mileage.');
+        return false;
+    }
+    
+    const emailReminder = document.getElementById('EmailReminder').checked;
+    const smsReminder = document.getElementById('SmsReminder').checked;
+    const appNotification = document.getElementById('AppNotification').checked;
+    
+    if (!emailReminder && !smsReminder && !appNotification) {
+        e.preventDefault();
+        alert('Please select at least one notification method.');
+        return false;
+    }
+});
+</script>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

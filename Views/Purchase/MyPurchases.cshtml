@@ -1,0 +1,179 @@
+@model List<AutoEdge.Models.Entities.Purchase>
+
+@{
+    ViewData["Title"] = "My Purchases";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-primary">
+                    <i class="fas fa-shopping-cart me-2"></i>
+                    My Purchases
+                </h2>
+                <a href="@Url.Action("Index", "VehicleBrowse")" class="btn btn-outline-primary">
+                    <i class="fas fa-car me-2"></i>
+                    Browse Vehicles
+                </a>
+            </div>
+
+            @if (Model == null || !Model.Any())
+            {
+                <div class="text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-shopping-cart fa-4x text-muted"></i>
+                    </div>
+                    <h4 class="text-muted mb-3">No Purchases Yet</h4>
+                    <p class="text-muted mb-4">You haven't made any vehicle purchases yet. Start browsing our inventory to find your perfect vehicle!</p>
+                    <a href="@Url.Action("Index", "VehicleBrowse")" class="btn btn-primary btn-lg">
+                        <i class="fas fa-search me-2"></i>
+                        Browse Vehicles
+                    </a>
+                </div>
+            }
+            else
+            {
+                <div class="row">
+                    @foreach (var purchase in Model)
+                    {
+                        <div class="col-lg-6 col-xl-4 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-header bg-light">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0 text-primary">
+                                            <i class="fas fa-hashtag me-1"></i>
+                                            Purchase #@purchase.Id
+                                        </h6>
+                                        <span class="badge @GetStatusBadgeClass(purchase.Status)">@purchase.Status</span>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title text-dark mb-3">
+                                        @purchase.Vehicle.Year @purchase.Vehicle.Make @purchase.Vehicle.Model
+                                    </h5>
+                                    
+                                    <div class="row mb-3">
+                                        <div class="col-6">
+                                            <small class="text-muted">Purchase Price</small>
+                                            <div class="fw-bold text-success">$@purchase.PurchasePrice.ToString("N0")</div>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted">Initiated</small>
+                                            <div class="fw-bold">@purchase.InitiatedDate.ToString("MMM dd, yyyy")</div>
+                                        </div>
+                                    </div>
+
+                                    @if (!string.IsNullOrEmpty(purchase.Notes))
+                                    {
+                                        <div class="mb-3">
+                                            <small class="text-muted">Notes</small>
+                                            <p class="small mb-0">@purchase.Notes</p>
+                                        </div>
+                                    }
+
+                                    <div class="progress mb-3" style="height: 8px;">
+                                        <div class="progress-bar @GetProgressBarClass(purchase.Status)" 
+                                             role="progressbar" 
+                                             style="width: @GetProgressPercentage(purchase.Status)%" 
+                                             aria-valuenow="@GetProgressPercentage(purchase.Status)" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100">
+                                        </div>
+                                    </div>
+                                    
+                                    <small class="text-muted">Progress: @GetProgressText(purchase.Status)</small>
+                                </div>
+                                <div class="card-footer bg-transparent">
+                                    <div class="d-flex gap-2">
+                                        <a href="@Url.Action("PurchaseStatus", new { id = purchase.Id })" 
+                                           class="btn btn-primary btn-sm flex-fill">
+                                            <i class="fas fa-eye me-1"></i>
+                                            View Details
+                                        </a>
+                                        @if (purchase.Status == "Initiated" || purchase.Status == "DocumentsRequired" || purchase.Status == "DocumentsSubmitted")
+                                        {
+                                            <a href="@Url.Action("PurchaseWorkflow", new { id = purchase.Id })" 
+                                               class="btn btn-outline-primary btn-sm flex-fill">
+                                                <i class="fas fa-tasks me-1"></i>
+                                                Continue
+                                            </a>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@functions {
+    private string GetStatusBadgeClass(string status)
+    {
+        return status switch
+        {
+            "Initiated" => "bg-info",
+            "DocumentsRequired" => "bg-warning",
+            "DocumentsSubmitted" => "bg-primary",
+            "DocumentsApproved" => "bg-success",
+            "ContractGenerated" => "bg-info",
+            "ContractSigned" => "bg-success",
+            "PaymentPending" => "bg-warning",
+            "PaymentCompleted" => "bg-success",
+            "Completed" => "bg-success",
+            "Cancelled" => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+
+    private string GetProgressBarClass(string status)
+    {
+        return status switch
+        {
+            "Completed" => "bg-success",
+            "Cancelled" => "bg-danger",
+            "PaymentCompleted" => "bg-success",
+            "PaymentPending" => "bg-warning",
+            _ => "bg-primary"
+        };
+    }
+
+    private int GetProgressPercentage(string status)
+    {
+        return status switch
+        {
+            "Initiated" => 10,
+            "DocumentsRequired" => 20,
+            "DocumentsSubmitted" => 40,
+            "DocumentsApproved" => 50,
+            "ContractGenerated" => 60,
+            "ContractSigned" => 70,
+            "PaymentPending" => 80,
+            "PaymentCompleted" => 90,
+            "Completed" => 100,
+            "Cancelled" => 0,
+            _ => 0
+        };
+    }
+
+    private string GetProgressText(string status)
+    {
+        return status switch
+        {
+            "Initiated" => "Getting Started",
+            "DocumentsRequired" => "Documents Needed",
+            "DocumentsSubmitted" => "Under Review",
+            "DocumentsApproved" => "Documents Approved",
+            "ContractGenerated" => "Contract Ready",
+            "ContractSigned" => "Contract Signed",
+            "PaymentPending" => "Payment Processing",
+            "PaymentCompleted" => "Payment Complete",
+            "Completed" => "Purchase Complete",
+            "Cancelled" => "Cancelled",
+            _ => "Unknown Status"
+        };
+    }
+}

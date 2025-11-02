@@ -1,0 +1,227 @@
+@model AutoEdge.Models.Entities.EmploymentOffer
+
+@{
+    ViewData["Title"] = "Documentation Already Completed";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-info text-white text-center">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-check-circle fa-3x mb-3"></i>
+                        <br>
+                        Documentation Already Completed
+                    </h3>
+                </div>
+                <div class="card-body text-center">
+                    <div class="alert alert-info">
+                        <h4 class="alert-heading">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            Documentation Already Submitted
+                        </h4>
+                        <p class="mb-0">
+                            You have already completed and submitted your pre-employment documentation. 
+                            Thank you for your prompt response!
+                        </p>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-user mr-2"></i>
+                                        Employee Information
+                                    </h5>
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td><strong>Name:</strong></td>
+                                            <td>@Model.Application.FirstName @Model.Application.LastName</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Position:</strong></td>
+                                            <td>@Model.JobTitle</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Department:</strong></td>
+                                            <td>@Model.Department</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Start Date:</strong></td>
+                                            <td>@Model.StartDate.ToString("dd MMMM yyyy")</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-clipboard-check mr-2"></i>
+                                        Documentation Status
+                                    </h5>
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td><strong>Submitted:</strong></td>
+                                            <td>@Model.PreEmploymentDocumentation?.CompletedDate?.ToString("dd MMMM yyyy HH:mm")</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Status:</strong></td>
+                                            <td>
+                                                @if (Model.PreEmploymentDocumentation?.Approved == true)
+                                                {
+                                                    <span class="badge badge-success">Approved</span>
+                                                }
+                                                else if (Model.PreEmploymentDocumentation?.AdminReviewed == true)
+                                                {
+                                                    <span class="badge badge-danger">Rejected</span>
+                                                }
+                                                else if (!string.IsNullOrEmpty(Model.PreEmploymentDocumentation?.CorrectionRequests))
+                                                {
+                                                    <span class="badge badge-warning">Corrections Requested</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge badge-primary">Under Review</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Reference:</strong></td>
+                                            <td>REF@(Model.OfferId.ToString("D6"))</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (Model.PreEmploymentDocumentation?.Approved == true)
+                    {
+                        <div class="alert alert-success mt-4">
+                            <h5 class="alert-heading">
+                                <i class="fas fa-check-circle mr-2"></i>
+                                Congratulations! Your documentation has been approved.
+                            </h5>
+                            <p class="mb-0">
+                                Your pre-employment documentation has been reviewed and approved by our HR team. 
+                                You will receive an email with onboarding details soon.
+                            </p>
+                        </div>
+                    }
+                    else if (!string.IsNullOrEmpty(Model.PreEmploymentDocumentation?.CorrectionRequests))
+                    {
+                        <div class="alert alert-warning mt-4">
+                            <h5 class="alert-heading">
+                                <i class="fas fa-exclamation-triangle mr-2"></i>
+                                Corrections Required
+                            </h5>
+                            <p class="mb-0">
+                                Our HR team has requested some corrections to your documentation. 
+                                Please check your email for details on what needs to be corrected.
+                            </p>
+                        </div>
+                    }
+                    else if (Model.PreEmploymentDocumentation?.AdminReviewed == true)
+                    {
+                        <div class="alert alert-danger mt-4">
+                            <h5 class="alert-heading">
+                                <i class="fas fa-times-circle mr-2"></i>
+                                Documentation Rejected
+                            </h5>
+                            <p class="mb-0">
+                                Unfortunately, your documentation has been rejected. 
+                                Please check your email for details about the rejection and next steps.
+                            </p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-primary mt-4">
+                            <h5 class="alert-heading">
+                                <i class="fas fa-clock mr-2"></i>
+                                Under Review
+                            </h5>
+                            <p class="mb-0">
+                                Your documentation is currently being reviewed by our HR team. 
+                                You will receive an email notification once the review is complete.
+                            </p>
+                        </div>
+                    }
+
+                    <div class="card mt-4">
+                        <div class="card-body">
+                            <h5>What happens next?</h5>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="text-center">
+                                        <i class="fas fa-envelope fa-2x text-primary mb-2"></i>
+                                        <h6>Email Updates</h6>
+                                        <p class="text-muted">Check your email regularly for updates</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-center">
+                                        <i class="fas fa-calendar fa-2x text-info mb-2"></i>
+                                        <h6>Onboarding</h6>
+                                        <p class="text-muted">Schedule will be sent if approved</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-center">
+                                        <i class="fas fa-user-check fa-2x text-success mb-2"></i>
+                                        <h6>Start Date</h6>
+                                        <p class="text-muted">@Model.StartDate.ToString("dd MMMM yyyy")</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-center">
+                                        <i class="fas fa-phone fa-2x text-warning mb-2"></i>
+                                        <h6>Contact HR</h6>
+                                        <p class="text-muted">If you have any questions</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <h5>Need Help?</h5>
+                        <p class="text-muted">
+                            If you have any questions about your documentation or the review process, 
+                            please don't hesitate to contact our HR team.
+                        </p>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6><i class="fas fa-envelope mr-2"></i>Email</h6>
+                                        <p class="mb-0">hr@autoedge.co.za</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6><i class="fas fa-phone mr-2"></i>Phone</h6>
+                                        <p class="mb-0">+27 31 123 4567</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer text-center">
+                    <p class="mb-0">
+                        <strong>Thank you for choosing AutoEdge!</strong><br>
+                        <small class="text-muted">We look forward to welcoming you to our team</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,276 @@
+@model AutoEdge.Models.Entities.Assessment
+
+@{
+    ViewData["Title"] = "Assessment";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">
+                            <i class="fas fa-clipboard-check"></i> @Model.AssessmentTitle
+                        </h4>
+                        <div class="text-end">
+                            <div class="badge bg-warning text-dark fs-6" id="timer">@Model.TimeLimitMinutes:00</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle"></i> Instructions</h6>
+                        <p class="mb-0">@Model.Instructions</p>
+                        <hr>
+                        <small class="text-muted">
+                            <strong>Time Limit:</strong> @Model.TimeLimitMinutes minutes<br>
+                            <strong>Due Date:</strong> @Model.DueDate.ToString("MMM dd, yyyy 'at' h:mm tt")
+                        </small>
+                    </div>
+
+                    <form asp-action="SubmitAssessment" method="post" id="assessmentForm">
+                        <input type="hidden" name="token" value="@Model.AccessToken" />
+                        
+                        <!-- Questions will be loaded here -->
+                        <div id="questionsContainer">
+                            @if (ViewBag.Questions != null)
+                            {
+                                var questions = ViewBag.Questions as List<AutoEdge.Models.Entities.Question>;
+                                @for (int i = 0; i < questions.Count; i++)
+                                {
+                                    var question = questions[i];
+                                    <div class="question-item mb-4 p-3 border rounded">
+                                        <div class="question-header mb-3">
+                                            <h6 class="mb-1">Question @(i + 1)</h6>
+                                            <small class="text-muted">@question.Type • @question.Points points</small>
+                                        </div>
+                                        <div class="question-content">
+                                            <p class="mb-3">@question.QuestionText</p>
+                                            
+                                            @if (question.Type == AutoEdge.Models.Entities.QuestionType.MultipleChoice || question.Type == AutoEdge.Models.Entities.QuestionType.TrueFalse)
+                                            {
+                                                var options = string.IsNullOrEmpty(question.Options) ? new string[0] : System.Text.Json.JsonSerializer.Deserialize<string[]>(question.Options);
+                                                @foreach (var option in options)
+                                                {
+                                                    <div class="form-check mb-2">
+                                                        <input class="form-check-input" type="radio" name="answers[@question.QuestionId]" value="@option" id="q@(question.QuestionId)_@(option.Replace(" ", "_"))">
+                                                        <label class="form-check-label" for="q@(question.QuestionId)_@(option.Replace(" ", "_"))">@option</label>
+                                                    </div>
+                                                }
+                                            }
+                                            else if (question.Type == AutoEdge.Models.Entities.QuestionType.ShortAnswer)
+                                            {
+                                                <textarea class="form-control" name="answers[@question.QuestionId]" rows="3" placeholder="Enter your answer here..." required></textarea>
+                                            }
+                                            else if (question.Type == AutoEdge.Models.Entities.QuestionType.Essay)
+                                            {
+                                                <textarea class="form-control" name="answers[@question.QuestionId]" rows="5" placeholder="Enter your detailed answer here..." required></textarea>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="alert alert-warning">No questions available for this assessment.</div>
+                            }
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-success btn-lg" id="submitBtn">
+                                <i class="fas fa-check"></i> Submit Assessment
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Timer Modal -->
+<div class="modal fade" id="timerModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title"><i class="fas fa-clock"></i> Time Warning</h5>
+            </div>
+            <div class="modal-body text-center">
+                <h4 id="timeRemaining">5:00</h4>
+                <p>Time is running out! Please submit your assessment soon.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Continue</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const timeLimit = @Model.TimeLimitMinutes;
+    let timeRemaining = timeLimit * 60; // Convert to seconds
+    let timerInterval;
+    let warningShown = false;
+    
+    // Timer functionality
+    function updateTimer() {
+        const hours = Math.floor(timeRemaining / 3600);
+        const minutes = Math.floor((timeRemaining % 3600) / 60);
+        const seconds = timeRemaining % 60;
+        
+        const timeString = hours > 0 
+            ? `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+            : `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        
+        document.getElementById('timer').textContent = timeString;
+        
+        if (timeRemaining <= 0) {
+            clearInterval(timerInterval);
+            alert('Time is up! Your assessment will be submitted automatically.');
+            document.getElementById('assessmentForm').submit();
+            return;
+        }
+        
+        // Show warning when 5 minutes remain
+        if (timeRemaining <= 300 && !warningShown) {
+            warningShown = true;
+            const modal = new bootstrap.Modal(document.getElementById('timerModal'));
+            modal.show();
+        }
+        
+        timeRemaining--;
+    }
+    
+    // Start timer
+    timerInterval = setInterval(updateTimer, 1000);
+    updateTimer(); // Initial call
+    
+    // Form validation
+    @* document.getElementById('assessmentForm').addEventListener('submit', function(e) {
+        const container = document.getElementById('questionsContainer');
+        const totalQuestions = container.querySelectorAll('.question-item').length;
+        const answeredQuestions = new Set();
+        
+        // Count answered questions
+        container.querySelectorAll('input[type="radio"]:checked, textarea').forEach(field => {
+            if (field.value.trim() !== '') {
+                const questionId = field.name.match(/answers\[(.*?)\]/)[1];
+                answeredQuestions.add(questionId);
+            }
+        });
+        
+        if (answeredQuestions.size < totalQuestions) {
+            e.preventDefault();
+            alert(`Please answer all questions. You have answered ${answeredQuestions.size} out of ${totalQuestions} questions.`);
+            return false;
+        }
+        
+        // Clear timer
+        clearInterval(timerInterval);
+        
+        // Show loading state
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+        submitBtn.disabled = true;
+    }); *@
+
+        document.getElementById('assessmentForm').addEventListener('submit', function(e) {
+        const container = document.getElementById('questionsContainer');
+        const totalQuestions = container.querySelectorAll('.question-item').length;
+        const answeredQuestions = new Set();
+        
+        // Count answered questions
+        container.querySelectorAll('input[type="radio"]:checked, textarea').forEach(field => {
+            if (field.value.trim() !== '') {
+                const questionId = field.name.match(/answers\[(.*?)\]/)[1];
+                answeredQuestions.add(questionId);
+            }
+        });
+        
+        if (answeredQuestions.size < totalQuestions) {
+            e.preventDefault();
+            alert(`Please answer all questions. You have answered ${answeredQuestions.size} out of ${totalQuestions} questions.`);
+            return false;
+        }
+        
+        // Clear timer
+        clearInterval(timerInterval);
+        
+        // Show loading state
+        const submitBtn = document.getElementById('submitBtn');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+        submitBtn.disabled = true;
+        
+        // Store original state for potential reset
+        submitBtn.dataset.originalText = originalText;
+        
+        // Add timeout to reset button if submission takes too long
+        setTimeout(() => {
+            if (submitBtn.disabled) {
+                resetSubmitButton();
+            }
+        }, 30000); // 30 seconds timeout
+    });
+    // Add function to reset button state
+    function resetSubmitButton() {
+        const submitBtn = document.getElementById('submitBtn');
+        if (submitBtn && submitBtn.dataset.originalText) {
+            submitBtn.innerHTML = submitBtn.dataset.originalText;
+            submitBtn.disabled = false;
+        }
+    }
+
+    // Prevent page refresh/close during assessment
+    window.addEventListener('beforeunload', function(e) {
+        if (timeRemaining > 0) {
+            resetSubmitButton();
+            e.preventDefault();
+            e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+        }
+    });
+    //Recently added
+    // Add event listener for when user cancels navigation
+    window.addEventListener('focus', function() {
+        // Reset button state when user returns to page
+        const submitBtn = document.getElementById('submitBtn');
+        if (submitBtn && submitBtn.disabled && submitBtn.innerHTML.includes('Submitting')) {
+            resetSubmitButton();
+        }
+    });
+});
+</script>
+
+<style>
+.question-item {
+    transition: all 0.3s ease;
+}
+
+.question-item:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+#timer {
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+}
+
+.form-check-input:checked {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.btn-success {
+    background: linear-gradient(45deg, #28a745, #20c997);
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+</style>

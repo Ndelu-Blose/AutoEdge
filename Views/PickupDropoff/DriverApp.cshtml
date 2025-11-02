@@ -1,0 +1,278 @@
+@model IEnumerable<AutoEdge.Models.Entities.VehiclePickup>
+@{
+    ViewData["Title"] = "Driver App - Pickup & Drop-off";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-mobile-alt"></i> Driver App - Pickup & Drop-off
+                    </h3>
+                </div>
+                <div class="card-body">
+                    @if (Model.Any())
+                    {
+                        <div class="row">
+                            @foreach (var pickup in Model)
+                            {
+                                <div class="col-md-6 col-lg-4 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-header d-flex justify-content-between align-items-center">
+                                            <h6 class="mb-0">Pickup #@pickup.VehiclePickupId</h6>
+                                            @{
+                                                var statusClass = pickup.PickupStatus switch
+                                                {
+                                                    "Scheduled" => "bg-primary",
+                                                    "EnRoute" => "bg-info",
+                                                    "Collected" => "bg-success",
+                                                    "InService" => "bg-warning",
+                                                    "Completed" => "bg-success",
+                                                    "Delivered" => "bg-success",
+                                                    "Failed" => "bg-danger",
+                                                    _ => "bg-secondary"
+                                                };
+                                            }
+                                            <span class="badge @statusClass">@pickup.PickupStatus</span>
+                                        </div>
+                                        <div class="card-body">
+                                            <h5 class="card-title">@pickup.ServiceBooking?.Make @pickup.ServiceBooking?.Model</h5>
+                                            <p class="card-text">
+                                                <strong>Customer:</strong> @pickup.ServiceBooking?.CustomerName<br>
+                                                <strong>Phone:</strong> @pickup.ServiceBooking?.CustomerPhone<br>
+                                                <strong>Pickup Date:</strong> @pickup.PickupDate.ToString("MMM dd, yyyy")<br>
+                                                <strong>Pickup Time:</strong> @pickup.PickupTime.ToString(@"hh\:mm")<br>
+                                                <strong>Location:</strong> @pickup.PickupLocation
+                                            </p>
+                                            
+                                            @if (!string.IsNullOrEmpty(pickup.ServiceBooking?.Notes))
+                                            {
+                                                <div class="alert alert-info">
+                                                    <strong>Service Notes:</strong><br>
+                                                    @pickup.ServiceBooking.Notes
+                                                </div>
+                                            }
+                                        </div>
+                                        <div class="card-footer">
+                                            <div class="btn-group w-100" role="group">
+                                                @if (pickup.PickupStatus == "Scheduled")
+                                                {
+                                                    <button type="button" class="btn btn-info btn-sm" 
+                                                            onclick="updateStatus(@pickup.VehiclePickupId, 'EnRoute')">
+                                                        <i class="fas fa-play"></i> Start Trip
+                                                    </button>
+                                                }
+                                                @if (pickup.PickupStatus == "EnRoute")
+                                                {
+                                                    <button type="button" class="btn btn-success btn-sm" 
+                                                            onclick="updateStatus(@pickup.VehiclePickupId, 'Collected')">
+                                                        <i class="fas fa-check"></i> Collected
+                                                    </button>
+                                                }
+                                                @if (pickup.PickupStatus == "Collected")
+                                                {
+                                                    <button type="button" class="btn btn-warning btn-sm" 
+                                                            onclick="updateStatus(@pickup.VehiclePickupId, 'InService')">
+                                                        <i class="fas fa-tools"></i> At Service
+                                                    </button>
+                                                }
+                                                @if (pickup.PickupStatus == "InService")
+                                                {
+                                                    <button type="button" class="btn btn-primary btn-sm" 
+                                                            onclick="updateStatus(@pickup.VehiclePickupId, 'Completed')">
+                                                        <i class="fas fa-check-circle"></i> Completed
+                                                    </button>
+                                                }
+                                                @if (pickup.PickupStatus == "Completed")
+                                                {
+                                                    <button type="button" class="btn btn-success btn-sm" 
+                                                            onclick="updateStatus(@pickup.VehiclePickupId, 'Delivered')">
+                                                        <i class="fas fa-truck"></i> Delivered
+                                                    </button>
+                                                }
+                                                <button type="button" class="btn btn-outline-primary btn-sm" 
+                                                        onclick="uploadPhotos(@pickup.VehiclePickupId)">
+                                                    <i class="fas fa-camera"></i> Photos
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-truck fa-3x text-muted mb-3"></i>
+                            <h4 class="text-muted">No Pickup Assignments</h4>
+                            <p class="text-muted">You don't have any pickup assignments at the moment.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Status Update Modal -->
+<div class="modal fade" id="statusModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Update Pickup Status</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="statusForm">
+                    <input type="hidden" id="pickupId" name="pickupId" />
+                    <div class="mb-3">
+                        <label for="status" class="form-label">New Status</label>
+                        <select id="status" name="status" class="form-select" required>
+                            <option value="">Select Status</option>
+                            <option value="EnRoute">En Route</option>
+                            <option value="Collected">Collected</option>
+                            <option value="InService">In Service</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Delivered">Delivered</option>
+                            <option value="Failed">Failed</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Notes (Optional)</label>
+                        <textarea id="notes" name="notes" class="form-control" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitStatusUpdate()">Update Status</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Photo Upload Modal -->
+<div class="modal fade" id="photoModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Upload Condition Photos</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="photoForm" enctype="multipart/form-data">
+                    <input type="hidden" id="photoPickupId" name="pickupId" />
+                    <div class="mb-3">
+                        <label for="photoType" class="form-label">Photo Type</label>
+                        <select id="photoType" name="photoType" class="form-select" required>
+                            <option value="">Select Type</option>
+                            <option value="BeforePickup">Before Pickup</option>
+                            <option value="AfterPickup">After Pickup</option>
+                            <option value="BeforeDelivery">Before Delivery</option>
+                            <option value="AfterDelivery">After Delivery</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="photos" class="form-label">Select Photos</label>
+                        <input type="file" id="photos" name="photos" class="form-control" multiple accept="image/*" required>
+                        <small class="form-text text-muted">Select multiple photos to upload</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitPhotoUpload()">Upload Photos</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function updateStatus(pickupId, status) {
+            document.getElementById('pickupId').value = pickupId;
+            document.getElementById('status').value = status;
+            new bootstrap.Modal(document.getElementById('statusModal')).show();
+        }
+
+        function uploadPhotos(pickupId) {
+            document.getElementById('photoPickupId').value = pickupId;
+            new bootstrap.Modal(document.getElementById('photoModal')).show();
+        }
+
+        function submitStatusUpdate() {
+            const pickupId = document.getElementById('pickupId').value;
+            const status = document.getElementById('status').value;
+            const notes = document.getElementById('notes').value;
+
+            fetch('/PickupDropoff/UpdateStatus', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: `id=${pickupId}&status=${status}&notes=${encodeURIComponent(notes)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error updating status: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while updating the status');
+            });
+        }
+
+        function submitPhotoUpload() {
+            const pickupId = document.getElementById('photoPickupId').value;
+            const photoType = document.getElementById('photoType').value;
+            const photos = document.getElementById('photos').files;
+
+            if (photos.length === 0) {
+                alert('Please select at least one photo');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('id', pickupId);
+            formData.append('photoType', photoType);
+            
+            for (let i = 0; i < photos.length; i++) {
+                formData.append('photos', photos[i]);
+            }
+
+            fetch('/PickupDropoff/UploadPhotos', {
+                method: 'POST',
+                headers: {
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Photos uploaded successfully!');
+                    location.reload();
+                } else {
+                    alert('Error uploading photos: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while uploading photos');
+            });
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(function() {
+            location.reload();
+        }, 30000);
+    </script>
+}

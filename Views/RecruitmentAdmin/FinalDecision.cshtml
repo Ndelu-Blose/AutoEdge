@@ -1,0 +1,319 @@
+@model AutoEdge.Models.Entities.Application
+@{
+    ViewData["Title"] = "Final Decision";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-gavel"></i> Final Decision - @Model.FirstName @Model.LastName
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <!-- Candidate Information -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-user"></i> Candidate Information</h6>
+                            <p><strong>Name:</strong> @Model.FirstName @Model.LastName</p>
+                            <p><strong>Email:</strong> @Model.Email</p>
+                            <p><strong>Phone:</strong> @Model.PhoneNumber</p>
+                            <p><strong>Experience:</strong> @Model.YearsOfExperience years</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-briefcase"></i> Position Applied For</h6>
+                            <p><strong>Job:</strong> @Model.JobPosting.JobTitle</p>
+                            <p><strong>Department:</strong> @Model.JobPosting.Department</p>
+                            <p><strong>Applied:</strong> @Model.SubmittedDate.ToString("MMM dd, yyyy")</p>
+                            <p><strong>Status:</strong> <span class="badge bg-info" style="padding: 0.35rem 0.75rem;">@Model.Status</span></p>
+                        </div>
+                    </div>
+
+                    <!-- Application Summary -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6><i class="fas fa-file-alt"></i> Application Summary</h6>
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <p><strong>Match Score:</strong> 
+                                        <span class="badge @(Model.MatchScore >= 70 ? "bg-success" : "bg-warning text-dark")" style="padding: 0.35rem 0.75rem;">
+                                            @Model.MatchScore%
+                                        </span>
+                                    </p>
+                                    <p><strong>Highest Qualification:</strong> @Model.HighestQualification</p>
+                                    <p><strong>Why Suitable for Role:</strong></p>
+                                    <p class="text-justify">@Model.WhySuitableForRole</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Interview Results -->
+                    @if (Model.Interviews.Any())
+                    {
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6><i class="fas fa-video"></i> Interview Results</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Recruiter</th>
+                                                <th>Rating</th>
+                                                <th>Status</th>
+                                                <th>Notes</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var interview in Model.Interviews)
+                                            {
+                                                <tr>
+                                                    <td>@interview.ScheduledDateTime.ToString("MMM dd, yyyy")</td>
+                                                    <td>@interview.RecruiterName</td>
+                                                    <td>
+                                                        @for (int i = 1; i <= 10; i++)
+                                                        {
+                                                            <i class="fas fa-star @(i <= interview.InterviewRating ? "text-warning" : "text-muted")"></i>
+                                                        }
+                                                        <span class="ml-2">(@interview.InterviewRating/10)</span>
+                                                    </td>
+                                                    <td>
+                                                        @if (interview.IsCompleted)
+                                                        {
+                                                            <span class="badge bg-success" style="padding: 0.35rem 0.75rem;">Completed</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="badge bg-warning text-dark" style="padding: 0.35rem 0.75rem;">Pending</span>
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        @if (!string.IsNullOrEmpty(interview.InterviewNotes))
+                                                        {
+                                                            <small>@interview.InterviewNotes</small>
+                                                        }
+                                                        else
+                                                        {
+                                                            <small class="text-muted">No notes</small>
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Assessment Results -->
+                    @if (Model.Assessments.Any())
+                    {
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6><i class="fas fa-clipboard-check"></i> Assessment Results</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Assessment</th>
+                                                <th>Score</th>
+                                                <th>Status</th>
+                                                <th>Completed</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var assessment in Model.Assessments)
+                                            {
+                                                <tr>
+                                                    <td>@assessment.AssessmentTitle</td>
+                                                    <td>
+                                                        <div class="progress" style="height: 20px;">
+                                                            <div class="progress-bar @(assessment.Score >= 70 ? "bg-success" : "bg-danger")" 
+                                                                 role="progressbar" style="width: @assessment.Score%">
+                                                                @assessment.Score%
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        @if (assessment.IsPassed)
+                                                        {
+                                                            <span class="badge bg-success" style="padding: 0.35rem 0.75rem;">Passed</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="badge bg-danger" style="padding: 0.35rem 0.75rem;">Failed</span>
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        @if (assessment.CompletedDate.HasValue)
+                                                        {
+                                                            @assessment.CompletedDate.Value.ToString("MMM dd, yyyy")
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="text-muted">Not completed</span>
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Final Decision Form -->
+                    <div class="row">
+                        <div class="col-12">
+                            <h6><i class="fas fa-gavel"></i> Make Final Decision</h6>
+                            <form asp-action="MakeFinalDecision" method="post">
+                                <input type="hidden" asp-for="ApplicationId" />
+                                
+                                <div class="form-group">
+                                    <label class="control-label">Decision *</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="decision" id="hire" value="Hire" required>
+                                        <label class="form-check-label text-success" for="hire">
+                                            <i class="fas fa-check-circle"></i> <strong>HIRE</strong> - Offer the position
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="decision" id="reject" value="Reject" required>
+                                        <label class="form-check-label text-danger" for="reject">
+                                            <i class="fas fa-times-circle"></i> <strong>REJECT</strong> - Do not offer the position
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="decision" id="waitlist" value="Waitlist" required>
+                                        <label class="form-check-label text-warning" for="waitlist">
+                                            <i class="fas fa-clock"></i> <strong>WAITLIST</strong> - Keep for future consideration
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="notes" class="control-label">Decision Notes</label>
+                                    <textarea name="notes" id="notes" class="form-control" rows="4" 
+                                              placeholder="Add any notes about your decision..."></textarea>
+                                </div>
+
+                                <div class="form-group">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-gavel"></i> Submit Final Decision
+                                    </button>
+                                    <a asp-action="Applications" class="btn btn-secondary">
+                                        <i class="fas fa-arrow-left"></i> Back to Applications
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-download"></i> Documents
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        @if (!string.IsNullOrEmpty(Model.ResumeFilePath))
+                        {
+                            <a href="@Model.ResumeFilePath" target="_blank" class="list-group-item list-group-item-action">
+                                <i class="fas fa-file-pdf text-danger"></i> Resume/CV
+                            </a>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.CoverLetterPath))
+                        {
+                            <a href="@Model.CoverLetterPath" target="_blank" class="list-group-item list-group-item-action">
+                                <i class="fas fa-file-pdf text-danger"></i> Cover Letter
+                            </a>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.IdDocumentPath))
+                        {
+                            <a href="@Model.IdDocumentPath" target="_blank" class="list-group-item list-group-item-action">
+                                <i class="fas fa-file-pdf text-danger"></i> ID Document
+                            </a>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.CertificatesPath))
+                        {
+                            <a href="@Model.CertificatesPath" target="_blank" class="list-group-item list-group-item-action">
+                                <i class="fas fa-file-pdf text-danger"></i> Certificates
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-chart-line"></i> Overall Assessment
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="text-center">
+                        <h4 class="text-primary">@Model.MatchScore%</h4>
+                        <small class="text-muted">Overall Match Score</small>
+                    </div>
+                    <hr>
+                    <div class="text-center">
+                        @* @if (Model.Interviews.Any())
+                        {
+                            var avgRating = Model.Interviews.Where(i => i.IsCompleted).Average(i => i.InterviewRating);
+                            <h4 class="text-success">@avgRating.ToString("F1")/10</h4>
+                            <small class="text-muted">Average Interview Rating</small>
+                        }
+                        else
+                        {
+                            <h4 class="text-muted">N/A</h4>
+                            <small class="text-muted">No interviews completed</small>
+                        } *@
+
+                        @if (Model.Interviews.Any())
+                        {
+                            var completedInterviews = Model.Interviews.Where(i => i.IsCompleted);
+                            if (completedInterviews.Any())
+                            {
+                                var avgRating = completedInterviews.Average(i => i.InterviewRating);
+                                <h4 class="text-success">@avgRating.ToString("F1")/10</h4>
+                                <small class="text-muted">Average Interview Rating</small>
+                            }
+                            else
+                            {
+                                <h4 class="text-muted">N/A</h4>
+                                <small class="text-muted">No completed interviews</small>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Add confirmation for final decision
+            $('form').on('submit', function(e) {
+                var decision = $('input[name="decision"]:checked').val();
+                var message = 'Are you sure you want to ' + decision.toLowerCase() + ' this candidate?';
+                
+                if (!confirm(message)) {
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+}
+

@@ -1,0 +1,555 @@
+@{
+    ViewData["Title"] = "Delivery Report";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2><i class="fas fa-truck me-2"></i>Delivery Report</h2>
+                    <p class="text-muted mb-0">Logistics performance and delivery analytics</p>
+                </div>
+                <div>
+                    <a href="@Url.Action("Index")" class="btn btn-outline-secondary me-2">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Reports
+                    </a>
+                    <button class="btn btn-primary" onclick="window.print()">
+                        <i class="fas fa-print me-2"></i>Print Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filter Options</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" action="@Url.Action("Deliveries")">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <label for="startDate" class="form-label">Start Date</label>
+                                <input type="date" class="form-control" id="startDate" name="startDate" value="@ViewBag.StartDate">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="endDate" class="form-label">End Date</label>
+                                <input type="date" class="form-control" id="endDate" name="endDate" value="@ViewBag.EndDate">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="status" class="form-label">Delivery Status</label>
+                                <select class="form-select" id="status" name="status">
+                                    <option value="">All Statuses</option>
+                                    <option value="Pending" selected="@(ViewBag.Status == "Pending")">Pending</option>
+                                    <option value="In Transit" selected="@(ViewBag.Status == "In Transit")">In Transit</option>
+                                    <option value="Delivered" selected="@(ViewBag.Status == "Delivered")">Delivered</option>
+                                    <option value="Cancelled" selected="@(ViewBag.Status == "Cancelled")">Cancelled</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary me-2">
+                                    <i class="fas fa-search me-2"></i>Apply Filter
+                                </button>
+                                <a href="@Url.Action("Deliveries")" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times me-2"></i>Clear
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delivery Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">@ViewBag.TotalDeliveries</h4>
+                            <p class="mb-0">Total Deliveries</p>
+                            <small class="text-light">@ViewBag.DeliveryGrowth% growth</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-shipping-fast fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">@ViewBag.CompletedDeliveries</h4>
+                            <p class="mb-0">Completed</p>
+                            <small class="text-light">@ViewBag.CompletionRate% success rate</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-check-circle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-warning text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">@ViewBag.PendingDeliveries</h4>
+                            <p class="mb-0">Pending</p>
+                            <small class="text-light">Awaiting dispatch</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-clock fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-info text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">@ViewBag.AverageDeliveryTime</h4>
+                            <p class="mb-0">Avg Delivery Time</p>
+                            <small class="text-light">Days to complete</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-stopwatch fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delivery Performance and Status Distribution -->
+    <div class="row mb-4">
+        <div class="col-lg-6 mb-3">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Delivery Status Distribution</h5>
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.DeliveryByStatus != null)
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Status</th>
+                                        <th>Count</th>
+                                        <th>Percentage</th>
+                                        <th>Distribution</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var status in ViewBag.DeliveryByStatus)
+                                    {
+                                        <tr>
+                                            <td>
+                                                @if (status.Status == "Delivered")
+                                                {
+                                                    <span class="badge bg-success">@status.Status</span>
+                                                }
+                                                else if (status.Status == "In Transit")
+                                                {
+                                                    <span class="badge bg-info">@status.Status</span>
+                                                }
+                                                else if (status.Status == "Pending")
+                                                {
+                                                    <span class="badge bg-warning">@status.Status</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-danger">@status.Status</span>
+                                                }
+                                            </td>
+                                            <td><span class="badge bg-primary">@status.Count</span></td>
+                                            <td><span class="text-info fw-bold">@Math.Round((double)status.Percentage, 1)%</span></td>
+                                            <td>
+                                                <div class="progress" style="height: 20px;">
+                                                    @{
+                                                        var progressColor = status.Status == "Delivered" ? "bg-success" : 
+                                                                          status.Status == "In Transit" ? "bg-info" : 
+                                                                          status.Status == "Pending" ? "bg-warning" : "bg-danger";
+                                                    }
+                                                    <div class="progress-bar @progressColor" role="progressbar" style="width: @status.Percentage%" aria-valuenow="@status.Percentage" aria-valuemin="0" aria-valuemax="100">
+                                                        @Math.Round((double)status.Percentage, 1)%
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center">No delivery status data available</p>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 mb-3">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Monthly Delivery Trend</h5>
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.MonthlyDeliveries != null)
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Month</th>
+                                        <th>Deliveries</th>
+                                        <th>Completed</th>
+                                        <th>Success Rate</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var month in ViewBag.MonthlyDeliveries)
+                                    {
+                                        <tr>
+                                            <td>@month.Month</td>
+                                            <td><span class="badge bg-info">@month.Total</span></td>
+                                            <td><span class="badge bg-success">@month.Completed</span></td>
+                                            <td>
+                                                @{
+                                                    var successRate = month.Total > 0 ? (double)month.Completed / month.Total * 100 : 0;
+                                                }
+                                                @if (successRate >= 90)
+                                                {
+                                                    <span class="text-success fw-bold">@Math.Round((double)successRate, 1)%</span>
+                                                }
+                                                else if (successRate >= 75)
+                                                {
+                                                    <span class="text-warning fw-bold">@Math.Round((double)successRate, 1)%</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-danger fw-bold">@Math.Round((double)successRate, 1)%</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center">No monthly delivery data available</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Performing Drivers -->
+    @if (ViewBag.TopDrivers != null)
+    {
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-trophy me-2"></i>Top Performing Drivers</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Driver</th>
+                                        <th>Email</th>
+                                        <th>Total Deliveries</th>
+                                        <th>Completed</th>
+                                        <th>Success Rate</th>
+                                        <th>Avg Delivery Time</th>
+                                        <th>Performance</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        var rank = 1;
+                                    }
+                                    @foreach (var driver in ViewBag.TopDrivers)
+                                    {
+                                        <tr>
+                                            <td>
+                                                @if (rank <= 3)
+                                                {
+                                                    <span class="badge bg-warning text-dark">@rank</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary">@rank</span>
+                                                }
+                                            </td>
+                                            <td><strong>@driver.Name</strong></td>
+                                            <td>@driver.Email</td>
+                                            <td><span class="badge bg-primary">@driver.TotalDeliveries</span></td>
+                                            <td><span class="badge bg-success">@driver.CompletedDeliveries</span></td>
+                                            <td>
+                                                @{
+                                                    var successRate = driver.TotalDeliveries > 0 ? (double)driver.CompletedDeliveries / driver.TotalDeliveries * 100 : 0;
+                                                }
+                                                @if (successRate >= 95)
+                                                {
+                                                    <span class="text-success fw-bold">@Math.Round((double)successRate, 1)%</span>
+                                                }
+                                                else if (successRate >= 85)
+                                                {
+                                                    <span class="text-warning fw-bold">@Math.Round((double)successRate, 1)%</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-danger fw-bold">@Math.Round((double)successRate, 1)%</span>
+                                                }
+                                            </td>
+                                            <td><span class="text-info">@driver.AverageDeliveryTime days</span></td>
+                                            <td>
+                                                <div class="progress" style="height: 20px;">
+                                                    @{
+                                                        var drivers = ViewBag.TopDrivers as IEnumerable<dynamic>;
+                                                        var maxDeliveries = drivers?.Max(d => (int)d.TotalDeliveries) ?? 1;
+                                                        var percentage = maxDeliveries > 0 ? (double)driver.TotalDeliveries / maxDeliveries * 100 : 0;
+                                                    }
+                                                    <div class="progress-bar bg-success" role="progressbar" style="width: @percentage%" aria-valuenow="@percentage" aria-valuemin="0" aria-valuemax="100">
+                                                        @Math.Round((double)percentage, 1)%
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        rank++;
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Delivery Performance Metrics -->
+    <div class="row mb-4">
+        <div class="col-lg-8 mb-3">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-area me-2"></i>Delivery Performance Metrics</h5>
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.PerformanceMetrics != null)
+                    {
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="text-center p-3 border rounded mb-3">
+                                    <h4 class="text-primary">@ViewBag.PerformanceMetrics.OnTimeDeliveryRate%</h4>
+                                    <p class="mb-0">On-Time Delivery</p>
+                                    <small class="text-muted">Within promised timeframe</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-center p-3 border rounded mb-3">
+                                    <h4 class="text-success">@ViewBag.PerformanceMetrics.CustomerSatisfaction%</h4>
+                                    <p class="mb-0">Customer Satisfaction</p>
+                                    <small class="text-muted">Average rating</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-center p-3 border rounded mb-3">
+                                    <h4 class="text-info">@ViewBag.PerformanceMetrics.FirstAttemptSuccess%</h4>
+                                    <p class="mb-0">First Attempt Success</p>
+                                    <small class="text-muted">Delivered on first try</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="text-center p-3 border rounded mb-3">
+                                    <h4 class="text-warning">@ViewBag.PerformanceMetrics.AverageDeliveryDistance km</h4>
+                                    <p class="mb-0">Avg Delivery Distance</p>
+                                    <small class="text-muted">Per delivery</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="text-center p-3 border rounded mb-3">
+                                    <h4 class="text-danger">@ViewBag.PerformanceMetrics.DeliveryCost.ToString("C")</h4>
+                                    <p class="mb-0">Avg Delivery Cost</p>
+                                    <small class="text-muted">Per delivery</small>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center">No performance metrics available</p>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 mb-3">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Delivery Issues</h5>
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.DeliveryIssues != null)
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var issue in ViewBag.DeliveryIssues)
+                            {
+                                <div class="list-group-item d-flex justify-content-between align-items-start">
+                                    <div class="ms-2 me-auto">
+                                        <div class="fw-bold">@issue.IssueType</div>
+                                        <small class="text-muted">@issue.Description</small>
+                                    </div>
+                                    <span class="badge bg-danger rounded-pill">@issue.Count</span>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center">No delivery issues reported</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Deliveries -->
+    @if (ViewBag.RecentDeliveries != null)
+    {
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Recent Deliveries</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Delivery Date</th>
+                                        <th>Customer</th>
+                                        <th>Vehicle</th>
+                                        <th>Driver</th>
+                                        <th>Destination</th>
+                                        <th>Status</th>
+                                        <th>Delivery Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var delivery in ViewBag.RecentDeliveries)
+                                    {
+                                        <tr>
+                                            <td>@delivery.DeliveryDate.ToString("MMM dd, yyyy")</td>
+                                            <td><strong>@delivery.CustomerName</strong></td>
+                                            <td>@delivery.VehicleName</td>
+                                            <td>@delivery.DriverName</td>
+                                            <td>@delivery.Destination</td>
+                                            <td>
+                                                @if (delivery.Status == "Delivered")
+                                                {
+                                                    <span class="badge bg-success">@delivery.Status</span>
+                                                }
+                                                else if (delivery.Status == "In Transit")
+                                                {
+                                                    <span class="badge bg-info">@delivery.Status</span>
+                                                }
+                                                else if (delivery.Status == "Pending")
+                                                {
+                                                    <span class="badge bg-warning">@delivery.Status</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-danger">@delivery.Status</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (delivery.DeliveryTime.HasValue)
+                                                {
+                                                    <span class="text-info">@delivery.DeliveryTime.Value days</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+@@media print {
+    .btn, .card-header, .navbar, .sidebar {
+        display: none !important;
+    }
+    
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+    
+    .container-fluid {
+        padding: 0 !important;
+    }
+}
+
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.progress {
+    height: 8px;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #495057;
+}
+
+.badge {
+    font-size: 0.75em;
+}
+
+.list-group-item {
+    border-left: none;
+    border-right: none;
+    padding-left: 0;
+    padding-right: 0;
+}
+</style>

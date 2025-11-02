@@ -1,0 +1,478 @@
+@model AutoEdge.Models.Entities.Purchase
+@{
+    ViewData["Title"] = "Select Payment Method";
+    Layout = "_Layout";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-credit-card"></i> Payment Options</h4>
+                </div>
+                <div class="card-body">
+                    <form id="paymentForm">
+                        <input type="hidden" id="purchaseId" value="@Model.Id" />
+                        <input type="hidden" id="totalAmount" value="@Model.PurchasePrice" />
+                        
+                        <!-- Payment Method Selection -->
+                        <div class="mb-4">
+                            <h5>Select Payment Method</h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="card payment-method-card" data-method="creditcard">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-credit-card fa-2x mb-2 text-primary"></i>
+                                            <h6>Credit/Debit Card</h6>
+                                            <p class="text-muted small">Secure online payment</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="card payment-method-card" data-method="cash">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-money-bill-wave fa-2x mb-2 text-success"></i>
+                                            <h6>Cash/Bank Transfer</h6>
+                                            <p class="text-muted small">Pay at dealership or bank</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="card payment-method-card" data-method="financing">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-chart-line fa-2x mb-2 text-info"></i>
+                                            <h6>Financing</h6>
+                                            <p class="text-muted small">Monthly payment plan</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="card payment-method-card" data-method="check">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-file-invoice fa-2x mb-2 text-warning"></i>
+                                            <h6>Check</h6>
+                                            <p class="text-muted small">Personal or cashier's check</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Payment Type Selection -->
+                        <div class="mb-4" id="paymentTypeSection" style="display: none;">
+                            <h5>Payment Type</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="paymentType" id="fullPayment" value="FullPayment" checked>
+                                        <label class="form-check-label" for="fullPayment">
+                                            <strong>Full Payment</strong><br>
+                                            <span class="text-muted">Pay the entire amount: @Model.PurchasePrice.ToString("C")</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="paymentType" id="depositPayment" value="DepositPayment">
+                                        <label class="form-check-label" for="depositPayment">
+                                            <strong>Deposit Payment</strong><br>
+                                            <span class="text-muted">Pay deposit: @Model.DepositAmount.ToString("C")</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Credit Card Details -->
+                        <div id="creditCardDetails" class="payment-details" style="display: none;">
+                            <h5>Card Information</h5>
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label for="cardNumber" class="form-label">Card Number</label>
+                                    <input type="text" class="form-control" id="cardNumber" name="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="expiryMonth" class="form-label">Expiry Month</label>
+                                    <select class="form-select" id="expiryMonth" name="expiryMonth">
+                                        <option value="">Month</option>
+                                        @for (int i = 1; i <= 12; i++)
+                                        {
+                                            <option value="@i.ToString("D2")">@i.ToString("D2")</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="expiryYear" class="form-label">Expiry Year</label>
+                                    <select class="form-select" id="expiryYear" name="expiryYear">
+                                        <option value="">Year</option>
+                                        @for (int i = DateTime.Now.Year; i <= DateTime.Now.Year + 10; i++)
+                                        {
+                                            <option value="@i">@i</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="cvv" class="form-label">CVV</label>
+                                    <input type="text" class="form-control" id="cvv" name="cvv" placeholder="123" maxlength="4">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="cardholderName" class="form-label">Cardholder Name</label>
+                                    <input type="text" class="form-control" id="cardholderName" name="cardholderName" placeholder="John Doe">
+                                </div>
+                            </div>
+                            
+                            <h6>Billing Address</h6>
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label for="billingAddress" class="form-label">Address</label>
+                                    <input type="text" class="form-control" id="billingAddress" name="billingAddress" placeholder="123 Main St">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="billingCity" class="form-label">City</label>
+                                    <input type="text" class="form-control" id="billingCity" name="billingCity" placeholder="City">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="billingState" class="form-label">State</label>
+                                    <input type="text" class="form-control" id="billingState" name="billingState" placeholder="State">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="billingZip" class="form-label">ZIP Code</label>
+                                    <input type="text" class="form-control" id="billingZip" name="billingZip" placeholder="12345">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Financing Details -->
+                        <div id="financingDetails" class="payment-details" style="display: none;">
+                            <h5>Financing Information</h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="financingProvider" class="form-label">Financing Provider</label>
+                                    <select class="form-select" id="financingProvider" name="financingProvider">
+                                        <option value="">Select Provider</option>
+                                        <option value="AutoEdgeFinancing">AutoEdge Financing</option>
+                                        <option value="BankOfAmerica">Bank of America</option>
+                                        <option value="WellsFargo">Wells Fargo</option>
+                                        <option value="Chase">Chase Auto Finance</option>
+                                        <option value="CapitalOne">Capital One Auto Finance</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="interestRate" class="form-label">Interest Rate (%)</label>
+                                    <input type="number" class="form-control" id="interestRate" name="interestRate" step="0.01" min="0" max="30" placeholder="5.99">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="loanTermMonths" class="form-label">Loan Term (Months)</label>
+                                    <select class="form-select" id="loanTermMonths" name="loanTermMonths">
+                                        <option value="">Select Term</option>
+                                        <option value="12">12 months</option>
+                                        <option value="24">24 months</option>
+                                        <option value="36">36 months</option>
+                                        <option value="48">48 months</option>
+                                        <option value="60">60 months</option>
+                                        <option value="72">72 months</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="downPayment" class="form-label">Down Payment</label>
+                                    <input type="number" class="form-control" id="downPayment" name="downPayment" step="0.01" min="0" placeholder="5000">
+                                </div>
+                                <div class="col-md-12 mb-3">
+                                    <label for="monthlyPayment" class="form-label">Estimated Monthly Payment</label>
+                                    <input type="number" class="form-control" id="monthlyPayment" name="monthlyPayment" step="0.01" readonly>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Cash/Check Instructions -->
+                        <div id="cashDetails" class="payment-details" style="display: none;">
+                            <div class="alert alert-info">
+                                <h5><i class="fas fa-info-circle"></i> Payment Instructions</h5>
+                                <p>You have selected to pay by cash, check, or bank transfer. Please follow these instructions:</p>
+                                <ul>
+                                    <li><strong>Cash:</strong> Visit our dealership to complete the payment</li>
+                                    <li><strong>Check:</strong> Make the check payable to "AutoEdge" and bring it to our dealership</li>
+                                    <li><strong>Bank Transfer:</strong> Contact our finance department for wire transfer details</li>
+                                </ul>
+                                <p><strong>Payment Deadline:</strong> 7 days from today</p>
+                                <p><strong>Contact:</strong> (555) 123-4567 or finance@autoedge.com</p>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="@Url.Action("PurchaseStatus", new { id = Model.Id })" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to Purchase
+                            </a>
+                            <button type="submit" class="btn btn-primary" id="processPaymentBtn" disabled>
+                                <i class="fas fa-credit-card"></i> Process Payment
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Purchase Summary -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-receipt"></i> Purchase Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>@Model.Vehicle.Make @Model.Vehicle.Model</strong><br>
+                        <span class="text-muted">@Model.Vehicle.Year - @Model.Vehicle.Mileage miles</span>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Vehicle Price:</span>
+                        <span>@Model.Vehicle.SellingPrice.ToString("C")</span>
+                    </div>
+                    
+                    @if (Model.DepositAmount > 0)
+                    {
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Deposit Required:</span>
+                            <span>@Model.DepositAmount.ToString("C")</span>
+                        </div>
+                    }
+                    
+                    <hr>
+                    
+                    <div class="d-flex justify-content-between mb-3">
+                        <strong>Total Amount:</strong>
+                        <strong>@Model.PurchasePrice.ToString("C")</strong>
+                    </div>
+                    
+                    <div class="alert alert-success">
+                        <small><i class="fas fa-shield-alt"></i> Your payment is secured with 256-bit SSL encryption</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <style>
+        .payment-method-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid #dee2e6;
+        }
+        .payment-method-card:hover {
+            border-color: #007bff;
+            box-shadow: 0 4px 8px rgba(0,123,255,0.2);
+            transform: translateY(-2px);
+        }
+        .payment-method-card.selected {
+            border-color: #007bff !important;
+            background-color: #f8f9ff;
+        }
+    </style>
+    <script>
+        $(document).ready(function() {
+            let selectedMethod = '';
+            let selectedAmount = 0;
+            
+            console.log('Payment page loaded, setting up event handlers');
+            
+            // Payment method selection
+            $('.payment-method-card').click(function() {
+                console.log('Payment method clicked:', $(this).data('method'));
+                
+                $('.payment-method-card').removeClass('border-primary selected');
+                $(this).addClass('border-primary selected');
+                
+                selectedMethod = $(this).data('method');
+                
+                // Hide all payment details
+                $('.payment-details').hide();
+                
+                // Show relevant payment details
+                if (selectedMethod === 'creditcard') {
+                    $('#creditCardDetails').show();
+                } else if (selectedMethod === 'financing') {
+                    $('#financingDetails').show();
+                } else {
+                    $('#cashDetails').show();
+                }
+                
+                // Show payment type section for all methods
+                $('#paymentTypeSection').show();
+                
+                updatePaymentAmount();
+                validateForm();
+            });
+            
+            // Payment type selection
+            $('input[name="paymentType"]').change(function() {
+                updatePaymentAmount();
+                validateForm();
+            });
+            
+            // Form validation
+            $('#paymentForm input, #paymentForm select').on('input change', function() {
+                validateForm();
+            });
+            
+            // Calculate monthly payment for financing
+            $('#interestRate, #loanTermMonths, #downPayment').on('input change', function() {
+                calculateMonthlyPayment();
+            });
+            
+            // Format card number
+            $('#cardNumber').on('input', function() {
+                let value = $(this).val().replace(/\s/g, '').replace(/[^0-9]/gi, '');
+                let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+                $(this).val(formattedValue);
+            });
+            
+            // Form submission
+            $('#paymentForm').submit(function(e) {
+                e.preventDefault();
+                processPayment();
+            });
+            
+            function updatePaymentAmount() {
+                const paymentType = $('input[name="paymentType"]:checked').val();
+                const totalAmount = parseFloat($('#totalAmount').val());
+                const depositAmount = @(Model.DepositAmount.ToString("F2", System.Globalization.CultureInfo.InvariantCulture));
+                
+                selectedAmount = paymentType === 'DepositPayment' ? depositAmount : totalAmount;
+            }
+            
+            function validateForm() {
+                let isValid = selectedMethod !== '';
+                
+                console.log('Validating form, selectedMethod:', selectedMethod);
+                
+                if (selectedMethod === 'creditcard') {
+                    isValid = isValid && $('#cardNumber').val().replace(/\s/g, '').length >= 13
+                        && $('#expiryMonth').val() !== ''
+                        && $('#expiryYear').val() !== ''
+                        && $('#cvv').val().length >= 3
+                        && $('#cardholderName').val().trim() !== ''
+                        && $('#billingAddress').val().trim() !== ''
+                        && $('#billingCity').val().trim() !== ''
+                        && $('#billingState').val().trim() !== ''
+                        && $('#billingZip').val().trim() !== '';
+                } else if (selectedMethod === 'financing') {
+                    isValid = isValid && $('#financingProvider').val() !== ''
+                        && $('#interestRate').val() !== ''
+                        && $('#loanTermMonths').val() !== ''
+                        && $('#downPayment').val() !== '';
+                } else if (selectedMethod === 'cash' || selectedMethod === 'check') {
+                    // For cash and check payments, only need payment method selection
+                    isValid = true;
+                }
+                
+                console.log('Form validation result:', isValid);
+                $('#processPaymentBtn').prop('disabled', !isValid);
+                
+                if (isValid) {
+                    $('#processPaymentBtn').removeClass('btn-secondary').addClass('btn-primary');
+                } else {
+                    $('#processPaymentBtn').removeClass('btn-primary').addClass('btn-secondary');
+                }
+            }
+            
+            function calculateMonthlyPayment() {
+                const totalAmount = parseFloat($('#totalAmount').val());
+                const downPayment = parseFloat($('#downPayment').val()) || 0;
+                const interestRate = parseFloat($('#interestRate').val()) || 0;
+                const loanTermMonths = parseInt($('#loanTermMonths').val()) || 0;
+                
+                if (totalAmount && loanTermMonths && interestRate) {
+                    const loanAmount = totalAmount - downPayment;
+                    const monthlyRate = interestRate / 100 / 12;
+                    const monthlyPayment = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, loanTermMonths)) / (Math.pow(1 + monthlyRate, loanTermMonths) - 1);
+                    
+                    $('#monthlyPayment').val(monthlyPayment.toFixed(2));
+                }
+            }
+            
+            function processPayment() {
+                const formData = new FormData();
+                formData.append('purchaseId', $('#purchaseId').val());
+                formData.append('paymentMethod', selectedMethod);
+                formData.append('amount', selectedAmount);
+                formData.append('paymentType', $('input[name="paymentType"]:checked').val());
+                
+                // Add method-specific data
+                if (selectedMethod === 'creditcard') {
+                    formData.append('cardNumber', $('#cardNumber').val().replace(/\s/g, ''));
+                    formData.append('expiryMonth', $('#expiryMonth').val());
+                    formData.append('expiryYear', $('#expiryYear').val());
+                    formData.append('cvv', $('#cvv').val());
+                    formData.append('cardholderName', $('#cardholderName').val());
+                    formData.append('billingAddress', $('#billingAddress').val());
+                    formData.append('billingCity', $('#billingCity').val());
+                    formData.append('billingState', $('#billingState').val());
+                    formData.append('billingZip', $('#billingZip').val());
+                } else if (selectedMethod === 'financing') {
+                    formData.append('financingProvider', $('#financingProvider').val());
+                    formData.append('interestRate', $('#interestRate').val());
+                    formData.append('loanTermMonths', $('#loanTermMonths').val());
+                    formData.append('monthlyPayment', $('#monthlyPayment').val());
+                    formData.append('downPayment', $('#downPayment').val());
+                }
+                
+                $('#processPaymentBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Processing...');
+                
+                $.ajax({
+                    url: '@Url.Action("ProcessPayment")',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.success) {
+                            if (response.redirectUrl) {
+                                window.location.href = response.redirectUrl;
+                            } else {
+                                alert('Payment processed successfully!');
+                            }
+                        } else {
+                            alert('Payment failed: ' + response.message);
+                            $('#processPaymentBtn').prop('disabled', false).html('<i class="fas fa-credit-card"></i> Process Payment');
+                        }
+                    },
+                    error: function() {
+                        alert('An error occurred while processing the payment.');
+                        $('#processPaymentBtn').prop('disabled', false).html('<i class="fas fa-credit-card"></i> Process Payment');
+                    }
+                });
+            }
+        });
+    </script>
+    
+    <style>
+        .payment-method-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .payment-method-card:hover {
+            border-color: #007bff;
+            transform: translateY(-2px);
+        }
+        
+        .payment-method-card.border-primary {
+            border-color: #007bff !important;
+            background-color: #f8f9fa;
+        }
+        
+        .payment-details {
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            padding: 1rem;
+            margin-top: 1rem;
+            background-color: #f8f9fa;
+        }
+    </style>
+}

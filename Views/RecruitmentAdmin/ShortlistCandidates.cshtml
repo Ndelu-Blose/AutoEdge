@@ -1,0 +1,431 @@
+@model AutoEdge.Models.Entities.JobPosting
+
+@{
+    ViewData["Title"] = "Shortlist Candidates";
+    var shortlistedApplications = ViewBag.ShortlistedApplications as List<AutoEdge.Models.Entities.Application> ?? new List<AutoEdge.Models.Entities.Application>();
+    var rejectedApplications = ViewBag.RejectedApplications as List<AutoEdge.Models.Entities.Application> ?? new List<AutoEdge.Models.Entities.Application>();
+    var allApplications = ViewBag.AllApplications as List<AutoEdge.Models.Entities.Application> ?? new List<AutoEdge.Models.Entities.Application>();
+    var jobPosting = Model;
+}
+
+<style>
+    .modern-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    .modern-table thead th {
+        background: linear-gradient(135deg, var(--primary-color) 0%, #34495e 100%);
+        color: white;
+        font-weight: 600;
+        padding: 1rem;
+        border: none;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .modern-table tbody tr {
+        background: white;
+        transition: all 0.2s ease;
+        border-bottom: 1px solid var(--border-color);
+    }
+    .modern-table tbody tr:hover {
+        background: #f8f9fa;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .modern-table tbody td {
+        padding: 1.25rem 1rem;
+        vertical-align: middle;
+        color: #333 !important;
+        font-size: 0.95rem;
+    }
+    .modern-table tbody tr.table-success {
+        background: rgba(39, 174, 96, 0.05);
+    }
+    .modern-table tbody tr.table-danger {
+        background: rgba(231, 76, 60, 0.05);
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-users mr-2"></i>
+                        Shortlist Candidates - @Model.JobTitle
+                    </h3>
+                    <div class="card-tools">
+                        <a href="@Url.Action("Applications", new { jobId = Model.JobId })" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-arrow-left mr-1"></i>Back to Applications
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            @TempData["SuccessMessage"]
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    }
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            @TempData["ErrorMessage"]
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    }
+                </div>
+                <div class="card-body">
+                    <!-- All Applications Section for Manual Shortlisting -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4 class="card-title text-primary">
+                                        <i class="fas fa-list mr-2"></i>
+                                        All Applications - Select to Shortlist
+                                    </h4>
+                                </div>
+                                <div class="card-body">
+                                    @if (allApplications.Any())
+                                    {
+                                        <form method="post" action="@Url.Action("ShortlistCandidates", new { jobId = Model.JobId })">
+                                            <div class="table-responsive">
+                                                <table class="modern-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>
+                                                                <input type="checkbox" id="selectAllApplications" />
+                                                            </th>
+                                                            <th><i class="fas fa-user mr-2"></i>Name</th>
+                                                            <th><i class="fas fa-envelope mr-2"></i>Email</th>
+                                                            <th><i class="fas fa-clock mr-2"></i>Experience</th>
+                                                            <th><i class="fas fa-chart-line mr-2"></i>Match Score</th>
+                                                            <th><i class="fas fa-info-circle mr-2"></i>Status</th>
+                                                            <th><i class="fas fa-calendar mr-2"></i>Submitted</th>
+                                                            <th><i class="fas fa-cogs mr-2"></i>Actions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach (var application in allApplications)
+                                                        {
+                                                            <tr class="@(application.Status == "Shortlisted" ? "table-success" : application.Status == "Rejected" ? "table-danger" : "")">
+                                                                <td>
+                                                                    <input type="checkbox" name="selectedApplicationIds" value="@application.ApplicationId" class="manual-shortlist-checkbox" @(application.Status == "Shortlisted" ? "checked" : "") />
+                                                                </td>
+                                                                <td>@application.FirstName @application.LastName</td>
+                                                                <td>@application.Email</td>
+                                                                <td>@application.YearsOfExperience years</td>
+                                                                <td>
+                                                                    <span class="badge @(application.MatchScore >= 70 ? "bg-success" : application.MatchScore >= 50 ? "bg-warning text-dark" : "bg-danger")" style="padding: 0.35rem 0.75rem;">
+                                                                        @application.MatchScore.ToString("F1")%
+                                                                    </span>
+                                                                </td>
+                                                                <td>
+                                                                    <span class="badge @(application.Status == "Shortlisted" ? "bg-success" : application.Status == "Rejected" ? "bg-danger" : "bg-info")" style="padding: 0.35rem 0.75rem;">
+                                                                        @application.Status
+                                                                    </span>
+                                                                </td>
+                                                                <td>@application.SubmittedDate.ToString("MMM dd, yyyy")</td>
+                                                                <td>
+                                                                    <a href="@Url.Action("ViewApplication", new { id = application.ApplicationId })" class="btn btn-sm btn-outline-info">
+                                                                        <i class="fas fa-eye"></i> View
+                                                                    </a>
+                                                                </td>
+                                                            </tr>
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                                <div class="mt-3">
+                                                    <button type="submit" class="btn btn-success">
+                                                        <i class="fas fa-check"></i> Shortlist Selected Candidates
+                                                    </button>
+                                                    <a href="@Url.Action("AutoShortlist", new { jobId = Model.JobId })" class="btn btn-info ml-2" onclick="return confirm('This will automatically shortlist candidates based on match scores (70%+ threshold). Continue?')">
+                                                        <i class="fas fa-magic"></i> Auto-Shortlist by Score
+                                                    </a>
+                                                    <a href="@Url.Action("ResetApplications", new { jobId = Model.JobId })" class="btn btn-warning ml-2" onclick="return confirm('Are you sure you want to reset all applications to Submitted status? This will clear all shortlisting decisions.')">
+                                                        <i class="fas fa-undo"></i> Reset All Applications
+                                                    </a>
+                                                </div>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <div class="text-center py-4">
+                                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                            <h5 class="text-muted">No applications found</h5>
+                                            <p class="text-muted">There are no applications for this job posting yet.</p>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-success"><i class="fas fa-check"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Shortlisted</span>
+                                    <span class="info-box-number">@shortlistedApplications.Count</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-danger"><i class="fas fa-times"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Rejected</span>
+                                    <span class="info-box-number">@rejectedApplications.Count</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (shortlistedApplications.Any())
+                    {
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h3 class="card-title text-success">
+                                            <i class="fas fa-check-circle mr-2"></i>
+                                            Shortlisted Candidates (70%+ Match Score)
+                                        </h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <form id="shortlistForm" method="post" action="@Url.Action("ScheduleInterviews", new { jobId = Model.JobId })">
+                                            @Html.AntiForgeryToken()
+                                            <div class="table-responsive">
+                                                <table class="modern-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>
+                                                                <input type="checkbox" id="selectAll" />
+                                                            </th>
+                                                            <th><i class="fas fa-user mr-2"></i>Name</th>
+                                                            <th><i class="fas fa-envelope mr-2"></i>Email</th>
+                                                            <th><i class="fas fa-clock mr-2"></i>Experience</th>
+                                                            <th><i class="fas fa-chart-line mr-2"></i>Match Score</th>
+                                                            <th><i class="fas fa-calendar mr-2"></i>Submitted</th>
+                                                            <th><i class="fas fa-cogs mr-2"></i>Actions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach (var application in shortlistedApplications)
+                                                        {
+                                                            <tr>
+                                                                <td>
+                                                                    <input type="checkbox" name="selectedApplicationIds" value="@application.ApplicationId" class="interview-schedule-checkbox" />
+                                                                </td>
+                                                                <td>@application.FirstName @application.LastName</td>
+                                                                <td>@application.Email</td>
+                                                                <td>@application.YearsOfExperience years</td>
+                                                                <td>
+                                                                    <span class="badge bg-success" style="padding: 0.35rem 0.75rem;">@application.MatchScore.ToString("F1")%</span>
+                                                                </td>
+                                                                <td>@application.SubmittedDate.ToString("MMM dd, yyyy")</td>
+                                                                <td>
+                                                                    <a href="@Url.Action("ViewApplication", new { id = application.ApplicationId })" class="btn btn-sm btn-outline-info">
+                                                                        <i class="fas fa-eye"></i> View
+                                                                    </a>
+                                                                </td>
+                                                            </tr>
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            </div>
+
+                                            <div class="row mt-3">
+                                                <div class="col-md-4">
+                                                    <div class="form-group">
+                                                        <label class="control-label">Interview Date & Time</label>
+                                                        <input type="datetime-local" name="interviewDate" class="form-control" required />
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="form-group">
+                                                        <label class="control-label">Recruiter Name</label>
+                                                        <input type="text" name="recruiterName" class="form-control" required />
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="form-group">
+                                                        <label class="control-label">Recruiter Email</label>
+                                                        <input type="email" name="recruiterEmail" class="form-control" required />
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label">Duration (minutes)</label>
+                                                        <select name="durationMinutes" class="form-control">
+                                                            <option value="30">30 minutes</option>
+                                                            <option value="60" selected>60 minutes</option>
+                                                            <option value="90">90 minutes</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label">&nbsp;</label>
+                                                        <div>
+                                                            <button type="submit" class="btn btn-success" id="scheduleInterviewsBtn">
+                                                                <i class="fas fa-calendar-plus mr-2"></i>Schedule Interviews for Selected
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    @if (rejectedApplications.Any())
+                    {
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h3 class="card-title text-danger">
+                                            <i class="fas fa-times-circle mr-2"></i>
+                                            Rejected Candidates (Below 70% Match Score)
+                                        </h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="modern-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th><i class="fas fa-user mr-2"></i>Name</th>
+                                                        <th><i class="fas fa-envelope mr-2"></i>Email</th>
+                                                        <th><i class="fas fa-clock mr-2"></i>Experience</th>
+                                                        <th><i class="fas fa-chart-line mr-2"></i>Match Score</th>
+                                                        <th><i class="fas fa-calendar mr-2"></i>Submitted</th>
+                                                        <th><i class="fas fa-cogs mr-2"></i>Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach (var application in rejectedApplications)
+                                                    {
+                                                        <tr>
+                                                            <td>@application.FirstName @application.LastName</td>
+                                                            <td>@application.Email</td>
+                                                            <td>@application.YearsOfExperience years</td>
+                                                            <td>
+                                                                <span class="badge bg-danger" style="padding: 0.35rem 0.75rem;">@application.MatchScore.ToString("F1")%</span>
+                                                            </td>
+                                                            <td>@application.SubmittedDate.ToString("MMM dd, yyyy")</td>
+                                                            <td>
+                                                                <a href="@Url.Action("ViewApplication", new { id = application.ApplicationId })" class="btn btn-sm btn-outline-info">
+                                                                    <i class="fas fa-eye"></i> View
+                                                                </a>
+                                                                <button type="button" class="btn btn-sm btn-outline-warning" onclick="overrideRejection(@application.ApplicationId)">
+                                                                    <i class="fas fa-undo"></i> Override
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Select all functionality for manual shortlisting
+            $('#selectAllApplications').change(function() {
+                $('.manual-shortlist-checkbox').prop('checked', this.checked);
+            });
+
+            // Individual checkbox change for manual shortlisting
+            $('.manual-shortlist-checkbox').change(function() {
+                // Update select all checkbox
+                var totalCheckboxes = $('.manual-shortlist-checkbox').length;
+                var checkedCheckboxes = $('.manual-shortlist-checkbox:checked').length;
+                $('#selectAllApplications').prop('checked', totalCheckboxes === checkedCheckboxes);
+            });
+
+            // Select all functionality for interview scheduling
+            $('#selectAll').change(function() {
+                $('.interview-schedule-checkbox').prop('checked', this.checked);
+                updateScheduleButton();
+            });
+
+            // Individual checkbox change for interview scheduling
+            $('.interview-schedule-checkbox').change(function() {
+                updateScheduleButton();
+                
+                // Update select all checkbox
+                var totalCheckboxes = $('.interview-schedule-checkbox').length;
+                var checkedCheckboxes = $('.interview-schedule-checkbox:checked').length;
+                $('#selectAll').prop('checked', totalCheckboxes === checkedCheckboxes);
+            });
+
+            function updateScheduleButton() {
+                var checkedCount = $('.interview-schedule-checkbox:checked').length;
+                $('#scheduleInterviewsBtn').prop('disabled', checkedCount === 0);
+                if (checkedCount > 0) {
+                    $('#scheduleInterviewsBtn').text('Schedule Interviews for ' + checkedCount + ' Selected');
+                } else {
+                    $('#scheduleInterviewsBtn').text('Schedule Interviews for Selected');
+                }
+            }
+
+            // Form submission
+            $('#shortlistForm').submit(function(e) {
+                var checkedCount = $('.interview-schedule-checkbox:checked').length;
+                if (checkedCount === 0) {
+                    e.preventDefault();
+                    alert('Please select at least one candidate to schedule interviews.');
+                    return false;
+                }
+                
+                if (!confirm('Are you sure you want to schedule interviews for ' + checkedCount + ' candidates? This will send interview invitations via email.')) {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+
+            // Initialize button state
+            updateScheduleButton();
+        });
+
+        function overrideRejection(applicationId) {
+            if (confirm('Are you sure you want to override the rejection for this candidate? They will be moved to the shortlisted candidates.')) {
+                // Implement override functionality
+                $.post('@Url.Action("OverrideRejection")', { applicationId: applicationId }, function(result) {
+                    if (result.success) {
+                        location.reload();
+                    } else {
+                        alert('Error overriding rejection: ' + result.message);
+                    }
+                });
+            }
+        }
+    </script>
+}

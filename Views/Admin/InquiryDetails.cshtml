@@ -1,0 +1,211 @@
+@model AutoEdge.Models.Entities.Inquiry
+@{
+    ViewData["Title"] = "Inquiry Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-question-circle me-2"></i>Inquiry Details #@Model.Id</h2>
+                <a href="@Url.Action("Inquiries")" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>Back to Inquiries
+                </a>
+            </div>
+
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <div class="row">
+                <!-- Inquiry Information -->
+                <div class="col-lg-8">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Inquiry Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6 class="text-muted">Customer Information</h6>
+                                    <p><strong>Name:</strong> @Model.Customer.User.FirstName @Model.Customer.User.LastName</p>
+                                    <p><strong>Email:</strong> @Model.Customer.User.Email</p>
+                                    <p><strong>Phone:</strong> @Model.Customer.User.PhoneNumber</p>
+                                    @if (!string.IsNullOrEmpty(Model.OfferedPrice?.ToString()))
+                                    {
+                                        <p><strong>Offered Price:</strong> @Model.OfferedPrice?.ToString("C")</p>
+                                    }
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-muted">Inquiry Details</h6>
+                                    <p><strong>Status:</strong> 
+                                        @switch (Model.Status)
+                                        {
+                                            case "Pending":
+                                                <span class="badge bg-warning">@Model.Status</span>
+                                                break;
+                                            case "In Progress":
+                                                <span class="badge bg-info">@Model.Status</span>
+                                                break;
+                                            case "Responded":
+                                                <span class="badge bg-success">@Model.Status</span>
+                                                break;
+                                            case "Closed":
+                                                <span class="badge bg-secondary">@Model.Status</span>
+                                                break;
+                                            default:
+                                                <span class="badge bg-light text-dark">@Model.Status</span>
+                                                break;
+                                        }
+                                    </p>
+                                    <p><strong>Created:</strong> @Model.CreatedDate.ToString("MMM dd, yyyy HH:mm")</p>
+                                    <p><strong>Assigned To:</strong> 
+                                        @if (Model.AssignedTo != null)
+                                        {
+                                            <span>@Model.AssignedTo.FirstName @Model.AssignedTo.LastName</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Unassigned</span>
+                                        }
+                                    </p>
+                                    @if (Model.ResponseDate.HasValue)
+                                    {
+                                        <p><strong>Response Date:</strong> @Model.ResponseDate.Value.ToString("MMM dd, yyyy HH:mm")</p>
+                                    }
+                                </div>
+                            </div>
+                            
+                            <hr>
+                            
+                            <h6 class="text-muted">Customer Message</h6>
+                            <div class="bg-light p-3 rounded">
+                                @Model.Message
+                            </div>
+                            
+                            @if (!string.IsNullOrEmpty(Model.Response))
+                            {
+                                <hr>
+                                <h6 class="text-muted">Admin Response</h6>
+                                <div class="bg-success bg-opacity-10 p-3 rounded border border-success">
+                                    @Model.Response
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Vehicle Information -->
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0"><i class="fas fa-car me-2"></i>Vehicle Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                @if (Model.Vehicle.VehicleImages.Any())
+                                {
+                                    <div class="col-md-4">
+                                        <img src="@Model.Vehicle.VehicleImages.FirstOrDefault()?.ImagePath" 
+                                             alt="@Model.Vehicle.Make @Model.Vehicle.Model" 
+                                             class="img-fluid rounded">
+                                    </div>
+                                }
+                                <div class="col-md-8">
+                                    <h4>@Model.Vehicle.Year @Model.Vehicle.Make @Model.Vehicle.Model</h4>
+                                    <p><strong>VIN:</strong> @Model.Vehicle.VIN</p>
+                                    <p><strong>Price:</strong> @Model.Vehicle.SellingPrice.ToString("C")</p>
+                                    <p><strong>Mileage:</strong> @Model.Vehicle.Mileage.ToString("N0") miles</p>
+                                    <p><strong>Status:</strong> 
+                                        <span class="badge @(Model.Vehicle.Status == "Available" ? "bg-success" : "bg-warning")">@Model.Vehicle.Status</span>
+                                    </p>
+                                    @if (!string.IsNullOrEmpty(Model.Vehicle.Features))
+                                     {
+                                         <p><strong>Features:</strong> @Model.Vehicle.Features</p>
+                                     }
+                                     <p><strong>Condition:</strong> @Model.Vehicle.Condition</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions Panel -->
+                <div class="col-lg-4">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>Manage Inquiry</h5>
+                        </div>
+                        <div class="card-body">
+                            <form asp-action="UpdateInquiryStatus" method="post">
+                                <input type="hidden" name="inquiryId" value="@Model.Id" />
+                                
+                                <div class="mb-3">
+                                    <label for="status" class="form-label">Status</label>
+                                    <select name="status" id="status" class="form-select" required>
+                                        <option value="Pending" selected="@(Model.Status == "Pending")">Pending</option>
+                                        <option value="In Progress" selected="@(Model.Status == "In Progress")">In Progress</option>
+                                        <option value="Responded" selected="@(Model.Status == "Responded")">Responded</option>
+                                        <option value="Closed" selected="@(Model.Status == "Closed")">Closed</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="assignedToUserId" class="form-label">Assign To</label>
+                                    <select name="assignedToUserId" id="assignedToUserId" class="form-select">
+                                        <option value="">Unassigned</option>
+                                        @foreach (var staff in (List<AutoEdge.Models.Entities.ApplicationUser>)ViewBag.StaffMembers)
+                                        {
+                                            <option value="@staff.Id" selected="@(Model.AssignedToUserId == staff.Id)">
+                                                @staff.FirstName @staff.LastName
+                                            </option>
+                                        }
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="adminResponse" class="form-label">Admin Response</label>
+                                    <textarea name="adminResponse" id="adminResponse" class="form-control" rows="4" 
+                                              placeholder="Enter your response to the customer...">@Model.Response</textarea>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-save me-1"></i>Update Inquiry
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="card shadow-sm mt-3">
+                        <div class="card-header bg-secondary text-white">
+                            <h6 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <a href="@Url.Action("Details", "Vehicle", new { id = Model.VehicleId })" 
+                                   class="btn btn-outline-info btn-sm">
+                                    <i class="fas fa-car me-1"></i>View Vehicle Details
+                                </a>
+                                <a href="@Url.Action("UserDetails", new { id = Model.Customer.UserId })" 
+                                   class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-user me-1"></i>View Customer Profile
+                                </a>
+                                @if (Model.Vehicle.Status == "Available")
+                                {
+                                    <a href="@Url.Action("Reservations", new { vehicleId = Model.VehicleId })" 
+                                       class="btn btn-outline-success btn-sm">
+                                        <i class="fas fa-bookmark me-1"></i>Check Reservations
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

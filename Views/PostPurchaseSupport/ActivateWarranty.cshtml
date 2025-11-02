@@ -1,0 +1,191 @@
+@model AutoEdge.Models.ViewModels.WarrantyActivationViewModel
+@{
+    ViewData["Title"] = "Activate Warranty";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-shield-alt"></i> Activate Warranty</h2>
+        <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Support
+        </a>
+    </div>
+
+    <!-- Vehicle Information Card -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-car"></i> Vehicle Information</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Vehicle:</strong> @Model.VehicleInfo</p>
+                    <p><strong>VIN:</strong> @Model.VIN</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Purchase Date:</strong> @Model.PurchaseDate.ToString("MMMM dd, yyyy")</p>
+                    <p><strong>Contract ID:</strong> #@Model.ContractId</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Existing Warranties -->
+    @if (Model.ExistingWarranties.Any())
+    {
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-check-circle"></i> Existing Warranties</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    @foreach (var warranty in Model.ExistingWarranties)
+                    {
+                        <div class="col-md-6 mb-3">
+                            <div class="border rounded p-3 @(warranty.IsActive ? "border-success" : "border-secondary")">
+                                <h6 class="mb-2">
+                                    @warranty.WarrantyType
+                                    <span class="badge @(warranty.IsActive ? "bg-success" : "bg-secondary") ms-2">
+                                        @(warranty.IsActive ? "Active" : "Inactive")
+                                    </span>
+                                </h6>
+                                <p class="mb-1"><strong>Coverage:</strong> @warranty.CoverageDetails</p>
+                                <p class="mb-1"><strong>Valid Until:</strong> @warranty.EndDate.ToString("MMMM dd, yyyy")</p>
+                                @if (warranty.StartDate != default(DateTime))
+                                {
+                                    <p class="mb-0"><strong>Activated:</strong> @warranty.StartDate.ToString("MMMM dd, yyyy")</p>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Warranty Activation Form -->
+    <div class="card">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0"><i class="fas fa-plus-circle"></i> Activate New Warranty</h5>
+        </div>
+        <div class="card-body">
+            <form asp-action="ActivateWarranty" method="post">
+                <input asp-for="ContractId" type="hidden" />
+                <input asp-for="VehicleInfo" type="hidden" />
+                <input asp-for="VIN" type="hidden" />
+                <input asp-for="PurchaseDate" type="hidden" />
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="WarrantyType" class="form-label"></label>
+                        <select asp-for="WarrantyType" class="form-select" required>
+                            <option value="">Select warranty type...</option>
+                            @foreach (var type in Model.AvailableWarrantyTypes)
+                            {
+                                <option value="@type">@type</option>
+                            }
+                        </select>
+                        <span asp-validation-for="WarrantyType" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="DurationYears" class="form-label"></label>
+                        <select asp-for="DurationYears" class="form-select" required>
+                            <option value="1">1 Year</option>
+                            <option value="2">2 Years</option>
+                            <option value="3" selected>3 Years</option>
+                            <option value="4">4 Years</option>
+                            <option value="5">5 Years</option>
+                            <option value="7">7 Years</option>
+                            <option value="10">10 Years</option>
+                        </select>
+                        <span asp-validation-for="DurationYears" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="CoverageDetails" class="form-label"></label>
+                    <textarea asp-for="CoverageDetails" class="form-control" rows="4" 
+                              placeholder="Describe what this warranty covers (e.g., engine, transmission, electrical systems, etc.)" required></textarea>
+                    <span asp-validation-for="CoverageDetails" class="text-danger"></span>
+                    <div class="form-text">Provide detailed information about what components and services are covered under this warranty.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Terms" class="form-label"></label>
+                    <textarea asp-for="Terms" class="form-control" rows="6" 
+                              placeholder="Enter the terms and conditions for this warranty..."></textarea>
+                    <span asp-validation-for="Terms" class="text-danger"></span>
+                    <div class="form-text">Include any limitations, exclusions, or special conditions that apply to this warranty.</div>
+                </div>
+
+                <!-- Warranty Information Panel -->
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-info-circle"></i> Important Warranty Information</h6>
+                    <ul class="mb-0">
+                        <li>Warranty coverage begins immediately upon activation</li>
+                        <li>Regular maintenance is required to maintain warranty validity</li>
+                        <li>Some exclusions may apply based on vehicle usage and condition</li>
+                        <li>Warranty claims must be processed through authorized service centers</li>
+                        <li>Proof of purchase and maintenance records may be required for claims</li>
+                    </ul>
+                </div>
+
+                <div class="mb-4">
+                    <div class="form-check">
+                        <input asp-for="AgreeToTerms" class="form-check-input" type="checkbox" required>
+                        <label asp-for="AgreeToTerms" class="form-check-label">
+                            I have read and agree to the warranty terms and conditions
+                        </label>
+                        <span asp-validation-for="AgreeToTerms" class="text-danger d-block"></span>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a href="@Url.Action("Index")" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-shield-alt"></i> Activate Warranty
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-populate coverage details based on warranty type
+document.getElementById('WarrantyType').addEventListener('change', function() {
+    const warrantyType = this.value;
+    const coverageTextarea = document.getElementById('CoverageDetails');
+    
+    const coverageTemplates = {
+        'Basic Warranty': 'Covers major mechanical components including engine, transmission, and drivetrain for manufacturing defects.',
+        'Extended Warranty': 'Comprehensive coverage extending beyond the basic warranty period, including electrical systems and air conditioning.',
+        'Powertrain Warranty': 'Covers engine, transmission, transfer case, and differential components against manufacturing defects.',
+        'Bumper-to-Bumper Warranty': 'Complete vehicle coverage excluding wear items like tires, brake pads, and fluids.',
+        'Corrosion Warranty': 'Protection against rust and corrosion damage to the vehicle body and frame.',
+        'Emission Warranty': 'Covers emission control systems and components required for environmental compliance.'
+    };
+    
+    if (coverageTemplates[warrantyType] && !coverageTextarea.value) {
+        coverageTextarea.value = coverageTemplates[warrantyType];
+    }
+});
+
+// Auto-populate terms based on warranty type
+document.getElementById('WarrantyType').addEventListener('change', function() {
+    const warrantyType = this.value;
+    const termsTextarea = document.getElementById('Terms');
+    
+    const termsTemplate = `This warranty is subject to the following terms and conditions:\n\n1. Regular maintenance must be performed according to manufacturer specifications\n2. Warranty is void if vehicle is used for commercial purposes (unless specified)\n3. Modifications to the vehicle may void warranty coverage\n4. Claims must be reported within 30 days of discovery\n5. Repairs must be performed by authorized service centers\n6. Customer is responsible for deductibles as specified in the warranty agreement\n7. This warranty is transferable to subsequent owners with proper documentation\n\nFor complete terms and conditions, please refer to the full warranty documentation.`;
+    
+    if (warrantyType && !termsTextarea.value) {
+        termsTextarea.value = termsTemplate;
+    }
+});
+</script>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

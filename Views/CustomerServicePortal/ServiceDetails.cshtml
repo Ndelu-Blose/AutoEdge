@@ -1,0 +1,470 @@
+@model AutoEdge.Models.Entities.ServiceBooking
+@using AutoEdge.Models.Entities
+@{
+    ViewData["Title"] = "Service Details";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0">
+                        <i class="fas fa-wrench"></i> Service Details - @Model.Reference
+                    </h3>
+                    @{
+                        var statusClass = Model.Status switch
+                        {
+                            ServiceBookingStatus.Pending => "bg-warning",
+                            ServiceBookingStatus.Confirmed => "bg-info",
+                            ServiceBookingStatus.Waitlisted => "bg-secondary",
+                            ServiceBookingStatus.Canceled => "bg-danger",
+                            ServiceBookingStatus.Completed => "bg-success",
+                            _ => "bg-secondary"
+                        };
+                    }
+                    <span class="badge @statusClass fs-6">@Model.Status</span>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-car text-primary"></i> Vehicle Information</h5>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><strong>Make:</strong></td>
+                                    <td>@Model.Make</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Model:</strong></td>
+                                    <td>@Model.Model</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Year:</strong></td>
+                                    <td>@Model.Year</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>VIN:</strong></td>
+                                    <td>@Model.VIN</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Mileage:</strong></td>
+                                    <td>@(Model.Mileage?.ToString("N0") ?? "N/A")</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-tools text-success"></i> Service Information</h5>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><strong>Service Type:</strong></td>
+                                    <td>@Model.ServiceType</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Preferred Date:</strong></td>
+                                    <td>@Model.PreferredDate.ToString("MMMM dd, yyyy")</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Preferred Time:</strong></td>
+                                    <td>@Model.PreferredStart.ToString(@"hh\:mm")</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Estimated Duration:</strong></td>
+                                    <td>@Model.EstimatedDurationMin minutes</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Estimated Cost:</strong></td>
+                                    <td><strong class="text-success">R @Model.EstimatedCost.ToString("F2")</strong></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    @if (!string.IsNullOrEmpty(Model.Notes))
+                    {
+                        <hr>
+                        <h5><i class="fas fa-sticky-note text-warning"></i> Service Notes</h5>
+                        <div class="alert alert-info">
+                            @Model.Notes
+                        </div>
+                    }
+                    
+                    @if (Model.ServiceJob != null)
+                    {
+                        <hr>
+                        <h5><i class="fas fa-user-tie text-info"></i> Service Assignment</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td><strong>Mechanic:</strong></td>
+                                        <td>@(Model.ServiceJob.Mechanic?.Name ?? "Not assigned")</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Scheduled Date:</strong></td>
+                                        <td>@Model.ServiceJob.ScheduledDate.ToString("MMMM dd, yyyy")</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Scheduled Time:</strong></td>
+                                        <td>@Model.ServiceJob.ScheduledStart.ToString(@"hh\:mm")</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td><strong>Duration:</strong></td>
+                                        <td>@Model.ServiceJob.DurationMin minutes</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Status:</strong></td>
+                                        <td>
+                                            @if (Model.ServiceJob.IsCompleted)
+                                            {
+                                                <span class="badge bg-success">Completed</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-warning">In Progress</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+            
+            <!-- Service Checklist -->
+            @if (Model.ServiceJob?.ServiceChecklist != null)
+            {
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-clipboard-check"></i> Service Checklist
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Task</th>
+                                        <th>Status</th>
+                                        <th>Completed By</th>
+                                        <th>Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.ServiceJob.ServiceChecklist.Items)
+                                    {
+                                        <tr>
+                                            <td>@item.TaskName</td>
+                                            <td>
+                                                @if (item.IsCompleted)
+                                                {
+                                                    <span class="badge bg-success">Completed</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-warning">Pending</span>
+                                                }
+                                            </td>
+                                            <td>@item.CompletedBy</td>
+                                            <td>@item.Notes</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        
+        <div class="col-md-4">
+            <!-- Service Timeline -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history"></i> Service Timeline
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="timeline-item @(Model.Status == ServiceBookingStatus.Pending ? "active" : "")">
+                            <div class="timeline-marker bg-warning"></div>
+                            <div class="timeline-content">
+                                <h6>Booking Received</h6>
+                                <small class="text-muted">@Model.CreatedAt.ToString("MMM dd, yyyy")</small>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item @(Model.Status == ServiceBookingStatus.Confirmed ? "active" : "")">
+                            <div class="timeline-marker bg-info"></div>
+                            <div class="timeline-content">
+                                <h6>Confirmed</h6>
+                                <small class="text-muted">Service confirmed</small>
+                            </div>
+                        </div>
+                        
+                        @if (Model.IsCheckedIn)
+                        {
+                            <div class="timeline-item active">
+                                <div class="timeline-marker bg-primary"></div>
+                                <div class="timeline-content">
+                                    <h6>Checked In</h6>
+                                    <small class="text-muted">@Model.CheckedInDate?.ToString("MMM dd, yyyy")</small>
+                                </div>
+                            </div>
+                        }
+                        
+                        @if (Model.IsServiceStarted)
+                        {
+                            <div class="timeline-item active">
+                                <div class="timeline-marker bg-warning"></div>
+                                <div class="timeline-content">
+                                    <h6>Service Started</h6>
+                                    <small class="text-muted">@Model.ServiceStartedDate?.ToString("MMM dd, yyyy")</small>
+                                </div>
+                            </div>
+                        }
+                        
+                        <div class="timeline-item @(Model.Status == ServiceBookingStatus.Completed ? "active" : "")">
+                            <div class="timeline-marker bg-success"></div>
+                            <div class="timeline-content">
+                                <h6>Completed</h6>
+                                <small class="text-muted">Service finished</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Invoice & Payment -->
+            @if (Model.ServiceInvoices.Any())
+            {
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-file-invoice-dollar"></i> Invoice & Payment
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        @foreach (var invoice in Model.ServiceInvoices)
+                        {
+                            <div class="mb-3">
+                                <h6>Invoice #@invoice.InvoiceNumber</h6>
+                                <p class="mb-1"><strong>Total:</strong> R @invoice.TotalAmount.ToString("F2")</p>
+                                <p class="mb-1"><strong>Due Date:</strong> @invoice.DueDate.ToString("MMM dd, yyyy")</p>
+                                
+                                @{
+                                    var totalPaid = invoice.ServicePayments.Where(p => p.Status == "Completed").Sum(p => p.Amount);
+                                    var remaining = invoice.TotalAmount - totalPaid;
+                                }
+                                
+                                @if (remaining > 0)
+                                {
+                                    <p class="mb-2 text-danger"><strong>Remaining:</strong> R @remaining.ToString("F2")</p>
+                                    <a asp-controller="ServiceInvoice" asp-action="Pay" asp-route-id="@invoice.Id" 
+                                       class="btn btn-success btn-sm w-100">
+                                        <i class="fas fa-credit-card"></i> Pay Now
+                                    </a>
+                                }
+                                else
+                                {
+                                    <p class="mb-2 text-success"><strong>Fully Paid</strong></p>
+                                }
+                                
+                                <div class="btn-group w-100 mt-2" role="group">
+                                    <a asp-controller="ServiceInvoice" asp-action="CustomerView" asp-route-id="@invoice.Id" 
+                                       class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-eye"></i> View
+                                    </a>
+                                    <a asp-controller="ServiceInvoice" asp-action="DownloadPDF" asp-route-id="@invoice.Id" 
+                                       class="btn btn-outline-secondary btn-sm">
+                                        <i class="fas fa-download"></i> PDF
+                                    </a>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+            
+            <!-- Actions -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-cogs"></i> Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        @if (Model.Status == ServiceBookingStatus.Completed && Model.CustomerRating == null)
+                        {
+                            <button type="button" class="btn btn-warning" onclick="showRatingModal()">
+                                <i class="fas fa-star"></i> Rate Service
+                            </button>
+                        }
+                        
+                        <a asp-action="MyServices" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Services
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Rating Modal -->
+<div class="modal fade" id="ratingModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Rate Your Service</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="ratingForm">
+                    <div class="mb-3">
+                        <label class="form-label">Rating</label>
+                        <div class="rating">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                <i class="fas fa-star rating-star" data-rating="@i"></i>
+                            }
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="comments" class="form-label">Comments (Optional)</label>
+                        <textarea id="comments" name="comments" class="form-control" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitRating()">Submit Rating</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.timeline-item.active .timeline-marker {
+    box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.25);
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -25px;
+    top: 5px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+}
+
+.timeline-content h6 {
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.rating {
+    font-size: 2rem;
+}
+
+.rating-star {
+    color: #ddd;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.rating-star:hover,
+.rating-star.active {
+    color: #ffc107;
+}
+</style>
+
+@section Scripts {
+    <script>
+        let selectedRating = 0;
+
+        function showRatingModal() {
+            new bootstrap.Modal(document.getElementById('ratingModal')).show();
+        }
+
+        // Rating stars interaction
+        document.querySelectorAll('.rating-star').forEach(star => {
+            star.addEventListener('click', function() {
+                selectedRating = parseInt(this.dataset.rating);
+                updateStars();
+            });
+            
+            star.addEventListener('mouseenter', function() {
+                const rating = parseInt(this.dataset.rating);
+                highlightStars(rating);
+            });
+        });
+
+        document.querySelector('.rating').addEventListener('mouseleave', function() {
+            updateStars();
+        });
+
+        function highlightStars(rating) {
+            document.querySelectorAll('.rating-star').forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+        }
+
+        function updateStars() {
+            highlightStars(selectedRating);
+        }
+
+        function submitRating() {
+            if (selectedRating === 0) {
+                alert('Please select a rating');
+                return;
+            }
+
+            const comments = document.getElementById('comments').value;
+
+            fetch('/CustomerServicePortal/RateService', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: `bookingId=@Model.Id&rating=${selectedRating}&comments=${encodeURIComponent(comments)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Thank you for your feedback!');
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while submitting your rating');
+            });
+        }
+    </script>
+}

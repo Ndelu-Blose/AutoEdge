@@ -1,0 +1,252 @@
+@model IEnumerable<AutoEdge.Models.Entities.JobPosting>
+
+@{
+    ViewData["Title"] = "Recruitment Dashboard";
+}
+
+<style>
+    .modern-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    .modern-table thead th {
+        background: linear-gradient(135deg, var(--primary-color) 0%, #34495e 100%);
+        color: white;
+        font-weight: 600;
+        padding: 1rem;
+        border: none;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .modern-table tbody tr {
+        background: white;
+        transition: all 0.2s ease;
+        border-bottom: 1px solid var(--border-color);
+    }
+    .modern-table tbody tr:hover {
+        background: #f8f9fa;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .modern-table tbody td {
+        padding: 1.25rem 1rem;
+        vertical-align: middle;
+        color: #333 !important;
+        font-size: 0.95rem;
+    }
+    
+    /* Custom card styling to match system theme */
+    .dashboard-card-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    .dashboard-card-primary .inner h3,
+    .dashboard-card-primary .inner p {
+        color: white;
+    }
+    .dashboard-card-secondary {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+    }
+    .dashboard-card-secondary .inner h3,
+    .dashboard-card-secondary .inner p {
+        color: white;
+    }
+    .dashboard-card-info {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+    }
+    .dashboard-card-info .inner h3,
+    .dashboard-card-info .inner p {
+        color: white;
+    }
+    .dashboard-card-success {
+        background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        color: white;
+    }
+    .dashboard-card-success .inner h3,
+    .dashboard-card-success .inner p {
+        color: white;
+    }
+    .dashboard-card .icon i {
+        opacity: 0.15;
+        font-size: 70px;
+        position: absolute;
+        right: 20px;
+        top: 20px;
+    }
+    .dashboard-card .small-box-footer {
+        background-color: rgba(0,0,0,0.1);
+        color: white;
+        text-align: center;
+        padding: 3px 0;
+        display: block;
+        z-index: 10;
+        text-decoration: none;
+    }
+    .dashboard-card .small-box-footer:hover {
+        background-color: rgba(0,0,0,0.2);
+        color: white;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-briefcase mr-2"></i>
+                        Recruitment Dashboard
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box dashboard-card dashboard-card-primary">
+                                <div class="inner">
+                                    <h3>@Model.Count()</h3>
+                                    <p>Active Job Postings</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-briefcase"></i>
+                                </div>
+                                <a href="@Url.Action("JobPostings")" class="small-box-footer">
+                                    More info <i class="fas fa-arrow-circle-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box dashboard-card dashboard-card-success">
+                                <div class="inner">
+                                    <h3>@Model.Sum(j => j.Applications.Count)</h3>
+                                    <p>Total Applications</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-file-alt"></i>
+                                </div>
+                                <a href="@Url.Action("Applications")" class="small-box-footer">
+                                    More info <i class="fas fa-arrow-circle-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box dashboard-card dashboard-card-info">
+                                <div class="inner">
+                                    <h3>@Model.SelectMany(j => j.Applications).Count(a => a.Status == "Shortlisted")</h3>
+                                    <p>Shortlisted Candidates</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <a href="@Url.Action("Applications")" class="small-box-footer">
+                                    More info <i class="fas fa-arrow-circle-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box dashboard-card dashboard-card-secondary">
+                                <div class="inner">
+                                    <h3>@Model.SelectMany(j => j.Applications).Count(a => a.Status == "Interview Scheduled")</h3>
+                                    <p>Scheduled Interviews</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-calendar"></i>
+                                </div>
+                                <a href="@Url.Action("InterviewSchedule")" class="small-box-footer">
+                                    More info <i class="fas fa-arrow-circle-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Recent Job Postings</h3>
+                                    <div class="card-tools">
+                                        <a href="@Url.Action("CreateJobPosting")" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-plus"></i> Create New Job Posting
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="modern-table">
+                                            <thead>
+                                                <tr>
+                                                    <th><i class="fas fa-briefcase mr-2"></i>Job Title</th>
+                                                    <th><i class="fas fa-building mr-2"></i>Department</th>
+                                                    <th><i class="fas fa-info-circle mr-2"></i>Status</th>
+                                                    <th><i class="fas fa-users mr-2"></i>Applications</th>
+                                                    <th><i class="fas fa-calendar mr-2"></i>Posted Date</th>
+                                                    <th><i class="fas fa-calendar-times mr-2"></i>Closing Date</th>
+                                                    <th><i class="fas fa-cogs mr-2"></i>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var job in Model.Take(10))
+                                                {
+                                                    <tr>
+                                                        <td style="font-weight: 500;">@job.JobTitle</td>
+                                                        <td>
+                                                            <span class="badge bg-info" style="padding: 0.35rem 0.75rem;">
+                                                                <i class="fas fa-building mr-1"></i>@job.Department
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            @if (job.Status == "Active")
+                                                            {
+                                                                <span class="badge bg-success" style="padding: 0.35rem 0.75rem;">@job.Status</span>
+                                                            }
+                                                            else if (job.Status == "Closed")
+                                                            {
+                                                                <span class="badge bg-danger" style="padding: 0.35rem 0.75rem;">@job.Status</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="badge bg-warning text-dark" style="padding: 0.35rem 0.75rem;">@job.Status</span>
+                                                            }
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge bg-primary" style="padding: 0.35rem 0.75rem;">
+                                                                <i class="fas fa-users mr-1"></i>@job.Applications.Count
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            <i class="fas fa-calendar-alt text-muted mr-1"></i>
+                                                            @job.PostedDate.ToString("MMM dd, yyyy")
+                                                        </td>
+                                                        <td>
+                                                            <i class="fas fa-calendar-times text-muted mr-1"></i>
+                                                            @job.ClosingDate.ToString("MMM dd, yyyy")
+                                                        </td>
+                                                        <td>
+                                                            <div class="d-flex gap-2">
+                                                                <a href="@Url.Action("EditJobPosting", new { id = job.JobId })" class="btn btn-outline-primary btn-sm">
+                                                                    <i class="fas fa-edit"></i>
+                                                                </a>
+                                                                <a href="@Url.Action("Applications", new { jobId = job.JobId })" class="btn btn-outline-info btn-sm">
+                                                                    <i class="fas fa-eye"></i>
+                                                                </a>
+                                                                <a href="@Url.Action("ShortlistCandidates", new { jobId = job.JobId })" class="btn btn-outline-success btn-sm">
+                                                                    <i class="fas fa-users"></i>
+                                                                </a>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,255 @@
+@model AutoEdge.Models.Entities.ApplicationUser
+@{
+    ViewData["Title"] = "User Details";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2>User Details</h2>
+                <div>
+                    <a asp-action="EditUser" asp-route-id="@Model.Id" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Edit User
+                    </a>
+                    <a asp-action="Users" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Users
+                    </a>
+                </div>
+            </div>
+            <hr />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Personal Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>First Name:</strong> @Model.FirstName</p>
+                            <p><strong>Last Name:</strong> @Model.LastName</p>
+                            <p><strong>Email:</strong> @Model.Email</p>
+                            <p><strong>Phone:</strong> @(Model.PhoneNumber ?? "Not provided")</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Address:</strong> @(Model.Address ?? "Not provided")</p>
+                            <p><strong>City:</strong> @(Model.City ?? "Not provided")</p>
+                            <p><strong>State:</strong> @(Model.State ?? "Not provided")</p>
+                            <p><strong>Zip Code:</strong> @(Model.ZipCode ?? "Not provided")</p>
+                            <p><strong>Country:</strong> @(Model.Country ?? "Not provided")</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5>Account Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>User ID:</strong> @Model.Id</p>
+                            <p><strong>Username:</strong> @Model.UserName</p>
+                            <p><strong>Created Date:</strong> @Model.CreatedDate.ToString("MMM dd, yyyy HH:mm")</p>
+                            <p><strong>Last Login:</strong> @(Model.LastLoginDate?.ToString("MMM dd, yyyy HH:mm") ?? "Never")</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Status:</strong> 
+                                @if (Model.IsActive)
+                                {
+                                    <span class="badge bg-success">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Inactive</span>
+                                }
+                            </p>
+                            <p><strong>Email Confirmed:</strong> 
+                                @if (Model.EmailConfirmed)
+                                {
+                                    <span class="badge bg-success">Yes</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning">No</span>
+                                }
+                            </p>
+                            <p><strong>Phone Confirmed:</strong> 
+                                @if (Model.PhoneNumberConfirmed)
+                                {
+                                    <span class="badge bg-success">Yes</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning">No</span>
+                                }
+                            </p>
+                            <p><strong>Two Factor Enabled:</strong> 
+                                @if (Model.TwoFactorEnabled)
+                                {
+                                    <span class="badge bg-success">Yes</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">No</span>
+                                }
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @if (ViewBag.UserInquiries != null && ViewBag.UserInquiries.Any())
+            {
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h5>Recent Inquiries</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Vehicle</th>
+                                        <th>Status</th>
+                                        <th>Message</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var inquiry in ViewBag.UserInquiries)
+                                    {
+                                        <tr>
+                                            <td>@inquiry.CreatedDate.ToString("MMM dd, yyyy")</td>
+                                            <td>@inquiry.Vehicle?.Make @inquiry.Vehicle?.Model</td>
+                                            <td>
+                                                <span class="badge bg-@(inquiry.Status == "Pending" ? "warning" : inquiry.Status == "Responded" ? "success" : "secondary")">
+                                                    @inquiry.Status
+                                                </span>
+                                            </td>
+                                            <td>@(inquiry.Message.Length > 50 ? inquiry.Message.Substring(0, 50) + "..." : inquiry.Message)</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>User Roles</h5>
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.UserRoles != null && ((List<string>)ViewBag.UserRoles).Count > 0)
+                    @* @if (ViewBag.UserRoles != null && ViewBag.UserRoles.Any()) *@
+                    {
+                        @foreach (var role in ViewBag.UserRoles)
+                        {
+                            <span class="badge bg-primary me-1 mb-1">@role</span>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted">No roles assigned</p>
+                    }
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5>Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a asp-action="EditUser" asp-route-id="@Model.Id" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-edit"></i> Edit User
+                        </a>
+                        
+                        @if (Model.IsActive)
+                        {
+                            <form asp-action="ToggleUserStatus" asp-route-id="@Model.Id" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-outline-warning btn-sm w-100" 
+                                        onclick="return confirm('Are you sure you want to deactivate this user?')">
+                                    <i class="fas fa-user-slash"></i> Deactivate User
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <form asp-action="ToggleUserStatus" asp-route-id="@Model.Id" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-outline-success btn-sm w-100">
+                                    <i class="fas fa-user-check"></i> Activate User
+                                </button>
+                            </form>
+                        }
+                        
+                        <button class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#resetPasswordModal">
+                            <i class="fas fa-key"></i> Reset Password
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5>Security Information</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Lockout Enabled:</strong> 
+                        @if (Model.LockoutEnabled)
+                        {
+                            <span class="badge bg-warning">Yes</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success">No</span>
+                        }
+                    </p>
+                    
+                    @if (Model.LockoutEnd.HasValue && Model.LockoutEnd > DateTimeOffset.UtcNow)
+                    {
+                        <p><strong>Locked Until:</strong> @Model.LockoutEnd.Value.ToString("MMM dd, yyyy HH:mm")</p>
+                    }
+                    
+                    <p><strong>Access Failed Count:</strong> @Model.AccessFailedCount</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reset Password Modal -->
+<div class="modal fade" id="resetPasswordModal" tabindex="-1" aria-labelledby="resetPasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="resetPasswordModalLabel">Reset Password</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to reset the password for <strong>@Model.FirstName @Model.LastName</strong>?</p>
+                <p class="text-muted">A temporary password will be generated and sent to the user's email address.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form asp-action="ResetUserPassword" asp-route-id="@Model.Id" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-key"></i> Reset Password
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

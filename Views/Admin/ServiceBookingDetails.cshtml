@@ -1,0 +1,229 @@
+@model AutoEdge.Models.Entities.ServiceBooking
+@using AutoEdge.Models.Entities
+@{
+    ViewData["Title"] = "Service Booking Details";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-calendar-check me-2"></i>Service Booking Details</h2>
+                <a href="/Admin/ServiceBookings" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Bookings
+                </a>
+            </div>
+
+            <div class="row">
+                <div class="col-md-8">
+                    <!-- Booking Information -->
+                    <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Booking Information</h5>
+                            <span class="badge @GetStatusBadgeClass(Model.Status) fs-6">@Model.Status</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>Booking Details</h6>
+                                    <p><strong>Reference:</strong> <code>@Model.Reference</code></p>
+                                    <p><strong>Service Type:</strong> @Model.ServiceType</p>
+                                    <p><strong>Scheduled Date:</strong> @Model.PreferredDate.ToString("MMMM dd, yyyy")</p>
+                                    <p><strong>Scheduled Time:</strong> @Model.PreferredStart.ToString("HH:mm")</p>
+                                    <p><strong>Duration:</strong> @Model.EstimatedDurationMin minutes</p>
+                                    <p><strong>Estimated Cost:</strong> $@Model.EstimatedCost.ToString("F2")</p>
+                                    <p><strong>Delivery Method:</strong> @Model.DeliveryMethod</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Vehicle Information</h6>
+                                    <p><strong>Make:</strong> @Model.Make</p>
+                                    <p><strong>Model:</strong> @Model.Model</p>
+                                    <p><strong>Year:</strong> @Model.Year</p>
+                                    <p><strong>VIN:</strong> @(Model.VIN ?? "Not provided")</p>
+                                    <p><strong>Mileage:</strong> @(Model.Mileage?.ToString() ?? "Not provided")</p>
+                                    @if (!string.IsNullOrEmpty(Model.Notes))
+                                    {
+                                        <p><strong>Notes:</strong> @Model.Notes</p>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Customer Information -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-user me-2"></i>Customer Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Name:</strong> @Model.CustomerName</p>
+                                    <p><strong>Email:</strong> @Model.CustomerEmail</p>
+                                    <p><strong>Phone:</strong> @(Model.CustomerPhone ?? "Not provided")</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Customer ID:</strong> @(Model.CustomerId ?? "Guest")</p>
+                                    <p><strong>Created:</strong> @Model.CreatedAtUtc.ToString("MMMM dd, yyyy HH:mm")</p>
+                                    <p><strong>Created By:</strong> @Model.CreatedBy</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Service Job Information -->
+                    @if (Model.ServiceJob != null)
+                    {
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-tools me-2"></i>Service Job Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p><strong>Assigned Mechanic:</strong> 
+                                            @if (Model.ServiceJob.Mechanic != null)
+                                            {
+                                                <span class="badge bg-info">@Model.ServiceJob.Mechanic.Name</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-warning">Unassigned</span>
+                                            }
+                                        </p>
+                                        <p><strong>Job Status:</strong> 
+                                            <span class="badge @(Model.ServiceJob.IsCompleted ? "bg-success" : "bg-warning")">
+                                                @(Model.ServiceJob.IsCompleted ? "Completed" : "In Progress")
+                                            </span>
+                                        </p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p><strong>Scheduled Date:</strong> @Model.ServiceJob.ScheduledDate.ToString("MMMM dd, yyyy")</p>
+                                        <p><strong>Scheduled Start:</strong> @Model.ServiceJob.ScheduledStart.ToString("HH:mm")</p>
+                                        <p><strong>Duration:</strong> @Model.ServiceJob.DurationMin minutes</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="col-md-4">
+                    <!-- Check-In Status -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-check-circle me-2"></i>Check-In Status</h5>
+                        </div>
+                        <div class="card-body">
+                            @if (Model.IsCheckedIn)
+                            {
+                                <div class="alert alert-success">
+                                    <i class="fas fa-check-circle me-2"></i>
+                                    <strong>Checked In</strong>
+                                </div>
+                                <p><strong>Check-In Date:</strong> @Model.CheckedInDate?.ToString("MMMM dd, yyyy HH:mm")</p>
+                            }
+                            else
+                            {
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-clock me-2"></i>
+                                    <strong>Not Checked In</strong>
+                                </div>
+                                <p class="text-muted">Customer has not checked in yet.</p>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Status Management -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-cog me-2"></i>Status Management</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post" action="/Admin/UpdateServiceBookingStatus">
+                                <input type="hidden" name="id" value="@Model.Id" />
+                                <div class="mb-3">
+                                    <label for="status" class="form-label">Booking Status:</label>
+                                    <select name="status" class="form-select" id="status">
+                                        @foreach (ServiceBookingStatus status in Enum.GetValues<ServiceBookingStatus>())
+                                        {
+                                            <option value="@status" selected="@(Model.Status == status)">@status</option>
+                                        }
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-save me-2"></i>Update Status
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Mechanic Reassignment -->
+                    @if (Model.ServiceJob?.Mechanic != null)
+                    {
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-user-edit me-2"></i>Reassign Mechanic</h5>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Current Mechanic:</strong> @Model.ServiceJob.Mechanic.Name</p>
+                                <form method="post" action="/Admin/ReassignServiceBooking">
+                                    <input type="hidden" name="id" value="@Model.Id" />
+                                    <div class="mb-3">
+                                        <label for="mechanicId" class="form-label">New Mechanic:</label>
+                                        <select name="mechanicId" class="form-select" id="mechanicId" required>
+                                            <option value="">Select a mechanic...</option>
+                                            <!-- This would be populated with available mechanics -->
+                                            <option value="1">Tech One</option>
+                                            <option value="2">John Mechanic</option>
+                                        </select>
+                                    </div>
+                                    <button type="submit" class="btn btn-warning w-100">
+                                        <i class="fas fa-user-edit me-2"></i>Reassign Mechanic
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Quick Actions -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <a href="mailto:@Model.CustomerEmail" class="btn btn-outline-primary">
+                                    <i class="fas fa-envelope me-2"></i>Email Customer
+                                </a>
+                                @if (!string.IsNullOrEmpty(Model.CustomerPhone))
+                                {
+                                    <a href="tel:@Model.CustomerPhone" class="btn btn-outline-success">
+                                        <i class="fas fa-phone me-2"></i>Call Customer
+                                    </a>
+                                }
+                                <button class="btn btn-outline-info" onclick="window.print()">
+                                    <i class="fas fa-print me-2"></i>Print Details
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetStatusBadgeClass(ServiceBookingStatus status)
+    {
+        return status switch
+        {
+            ServiceBookingStatus.Confirmed => "bg-success",
+            ServiceBookingStatus.Pending => "bg-warning",
+            ServiceBookingStatus.Completed => "bg-info",
+            ServiceBookingStatus.Canceled => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+}

@@ -1,0 +1,95 @@
+@model IEnumerable<AutoEdge.Models.Entities.JobPosting>
+
+@{
+    ViewData["Title"] = "Vacant Positions";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-briefcase mr-2"></i>
+                        Available Positions at AutoEdge
+                    </h3>
+                </div>
+                <div class="card-body">
+                    @if (Model.Any())
+                    {
+                        <div class="row">
+                            @foreach (var job in Model)
+                            {
+                                <div class="col-md-6 col-lg-4 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-header">
+                                            <h5 class="card-title mb-1">@job.JobTitle</h5>
+                                            <span class="badge badge-info">@job.Department</span>
+                                        </div>
+                                        <div class="card-body">
+                                            <p class="card-text">
+                                                @if (job.JobDescription.Length > 150)
+                                                {
+                                                    @job.JobDescription.Substring(0, 150)<text>...</text>
+                                                }
+                                                else
+                                                {
+                                                    @job.JobDescription
+                                                }
+                                            </p>
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-clock mr-1"></i>
+                                                        @job.MinYearsExperience+ years exp
+                                                    </small>
+                                                </div>
+                                                <div class="col-6">
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-users mr-1"></i>
+                                                        @job.PositionsAvailable position(s)
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="card-footer">
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-calendar mr-1"></i>
+                                                        Closes: @job.ClosingDate.ToString("MMM dd, yyyy")
+                                                    </small>
+                                                </div>
+                                                <div class="col-6 text-right">
+                                                    <a href="@Url.Action("JobDetails", new { id = job.JobId })" class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-eye mr-1"></i>View Details
+                                                    </a>
+                                                </div>
+                                            </div>
+                                            <div class="row mt-2">
+                                                <div class="col-12">
+                                                    <a href="@Url.Action("Apply", new { id = job.JobId })" 
+                                                       class="btn btn-sm btn-primary w-100">
+                                                        <i class="fas fa-paper-plane mr-1"></i>Apply Now
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-briefcase fa-3x text-muted mb-3"></i>
+                            <h4 class="text-muted">No Active Positions Available</h4>
+                            <p class="text-muted">There are currently no open positions. Please check back later.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

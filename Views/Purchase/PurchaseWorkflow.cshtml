@@ -1,0 +1,476 @@
+@model AutoEdge.Models.Entities.Purchase
+@{
+    ViewData["Title"] = "Purchase Workflow";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-shopping-cart me-2"></i>Purchase Workflow</h2>
+                <a href="@Url.Action("Details", "VehicleBrowse", new { id = Model.VehicleId })" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Vehicle
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success/Error Messages -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </div>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>@TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Vehicle Summary -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-car me-2"></i>Vehicle Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h4>@Model.Vehicle.Year @Model.Vehicle.Make @Model.Vehicle.Model</h4>
+                            <p class="text-muted mb-2">VIN: @Model.Vehicle.VIN</p>
+                            <p class="mb-0">Mileage: @Model.Vehicle.Mileage.ToString("N0") miles</p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <h3 class="text-primary">@Model.PurchasePrice.ToString("C")</h3>
+                            <span class="badge bg-info">Purchase ID: #@Model.Id</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Purchase Progress Steps -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-tasks me-2"></i>Purchase Progress</h5>
+                </div>
+                <div class="card-body">
+                    <div class="progress-steps">
+                        <div class="step @(GetStepClass("Initiated"))">
+                            <div class="step-icon">
+                                <i class="fas fa-play"></i>
+                            </div>
+                            <div class="step-content">
+                                <h6>Purchase Initiated</h6>
+                                <small class="text-muted">@Model.InitiatedDate.ToString("MMM dd, yyyy")</small>
+                            </div>
+                        </div>
+                        
+                        <div class="step @(GetStepClass("DocumentsRequired"))">
+                            <div class="step-icon">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <div class="step-content">
+                                <h6>Document Upload</h6>
+                                <small class="text-muted">Upload required documents</small>
+                            </div>
+                        </div>
+                        
+                        <div class="step @(GetStepClass("DocumentsReview"))">
+                            <div class="step-icon">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <div class="step-content">
+                                <h6>Document Review</h6>
+                                <small class="text-muted">Admin reviewing documents</small>
+                            </div>
+                        </div>
+                        
+                        <div class="step @(GetStepClass("ContractGeneration"))">
+                            <div class="step-icon">
+                                <i class="fas fa-file-contract"></i>
+                            </div>
+                            <div class="step-content">
+                                <h6>Contract Generation</h6>
+                                <small class="text-muted">Purchase agreement created</small>
+                            </div>
+                        </div>
+                        
+                        <div class="step @(GetStepClass("PaymentProcessing"))">
+                            <div class="step-icon">
+                                <i class="fas fa-credit-card"></i>
+                            </div>
+                            <div class="step-content">
+                                <h6>Payment Processing</h6>
+                                <small class="text-muted">Complete payment</small>
+                            </div>
+                        </div>
+                        
+                        <div class="step @(GetStepClass("Completed"))">
+                            <div class="step-icon">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="step-content">
+                                <h6>Purchase Complete</h6>
+                                <small class="text-muted">Vehicle ownership transferred</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Current Step Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-clipboard-list me-2"></i>Next Steps</h5>
+                </div>
+                <div class="card-body">
+                    @switch (Model.Status)
+                    {
+                        case "Initiated":
+                            <div class="alert alert-info">
+                                <h6><i class="fas fa-info-circle me-2"></i>Welcome to the Purchase Process!</h6>
+                                <p class="mb-3">Your purchase has been initiated. The next step is to upload the required documents for verification.</p>
+                                <a href="@Url.Action("Documents", "Customer", new { purchaseId = Model.Id })" class="btn btn-primary">
+                                    <i class="fas fa-upload me-2"></i>Upload Documents
+                                </a>
+                            </div>
+                            break;
+                            
+                        case "DocumentsRequired":
+                            <div class="alert alert-warning">
+                                <h6><i class="fas fa-exclamation-triangle me-2"></i>Documents Required</h6>
+                                <p class="mb-3">Please upload the required documents to proceed with your purchase.</p>
+                                <a href="@Url.Action("Documents", "Customer", new { purchaseId = Model.Id })" class="btn btn-warning">
+                                    <i class="fas fa-upload me-2"></i>Upload Documents
+                                </a>
+                            </div>
+                            break;
+                            
+                        case "DocumentsUploaded":
+                            <div class="alert alert-success">
+                                <h6><i class="fas fa-check-circle me-2"></i>Documents Uploaded</h6>
+                                <p class="mb-3">Your documents have been uploaded successfully. You can now submit them for admin review.</p>
+                                <div class="d-flex gap-2">
+                                    <a href="@Url.Action("Documents", "Customer", new { purchaseId = Model.Id })" class="btn btn-outline-primary">
+                                        <i class="fas fa-plus me-2"></i>Upload More Documents
+                                    </a>
+                                    <a href="@Url.Action("SubmitForReview", "Purchase", new { id = Model.Id })" class="btn btn-success">
+                                        <i class="fas fa-paper-plane me-2"></i>Submit for Review
+                                    </a>
+                                </div>
+                            </div>
+                            break;
+                            
+                        case "DocumentsReview":
+                            <div class="alert alert-info">
+                                <h6><i class="fas fa-clock me-2"></i>Under Review</h6>
+                                <p class="mb-0">Your documents are being reviewed by our team. We'll notify you once the review is complete.</p>
+                            </div>
+                            break;
+                            
+                        case "ContractGeneration":
+                            <div class="alert alert-success">
+                                <h6><i class="fas fa-file-contract me-2"></i>Contract Ready</h6>
+                                <p class="mb-3">Your purchase contract has been generated and is ready for review.</p>
+                                <a href="@Url.Action("GenerateContract", new { id = Model.Id })" class="btn btn-success">
+                                    <i class="fas fa-eye me-2"></i>Review Contract
+                                </a>
+                            </div>
+                            break;
+                            
+                        case "ContractGenerated":
+                            <div class="alert alert-primary">
+                                <h6><i class="fas fa-file-contract me-2"></i>Contract Ready for Review</h6>
+                                <p class="mb-3">Your purchase contract has been generated and is ready for review. Please review the contract carefully before proceeding to payment.</p>
+                                <div class="d-flex gap-2">
+                                    <a href="@Url.Action("GenerateContract", new { id = Model.Id })" class="btn btn-outline-primary">
+                                        <i class="fas fa-eye me-2"></i>View Contract
+                                    </a>
+                                    @* <a href="@Url.Action("SelectPayment", new { id = Model.Id })" class="btn btn-success">
+                                        <i class="fas fa-credit-card me-2"></i>Proceed to Payment
+                                    </a> *@
+                                </div>
+                            </div>
+                            break;
+                            
+                        case "PaymentProcessing":
+                            <div class="alert alert-primary">
+                                <h6><i class="fas fa-credit-card me-2"></i>Payment Required</h6>
+                                <p class="mb-3">Please complete the payment to finalize your purchase.</p>
+                                <a href="@Url.Action("SelectPayment", new { id = Model.Id })" class="btn btn-primary">
+                                    <i class="fas fa-dollar-sign me-2"></i>Make Payment
+                                </a>
+                            </div>
+                            break;
+                            
+                        case "Completed":
+                            <div class="alert alert-success">
+                                <h6><i class="fas fa-check-circle me-2"></i>Purchase Complete!</h6>
+                                <p class="mb-3">Congratulations! Your purchase has been completed successfully. Your next step is to schedule delivery of your vehicle.</p>
+                                <div class="d-flex gap-2 flex-wrap">
+                                    @if (Model.Contracts != null && Model.Contracts.Any())
+                                    {
+                                        <a href="@Url.Action("Schedule", "Delivery", new { contractId = Model.Contracts.First().Id })" class="btn btn-primary">
+                                            <i class="fas fa-truck me-2"></i>Schedule Delivery
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="btn btn-secondary disabled">
+                                            <i class="fas fa-truck me-2"></i>Contract Required for Delivery
+                                        </span>
+                                    }
+                                    <a href="@Url.Action("Dashboard", "Customer")" class="btn btn-outline-primary">
+                                        <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+                                    </a>
+                                    <a href="@Url.Action("MyPurchases", "Purchase")" class="btn btn-outline-secondary">
+                                        <i class="fas fa-list me-2"></i>View All Purchases
+                                    </a>
+                                </div>
+                            </div>
+                            break;
+                            
+                        case "Cancelled":
+                            <div class="alert alert-danger">
+                                <h6><i class="fas fa-times-circle me-2"></i>Purchase Cancelled</h6>
+                                <p class="mb-0">This purchase has been cancelled. @(!string.IsNullOrEmpty(Model.CancellationReason) ? "Reason: " + Model.CancellationReason : "")</p>
+                            </div>
+                            break;
+                            
+                        default:
+                            <div class="alert alert-secondary">
+                                <h6><i class="fas fa-question-circle me-2"></i>Status: @Model.Status</h6>
+                                <p class="mb-0">Please contact our support team for assistance with your purchase.</p>
+                            </div>
+                            break;
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Purchase History -->
+    @if (Model.StatusHistory != null && Model.StatusHistory.Any())
+    {
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-history me-2"></i>Purchase History</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="timeline">
+                            @foreach (var history in Model.StatusHistory.OrderByDescending(h => h.ChangedDate))
+                            {
+                                <div class="timeline-item">
+                                    <div class="timeline-marker"></div>
+                                    <div class="timeline-content">
+                                        <h6 class="mb-1">@history.ToStatus</h6>
+                                        <p class="text-muted mb-1">@history.ChangedDate.ToString("MMM dd, yyyy hh:mm tt")</p>
+                                        @if (!string.IsNullOrEmpty(history.Notes))
+                                        {
+                                            <p class="mb-0">@history.Notes</p>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@functions {
+    private string GetStepClass(string stepStatus)
+    {
+        var currentStepOrder = GetStepOrder(Model.Status);
+        var stepOrder = GetStepOrder(stepStatus);
+        
+        if (stepOrder < currentStepOrder)
+            return "completed";
+        else if (stepOrder == currentStepOrder)
+            return "active";
+        else
+            return "";
+    }
+    
+    private int GetStepOrder(string status)
+    {
+        return status switch
+        {
+            "Initiated" => 1,
+            "DocumentsRequired" => 2,
+            "DocumentsReview" => 3,
+            "ContractGeneration" => 4,
+            "PaymentProcessing" => 5,
+            "Completed" => 6,
+            _ => 0
+        };
+    }
+}
+
+<style>
+    .progress-steps {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 2rem 0;
+        position: relative;
+    }
+    
+    .progress-steps::before {
+        content: '';
+        position: absolute;
+        top: 25px;
+        left: 25px;
+        right: 25px;
+        height: 2px;
+        background-color: #e9ecef;
+        z-index: 1;
+    }
+    
+    .step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        position: relative;
+        z-index: 2;
+        flex: 1;
+    }
+    
+    .step-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 0.5rem;
+        font-size: 1.2rem;
+        border: 3px solid #e9ecef;
+    }
+    
+    .step.completed .step-icon {
+        background-color: #28a745;
+        color: white;
+        border-color: #28a745;
+    }
+    
+    .step.active .step-icon {
+        background-color: #007bff;
+        color: white;
+        border-color: #007bff;
+        animation: pulse 2s infinite;
+    }
+    
+    .step-content h6 {
+        margin-bottom: 0.25rem;
+        font-size: 0.9rem;
+    }
+    
+    .step-content small {
+        font-size: 0.75rem;
+    }
+    
+    @@keyframes pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7);
+        }
+        70% {
+            box-shadow: 0 0 0 10px rgba(0, 123, 255, 0);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
+        }
+    }
+    
+    .timeline {
+        position: relative;
+        padding-left: 2rem;
+    }
+    
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 15px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background-color: #e9ecef;
+    }
+    
+    .timeline-item {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+    
+    .timeline-marker {
+        position: absolute;
+        left: -2rem;
+        top: 0.25rem;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background-color: #007bff;
+        border: 3px solid white;
+        box-shadow: 0 0 0 2px #007bff;
+    }
+    
+    .timeline-content {
+        background-color: #f8f9fa;
+        padding: 1rem;
+        border-radius: 0.375rem;
+        border-left: 3px solid #007bff;
+    }
+    
+    @@media (max-width: 768px) {
+        .progress-steps {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .progress-steps::before {
+            display: none;
+        }
+        
+        .step {
+            flex-direction: row;
+            text-align: left;
+            width: 100%;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-radius: 0.375rem;
+        }
+        
+        .step-icon {
+            margin-right: 1rem;
+            margin-bottom: 0;
+        }
+    }
+</style>

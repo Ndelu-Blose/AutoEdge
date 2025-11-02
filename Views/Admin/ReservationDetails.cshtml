@@ -1,0 +1,321 @@
+@model AutoEdge.Models.Entities.Reservation
+@{
+    ViewData["Title"] = "Reservation Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-bookmark me-2"></i>Reservation Details #@Model.ReservationNumber</h2>
+                <a href="@Url.Action("Reservations")" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>Back to Reservations
+                </a>
+            </div>
+
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <div class="row">
+                <!-- Reservation Information -->
+                <div class="col-lg-8">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Reservation Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6 class="text-muted">Customer Information</h6>
+                                    <p><strong>Name:</strong> @Model.Customer.User.FirstName @Model.Customer.User.LastName</p>
+                                    <p><strong>Email:</strong> @Model.Customer.User.Email</p>
+                                    <p><strong>Phone:</strong> @Model.Customer.User.PhoneNumber</p>
+                                    <p><strong>Address:</strong> @Model.Customer.User.Address, @Model.Customer.User.City, @Model.Customer.User.State @Model.Customer.User.ZipCode</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-muted">Reservation Details</h6>
+                                    <p><strong>Reservation Number:</strong> @Model.ReservationNumber</p>
+                                    <p><strong>Status:</strong> 
+                                        @switch (Model.Status)
+                                        {
+                                            case "Active":
+                                                @if (Model.ExpiryDate < DateTime.UtcNow)
+                                                {
+                                                    <span class="badge bg-warning">Expired</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-success">@Model.Status</span>
+                                                }
+                                                break;
+                                            case "Confirmed":
+                                                <span class="badge bg-primary">@Model.Status</span>
+                                                break;
+                                            case "Expired":
+                                                <span class="badge bg-warning">@Model.Status</span>
+                                                break;
+                                            case "Cancelled":
+                                                <span class="badge bg-danger">@Model.Status</span>
+                                                break;
+                                            case "Completed":
+                                                <span class="badge bg-success">@Model.Status</span>
+                                                break;
+                                            default:
+                                                <span class="badge bg-light text-dark">@Model.Status</span>
+                                                break;
+                                        }
+                                    </p>
+                                    <p><strong>Created:</strong> @Model.CreatedDate.ToString("MMM dd, yyyy HH:mm")</p>
+                                    <p><strong>Expiry Date:</strong> 
+                                        @Model.ExpiryDate.ToString("MMM dd, yyyy HH:mm")
+                                        @if (Model.ExpiryDate < DateTime.UtcNow && Model.Status == "Active")
+                                        {
+                                            <span class="badge bg-danger ms-2">Expired</span>
+                                        }
+                                        else if (Model.Status == "Active")
+                                        {
+                                            <span class="badge bg-info ms-2">@((Model.ExpiryDate - DateTime.UtcNow).Days) days left</span>
+                                        }
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <hr>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6 class="text-muted">Financial Information</h6>
+                                    <p><strong>Deposit Amount:</strong> @Model.DepositAmount.ToString("C")</p>
+                                    @if (Model.RefundAmount.HasValue && Model.RefundAmount > 0)
+                                    {
+                                        <p><strong>Refund Amount:</strong> <span class="text-danger">@Model.RefundAmount.Value.ToString("C")</span></p>
+                                    }
+                                </div>
+                                <div class="col-md-6">
+                                    @if (!string.IsNullOrEmpty(Model.Notes))
+                                    {
+                                        <h6 class="text-muted">Notes</h6>
+                                        <div class="bg-light p-3 rounded">
+                                            @Model.Notes
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Vehicle Information -->
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0"><i class="fas fa-car me-2"></i>Vehicle Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                @if (Model.Vehicle.VehicleImages.Any())
+                                {
+                                    <div class="col-md-4">
+                                        <img src="@Model.Vehicle.VehicleImages.FirstOrDefault()?.ImagePath" 
+                                             alt="@Model.Vehicle.Make @Model.Vehicle.Model" 
+                                             class="img-fluid rounded">
+                                    </div>
+                                }
+                                <div class="col-md-8">
+                                    <h4>@Model.Vehicle.Year @Model.Vehicle.Make @Model.Vehicle.Model</h4>
+                                    <p><strong>VIN:</strong> @Model.Vehicle.VIN</p>
+                                    <p><strong>Price:</strong> @Model.Vehicle.SellingPrice.ToString("C")</p>
+                                    <p><strong>Mileage:</strong> @Model.Vehicle.Mileage.ToString("N0") miles</p>
+                                    <p><strong>Status:</strong> 
+                                        <span class="badge @(Model.Vehicle.Status == "Available" ? "bg-success" : Model.Vehicle.Status == "Reserved" ? "bg-warning" : "bg-danger")">@Model.Vehicle.Status</span>
+                                    </p>
+                                    @if (!string.IsNullOrEmpty(Model.Vehicle.Features))
+                                    {
+                                        <p><strong>Features:</strong> @Model.Vehicle.Features</p>
+                                    }
+                                    <p><strong>Condition:</strong> @Model.Vehicle.Condition</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions Panel -->
+                <div class="col-lg-4">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>Manage Reservation</h5>
+                        </div>
+                        <div class="card-body">
+                            <form asp-action="UpdateReservationStatus" method="post">
+                                <input type="hidden" name="reservationId" value="@Model.Id" />
+                                
+                                <div class="mb-3">
+                                    <label for="status" class="form-label">Status</label>
+                                    <select name="status" id="status" class="form-select" required>
+                                        <option value="Active" selected="@(Model.Status == "Active")">Active</option>
+                                        <option value="Confirmed" selected="@(Model.Status == "Confirmed")">Confirmed</option>
+                                        <option value="Expired" selected="@(Model.Status == "Expired")">Expired</option>
+                                        <option value="Cancelled" selected="@(Model.Status == "Cancelled")">Cancelled</option>
+                                        <option value="Completed" selected="@(Model.Status == "Completed")">Completed</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3" id="refundSection" style="display: none;">
+                                    <label for="refundAmount" class="form-label">Refund Amount</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" name="refundAmount" id="refundAmount" class="form-control" 
+                                               step="0.01" min="0" max="@Model.DepositAmount" 
+                                               value="@(Model.RefundAmount?.ToString("F2") ?? "0.00")" placeholder="0.00">
+                                    </div>
+                                    <small class="form-text text-muted">Maximum refund: @Model.DepositAmount.ToString("C")</small>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-save me-1"></i>Update Reservation
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="card shadow-sm mt-3">
+                        <div class="card-header bg-secondary text-white">
+                            <h6 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <a href="@Url.Action("Details", "Vehicle", new { id = Model.VehicleId })" 
+                                   class="btn btn-outline-info btn-sm">
+                                    <i class="fas fa-car me-1"></i>View Vehicle Details
+                                </a>
+                                <a href="@Url.Action("UserDetails", new { id = Model.Customer.UserId })" 
+                                   class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-user me-1"></i>View Customer Profile
+                                </a>
+                                @if (Model.Status == "Confirmed")
+                                {
+                                    <button class="btn btn-outline-success btn-sm" onclick="generateContract()">
+                                        <i class="fas fa-file-contract me-1"></i>Generate Contract
+                                    </button>
+                                }
+                                @if (Model.Status == "Cancelled" && Model.RefundAmount > 0)
+                                {
+                                    <button class="btn btn-outline-warning btn-sm" onclick="processRefund()">
+                                        <i class="fas fa-money-bill-wave me-1"></i>Process Refund
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reservation Timeline -->
+                    <div class="card shadow-sm mt-3">
+                        <div class="card-header bg-dark text-white">
+                            <h6 class="mb-0"><i class="fas fa-clock me-2"></i>Timeline</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="timeline">
+                                <div class="timeline-item">
+                                    <div class="timeline-marker bg-success"></div>
+                                    <div class="timeline-content">
+                                        <h6 class="mb-1">Reservation Created</h6>
+                                        <small class="text-muted">@Model.CreatedDate.ToString("MMM dd, yyyy HH:mm")</small>
+                                    </div>
+                                </div>
+                                @if (Model.Status != "Active")
+                                {
+                                    <div class="timeline-item">
+                                        <div class="timeline-marker @(Model.Status == "Cancelled" ? "bg-danger" : "bg-primary")"></div>
+                                        <div class="timeline-content">
+                                            <h6 class="mb-1">Status: @Model.Status</h6>
+                                            <small class="text-muted">Updated recently</small>
+                                        </div>
+                                    </div>
+                                }
+                                <div class="timeline-item">
+                                    <div class="timeline-marker @(Model.ExpiryDate < DateTime.UtcNow ? "bg-danger" : "bg-warning")"></div>
+                                    <div class="timeline-content">
+                                        <h6 class="mb-1">@(Model.ExpiryDate < DateTime.UtcNow ? "Expired" : "Expires")</h6>
+                                        <small class="text-muted">@Model.ExpiryDate.ToString("MMM dd, yyyy HH:mm")</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Show/hide refund section based on status
+document.getElementById('status').addEventListener('change', function() {
+    const refundSection = document.getElementById('refundSection');
+    if (this.value === 'Cancelled') {
+        refundSection.style.display = 'block';
+    } else {
+        refundSection.style.display = 'none';
+    }
+});
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const statusSelect = document.getElementById('status');
+    if (statusSelect.value === 'Cancelled') {
+        document.getElementById('refundSection').style.display = 'block';
+    }
+});
+
+function generateContract() {
+    alert('Contract generation feature will be implemented in the next phase.');
+}
+
+function processRefund() {
+    alert('Refund processing feature will be implemented with payment integration.');
+}
+</script>
+
+<style>
+.timeline {
+    position: relative;
+    padding-left: 20px;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.timeline-item:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: -12px;
+    top: 20px;
+    width: 2px;
+    height: calc(100% + 10px);
+    background-color: #dee2e6;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -16px;
+    top: 4px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 2px #dee2e6;
+}
+
+.timeline-content h6 {
+    font-size: 0.875rem;
+    margin-bottom: 2px;
+}
+</style>

@@ -1,0 +1,398 @@
+@{
+    ViewData["Title"] = "Sales Report";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2><i class="fas fa-chart-area me-2"></i>Sales Report</h2>
+                    <p class="text-muted mb-0">Comprehensive sales analysis and performance metrics</p>
+                </div>
+                <div>
+                    <a href="@Url.Action("Index")" class="btn btn-outline-secondary me-2">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Reports
+                    </a>
+                    <button class="btn btn-primary" onclick="window.print()">
+                        <i class="fas fa-print me-2"></i>Print Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filter Options</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" action="@Url.Action("Sales")">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <label for="startDate" class="form-label">Start Date</label>
+                                <input type="date" class="form-control" id="startDate" name="startDate" value="@ViewBag.StartDate">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="endDate" class="form-label">End Date</label>
+                                <input type="date" class="form-control" id="endDate" name="endDate" value="@ViewBag.EndDate">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="vehicleType" class="form-label">Vehicle Type</label>
+                                <select class="form-select" id="vehicleType" name="vehicleType">
+                                    <option value="">All Types</option>
+                                    <option value="Sedan" selected="@(ViewBag.VehicleType == "Sedan")">Sedan</option>
+                                    <option value="SUV" selected="@(ViewBag.VehicleType == "SUV")">SUV</option>
+                                    <option value="Hatchback" selected="@(ViewBag.VehicleType == "Hatchback")">Hatchback</option>
+                                    <option value="Coupe" selected="@(ViewBag.VehicleType == "Coupe")">Coupe</option>
+                                    <option value="Convertible" selected="@(ViewBag.VehicleType == "Convertible")">Convertible</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary me-2">
+                                    <i class="fas fa-search me-2"></i>Apply Filter
+                                </button>
+                                <a href="@Url.Action("Sales")" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times me-2"></i>Clear
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">@ViewBag.TotalSales</h4>
+                            <p class="mb-0">Total Sales</p>
+                            <small class="text-light">@ViewBag.SalesGrowth% growth</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-shopping-cart fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">@ViewBag.TotalRevenue.ToString("C")</h4>
+                            <p class="mb-0">Total Revenue</p>
+                            <small class="text-light">@ViewBag.RevenueGrowth% growth</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-dollar-sign fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-info text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">@ViewBag.AverageOrderValue.ToString("C")</h4>
+                            <p class="mb-0">Avg Order Value</p>
+                            <small class="text-light">Per transaction</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-calculator fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-warning text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">@ViewBag.ConversionRate%</h4>
+                            <p class="mb-0">Conversion Rate</p>
+                            <small class="text-light">Inquiries to sales</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-percentage fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sales by Vehicle Type -->
+    @if (ViewBag.SalesByType != null)
+    {
+        <div class="row mb-4">
+            <div class="col-lg-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Sales by Vehicle Type</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Vehicle Type</th>
+                                        <th>Units Sold</th>
+                                        <th>Revenue</th>
+                                        <th>Share</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var type in ViewBag.SalesByType)
+                                    {
+                                        <tr>
+                                            <td><strong>@type.VehicleType</strong></td>
+                                            <td><span class="badge bg-primary">@type.Count</span></td>
+                                            <td><span class="text-success fw-bold">@type.Revenue.ToString("C")</span></td>
+                                            <td>
+                                                <div class="progress" style="height: 20px;">
+                                                    <div class="progress-bar bg-info" role="progressbar" style="width: @type.Percentage%" aria-valuenow="@type.Percentage" aria-valuemin="0" aria-valuemax="100">
+                                                        @Math.Round((double)type.Percentage, 1)%
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Monthly Sales Trend</h5>
+                    </div>
+                    <div class="card-body">
+                        @if (ViewBag.MonthlySales != null)
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Month</th>
+                                            <th>Sales</th>
+                                            <th>Revenue</th>
+                                            <th>Growth</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var month in ViewBag.MonthlySales)
+                                        {
+                                            <tr>
+                                                <td>@month.Month</td>
+                                                <td><span class="badge bg-info">@month.Count</span></td>
+                                                <td><span class="text-success">@month.Revenue.ToString("C")</span></td>
+                                                <td>
+                                                    @if (month.Growth >= 0)
+                                                    {
+                                                        <span class="text-success"><i class="fas fa-arrow-up"></i> @month.Growth%</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-danger"><i class="fas fa-arrow-down"></i> @Math.Abs(month.Growth)%</span>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-muted text-center">No monthly data available</p>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Top Selling Vehicles -->
+    @if (ViewBag.TopVehicles != null)
+    {
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-trophy me-2"></i>Top Selling Vehicles</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Vehicle</th>
+                                        <th>Make & Model</th>
+                                        <th>Type</th>
+                                        <th>Units Sold</th>
+                                        <th>Revenue</th>
+                                        <th>Avg Price</th>
+                                        <th>Performance</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        var rank = 1;
+                                    }
+                                    @foreach (var vehicle in ViewBag.TopVehicles)
+                                    {
+                                        <tr>
+                                            <td>
+                                                @if (rank <= 3)
+                                                {
+                                                    <span class="badge bg-warning text-dark">@rank</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary">@rank</span>
+                                                }
+                                            </td>
+                                            <td><strong>@vehicle.VehicleName</strong></td>
+                                            <td>@vehicle.Make @vehicle.Model</td>
+                                            <td><span class="badge bg-info">@vehicle.Type</span></td>
+                                            <td><span class="badge bg-primary">@vehicle.UnitsSold</span></td>
+                                            <td><span class="text-success fw-bold">@vehicle.Revenue.ToString("C")</span></td>
+                                            <td><span class="text-muted">@vehicle.AveragePrice.ToString("C")</span></td>
+                                            <td>
+                                                <div class="progress" style="height: 20px;">
+                                                    @{
+                                                        var vehicles = ViewBag.TopVehicles as IEnumerable<dynamic>;
+                                                        var maxRevenue = vehicles?.Max(v => (decimal)v.Revenue) ?? 1;
+                                                        var percentage = maxRevenue > 0 ? (double)vehicle.Revenue / (double)maxRevenue * 100 : 0;
+                                                    }
+                                                    <div class="progress-bar bg-success" role="progressbar" style="width: @percentage%" aria-valuenow="@percentage" aria-valuemin="0" aria-valuemax="100">
+                                                        @Math.Round((double)percentage, 1)%
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        rank++;
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Recent Sales Transactions -->
+    @if (ViewBag.RecentSales != null)
+    {
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Recent Sales Transactions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Customer</th>
+                                        <th>Vehicle</th>
+                                        <th>Amount</th>
+                                        <th>Payment Method</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var sale in ViewBag.RecentSales)
+                                    {
+                                        <tr>
+                                            <td>@sale.Date.ToString("MMM dd, yyyy")</td>
+                                            <td>@sale.CustomerName</td>
+                                            <td>@sale.VehicleName</td>
+                                            <td><span class="text-success fw-bold">@sale.Amount.ToString("C")</span></td>
+                                            <td><span class="badge bg-info">@sale.PaymentMethod</span></td>
+                                            <td>
+                                                @if (sale.Status == "Completed")
+                                                {
+                                                    <span class="badge bg-success">@sale.Status</span>
+                                                }
+                                                else if (sale.Status == "Pending")
+                                                {
+                                                    <span class="badge bg-warning">@sale.Status</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary">@sale.Status</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+@@media print {
+    .btn, .card-header, .navbar, .sidebar {
+        display: none !important;
+    }
+    
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+    
+    .container-fluid {
+        padding: 0 !important;
+    }
+}
+
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.progress {
+    height: 8px;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #495057;
+}
+
+.badge {
+    font-size: 0.75em;
+}
+</style>

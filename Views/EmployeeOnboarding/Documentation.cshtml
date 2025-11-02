@@ -1,0 +1,1272 @@
+@model AutoEdge.Models.Entities.PreEmploymentDocumentation
+
+@{
+    ViewData["Title"] = "Pre-Employment Documentation";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title">
+                        <i class="fas fa-clipboard-list mr-2"></i>
+                        Pre-Employment Documentation
+                    </h3>
+                    <div class="progress mt-2" style="height: 20px;">
+                        <div class="progress-bar" role="progressbar" style="width: 0%" id="progressBar">
+                            <span id="progressText">Step 1 of 8</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle mr-2"></i>
+                            @TempData["SuccessMessage"]
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    }
+
+                    <form asp-action="SaveDocumentation" method="post" id="documentationForm" enctype="multipart/form-data">
+                        <input type="hidden" name="token" value="@ViewContext.HttpContext.Request.Query["token"]" />
+                        
+                        <!-- Section 1: Personal Information -->
+                        <div class="form-section" id="section1">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-user mr-2"></i>
+                                        Section 1: Personal Information
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label asp-for="IdNumber" class="control-label">South African ID Number <span class="text-danger">*</span></label>
+                                                <input asp-for="IdNumber" class="form-control" maxlength="13" required />
+                                                <span asp-validation-for="IdNumber" class="text-danger"></span>
+                                                <small class="form-text text-muted">13 digits only</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label asp-for="DateOfBirth" class="control-label">Date of Birth <span class="text-danger">*</span></label>
+                                                <input asp-for="DateOfBirth" class="form-control" type="date" required />
+                                                <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label asp-for="Gender" class="control-label">Gender <span class="text-danger">*</span></label>
+                                                <select asp-for="Gender" class="form-control" required>
+                                                    <option value="">Select Gender</option>
+                                                    <option value="Male">Male</option>
+                                                    <option value="Female">Female</option>
+                                                    <option value="Other">Other</option>
+                                                </select>
+                                                <span asp-validation-for="Gender" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label asp-for="Nationality" class="control-label">Nationality <span class="text-danger">*</span></label>
+                                                <select asp-for="Nationality" class="form-control" required>
+                                                    <option value="">Select Nationality</option>
+                                                    <option value="South African">South African</option>
+                                                    <option value="Other">Other</option>
+                                                </select>
+                                                <span asp-validation-for="Nationality" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label asp-for="MaritalStatus" class="control-label">Marital Status <span class="text-danger">*</span></label>
+                                                <select asp-for="MaritalStatus" class="form-control" required>
+                                                    <option value="">Select Status</option>
+                                                    <option value="Single">Single</option>
+                                                    <option value="Married">Married</option>
+                                                    <option value="Divorced">Divorced</option>
+                                                    <option value="Widowed">Widowed</option>
+                                                </select>
+                                                <span asp-validation-for="MaritalStatus" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <div class="form-group">
+                                                <label asp-for="ResidentialAddress" class="control-label">Residential Address <span class="text-danger">*</span></label>
+                                                <input asp-for="ResidentialAddress" class="form-control" required />
+                                                <span asp-validation-for="ResidentialAddress" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label asp-for="City" class="control-label">City/Town <span class="text-danger">*</span></label>
+                                                <input asp-for="City" class="form-control" required />
+                                                <span asp-validation-for="City" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label asp-for="Province" class="control-label">Province <span class="text-danger">*</span></label>
+                                                <select asp-for="Province" class="form-control" required>
+                                                    <option value="">Select Province</option>
+                                                    <option value="Gauteng">Gauteng</option>
+                                                    <option value="KwaZulu-Natal">KwaZulu-Natal</option>
+                                                    <option value="Western Cape">Western Cape</option>
+                                                    <option value="Eastern Cape">Eastern Cape</option>
+                                                    <option value="Free State">Free State</option>
+                                                    <option value="Limpopo">Limpopo</option>
+                                                    <option value="Mpumalanga">Mpumalanga</option>
+                                                    <option value="Northern Cape">Northern Cape</option>
+                                                    <option value="North West">North West</option>
+                                                </select>
+                                                <span asp-validation-for="Province" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label asp-for="PostalCode" class="control-label">Postal Code <span class="text-danger">*</span></label>
+                                                <input asp-for="PostalCode" class="form-control" maxlength="4" required />
+                                                <span asp-validation-for="PostalCode" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label asp-for="AlternativePhoneNumber" class="control-label">Alternative Phone Number</label>
+                                                <input asp-for="AlternativePhoneNumber" class="form-control" />
+                                                <span asp-validation-for="AlternativePhoneNumber" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 2: Emergency Contact -->
+                        <div class="form-section" id="section2" style="display: none;">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-phone mr-2"></i>
+                                        Section 2: Emergency Contact
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <h6>Primary Emergency Contact</h6>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label asp-for="EmergencyContactName" class="control-label">Full Name <span class="text-danger">*</span></label>
+                                                <input asp-for="EmergencyContactName" class="form-control" required />
+                                                <span asp-validation-for="EmergencyContactName" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label asp-for="EmergencyContactRelationship" class="control-label">Relationship <span class="text-danger">*</span></label>
+                                                <select asp-for="EmergencyContactRelationship" class="form-control" required>
+                                                    <option value="">Select Relationship</option>
+                                                    <option value="Spouse">Spouse</option>
+                                                    <option value="Parent">Parent</option>
+                                                    <option value="Sibling">Sibling</option>
+                                                    <option value="Friend">Friend</option>
+                                                    <option value="Other">Other</option>
+                                                </select>
+                                                <span asp-validation-for="EmergencyContactRelationship" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label asp-for="EmergencyContactPhone" class="control-label">Phone Number <span class="text-danger">*</span></label>
+                                                <input asp-for="EmergencyContactPhone" class="form-control" required />
+                                                <span asp-validation-for="EmergencyContactPhone" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label asp-for="EmergencyContactAddress" class="control-label">Address</label>
+                                                <input asp-for="EmergencyContactAddress" class="form-control" />
+                                                <span asp-validation-for="EmergencyContactAddress" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <h6 class="mt-4">Secondary Emergency Contact (Optional)</h6>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label asp-for="SecondaryEmergencyContactName" class="control-label">Full Name</label>
+                                                <input asp-for="SecondaryEmergencyContactName" class="form-control" />
+                                                <span asp-validation-for="SecondaryEmergencyContactName" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label asp-for="SecondaryEmergencyContactRelationship" class="control-label">Relationship</label>
+                                                <select asp-for="SecondaryEmergencyContactRelationship" class="form-control">
+                                                    <option value="">Select Relationship</option>
+                                                    <option value="Spouse">Spouse</option>
+                                                    <option value="Parent">Parent</option>
+                                                    <option value="Sibling">Sibling</option>
+                                                    <option value="Friend">Friend</option>
+                                                    <option value="Other">Other</option>
+                                                </select>
+                                                <span asp-validation-for="SecondaryEmergencyContactRelationship" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label asp-for="SecondaryEmergencyContactPhone" class="control-label">Phone Number</label>
+                                                <input asp-for="SecondaryEmergencyContactPhone" class="form-control" />
+                                                <span asp-validation-for="SecondaryEmergencyContactPhone" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label asp-for="SecondaryEmergencyContactAddress" class="control-label">Address</label>
+                                                <input asp-for="SecondaryEmergencyContactAddress" class="form-control" />
+                                                <span asp-validation-for="SecondaryEmergencyContactAddress" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 3: Banking Details -->
+                        <div class="form-section" id="section3" style="display: none;">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-university mr-2"></i>
+                                        Section 3: Banking Details
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label asp-for="BankName" class="control-label">Bank Name <span class="text-danger">*</span></label>
+                                                <select asp-for="BankName" class="form-control" required>
+                                                    <option value="">Select Bank</option>
+                                                    <option value="FNB">First National Bank (FNB)</option>
+                                                    <option value="Standard Bank">Standard Bank</option>
+                                                    <option value="ABSA">ABSA Bank</option>
+                                                    <option value="Nedbank">Nedbank</option>
+                                                    <option value="Capitec">Capitec Bank</option>
+                                                    <option value="Other">Other</option>
+                                                </select>
+                                                <span asp-validation-for="BankName" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label asp-for="AccountType" class="control-label">Account Type <span class="text-danger">*</span></label>
+                                                <select asp-for="AccountType" class="form-control" required>
+                                                    <option value="">Select Type</option>
+                                                    <option value="Savings">Savings</option>
+                                                    <option value="Cheque">Cheque/Current</option>
+                                                </select>
+                                                <span asp-validation-for="AccountType" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label asp-for="AccountNumber" class="control-label">Account Number <span class="text-danger">*</span></label>
+                                                <input asp-for="AccountNumber" class="form-control" required />
+                                                <span asp-validation-for="AccountNumber" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label asp-for="BranchCode" class="control-label">Branch Code <span class="text-danger">*</span></label>
+                                                <input asp-for="BranchCode" class="form-control" maxlength="6" required />
+                                                <span asp-validation-for="BranchCode" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label asp-for="AccountHolderName" class="control-label">Account Holder Name <span class="text-danger">*</span></label>
+                                        <input asp-for="AccountHolderName" class="form-control" required />
+                                        <span asp-validation-for="AccountHolderName" class="text-danger"></span>
+                                        <small class="form-text text-muted">Must match your full name</small>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label class="control-label">Proof of Bank Account <span class="text-danger">*</span></label>
+                                        <div class="file-upload-area" id="bankStatementUpload">
+                                            <div class="upload-placeholder">
+                                                <i class="fas fa-cloud-upload-alt fa-3x text-muted"></i>
+                                                <p class="mt-2">Drag and drop your bank statement here or click to browse</p>
+                                                <p class="text-muted">PDF, JPG, PNG (Max 5MB)</p>
+                                            </div>
+                                            <input type="file" id="bankStatementFile" name="bankStatementFile" accept=".pdf,.jpg,.jpeg,.png" style="display: none;" />
+                                        </div>
+                                        <div id="bankStatementPreview" class="mt-2" style="display: none;">
+                                            <div class="alert alert-success">
+                                                <i class="fas fa-check-circle mr-2"></i>
+                                                <span id="bankStatementFileName"></span>
+                                                <button type="button" class="btn btn-sm btn-outline-danger ml-2" onclick="removeFile('bankStatement')">Remove</button>
+                                            </div>
+                                        </div>
+                                        <input type="hidden" asp-for="BankStatementPath" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 4: Tax Information -->
+                        <div class="form-section" id="section4" style="display: none;">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-receipt mr-2"></i>
+                                        Section 4: Tax Information
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label asp-for="TaxNumber" class="control-label">Tax Number</label>
+                                                <input asp-for="TaxNumber" class="form-control" />
+                                                <span asp-validation-for="TaxNumber" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label class="control-label">Registered for Tax?</label>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="RegisteredForTax" id="taxYes" value="true" asp-for="RegisteredForTax">
+                                                    <label class="form-check-label" for="taxYes">Yes</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="RegisteredForTax" id="taxNo" value="false" asp-for="RegisteredForTax">
+                                                    <label class="form-check-label" for="taxNo">No</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label asp-for="TaxDirectiveNumber" class="control-label">Tax Directive Number</label>
+                                        <input asp-for="TaxDirectiveNumber" class="form-control" />
+                                        <span asp-validation-for="TaxDirectiveNumber" class="text-danger"></span>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label class="control-label">Tax Clearance Certificate (Optional)</label>
+                                        <div class="file-upload-area" id="taxClearanceUpload">
+                                            <div class="upload-placeholder">
+                                                <i class="fas fa-cloud-upload-alt fa-3x text-muted"></i>
+                                                <p class="mt-2">Upload tax clearance certificate</p>
+                                                <p class="text-muted">PDF only (Max 5MB)</p>
+                                            </div>
+                                            <input type="file" id="taxClearanceFile" name="taxClearanceFile" accept=".pdf" style="display: none;" />
+                                        </div>
+                                        <div id="taxClearancePreview" class="mt-2" style="display: none;">
+                                            <div class="alert alert-success">
+                                                <i class="fas fa-check-circle mr-2"></i>
+                                                <span id="taxClearanceFileName"></span>
+                                                <button type="button" class="btn btn-sm btn-outline-danger ml-2" onclick="removeFile('taxClearance')">Remove</button>
+                                            </div>
+                                        </div>
+                                        <input type="hidden" asp-for="TaxClearancePath" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 5: Medical Information -->
+                        <div class="form-section" id="section5" style="display: none;">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-heartbeat mr-2"></i>
+                                        Section 5: Medical Information
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <h6>Medical Aid Information</h6>
+                                    <div class="form-group">
+                                        <label class="control-label">Do you have medical aid?</label>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="HasMedicalAid" id="medicalAidYes" value="true" asp-for="HasMedicalAid">
+                                            <label class="form-check-label" for="medicalAidYes">Yes</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="HasMedicalAid" id="medicalAidNo" value="false" asp-for="HasMedicalAid">
+                                            <label class="form-check-label" for="medicalAidNo">No</label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div id="medicalAidDetails" style="display: none;">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label asp-for="MedicalAidProvider" class="control-label">Medical Aid Provider</label>
+                                                    <input asp-for="MedicalAidProvider" class="form-control" />
+                                                    <span asp-validation-for="MedicalAidProvider" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label asp-for="MedicalAidNumber" class="control-label">Medical Aid Number</label>
+                                                    <input asp-for="MedicalAidNumber" class="form-control" />
+                                                    <span asp-validation-for="MedicalAidNumber" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label asp-for="MedicalAidMemberType" class="control-label">Member Type</label>
+                                            <select asp-for="MedicalAidMemberType" class="form-control">
+                                                <option value="">Select Type</option>
+                                                <option value="Main Member">Main Member</option>
+                                                <option value="Dependant">Dependant</option>
+                                            </select>
+                                            <span asp-validation-for="MedicalAidMemberType" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                    
+                                    <h6 class="mt-4">Health Declaration</h6>
+                                    <div class="form-group">
+                                        <label class="control-label">Do you have any chronic medical conditions?</label>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="HasChronicConditions" id="chronicYes" value="true" asp-for="HasChronicConditions">
+                                            <label class="form-check-label" for="chronicYes">Yes</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="HasChronicConditions" id="chronicNo" value="false" asp-for="HasChronicConditions">
+                                            <label class="form-check-label" for="chronicNo">No</label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div id="chronicConditionsDetails" style="display: none;">
+                                        <div class="form-group">
+                                            <label asp-for="ChronicConditionsDetails" class="control-label">Please provide details</label>
+                                            <textarea asp-for="ChronicConditionsDetails" class="form-control" rows="3" maxlength="500"></textarea>
+                                            <span asp-validation-for="ChronicConditionsDetails" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label class="control-label">Are you on any chronic medication?</label>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="OnChronicMedication" id="medicationYes" value="true" asp-for="OnChronicMedication">
+                                            <label class="form-check-label" for="medicationYes">Yes</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="OnChronicMedication" id="medicationNo" value="false" asp-for="OnChronicMedication">
+                                            <label class="form-check-label" for="medicationNo">No</label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label class="control-label">Do you have any disabilities requiring workplace accommodation?</label>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="HasDisabilities" id="disabilitiesYes" value="true" asp-for="HasDisabilities">
+                                            <label class="form-check-label" for="disabilitiesYes">Yes</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="HasDisabilities" id="disabilitiesNo" value="false" asp-for="HasDisabilities">
+                                            <label class="form-check-label" for="disabilitiesNo">No</label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div id="disabilitiesDetails" style="display: none;">
+                                        <div class="form-group">
+                                            <label asp-for="DisabilitiesDetails" class="control-label">Please provide details</label>
+                                            <textarea asp-for="DisabilitiesDetails" class="form-control" rows="3" maxlength="500"></textarea>
+                                            <span asp-validation-for="DisabilitiesDetails" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 6: Dependents Information -->
+                        <div class="form-section" id="section6" style="display: none;">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-users mr-2"></i>
+                                        Section 6: Dependents Information
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="form-group">
+                                        <label asp-for="NumberOfDependents" class="control-label">Number of Dependents <span class="text-danger">*</span></label>
+                                        <select asp-for="NumberOfDependents" class="form-control" required onchange="toggleDependentsSection()">
+                                            <option value="">Select Number</option>
+                                            <option value="0">0</option>
+                                            <option value="1">1</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                            <option value="5">5</option>
+                                            <option value="6">6</option>
+                                            <option value="7">7</option>
+                                            <option value="8">8</option>
+                                            <option value="9">9</option>
+                                            <option value="10">10+</option>
+                                        </select>
+                                        <span asp-validation-for="NumberOfDependents" class="text-danger"></span>
+                                    </div>
+                                    
+                                    <div id="dependentsSection" style="display: none;">
+                                        <h6>Dependents Details</h6>
+                                        <div id="dependentsList">
+                                            <!-- Dependents will be added dynamically here -->
+                                        </div>
+                                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="addDependent()">
+                                            <i class="fas fa-plus mr-1"></i>
+                                            Add Another Dependent
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 7: Required Documents Upload -->
+                        <div class="form-section" id="section7" style="display: none;">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-file-upload mr-2"></i>
+                                        Section 7: Required Documents Upload
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle mr-2"></i>
+                                        <strong>Important:</strong> All documents must be clear, legible, and dated within the last 3 months (where applicable).
+                                    </div>
+                                    
+                                    <h6>Mandatory Documents</h6>
+                                    
+                                    <div class="form-group">
+                                        <label class="control-label">1. Certified Copy of ID Document <span class="text-danger">*</span></label>
+                                        <div class="file-upload-area" id="certifiedIdUpload">
+                                            <div class="upload-placeholder">
+                                                <i class="fas fa-cloud-upload-alt fa-3x text-muted"></i>
+                                                <p class="mt-2">Upload certified copy of ID</p>
+                                                <p class="text-muted">PDF, JPG, PNG (Max 5MB)</p>
+                                            </div>
+                                            <input type="file" id="certifiedIdFile" name="certifiedIdFile" accept=".pdf,.jpg,.jpeg,.png" style="display: none;" />
+                                        </div>
+                                        <div id="certifiedIdPreview" class="mt-2" style="display: none;">
+                                            <div class="alert alert-success">
+                                                <i class="fas fa-check-circle mr-2"></i>
+                                                <span id="certifiedIdFileName"></span>
+                                                <button type="button" class="btn btn-sm btn-outline-danger ml-2" onclick="removeFile('certifiedId')">Remove</button>
+                                            </div>
+                                        </div>
+                                        <input type="hidden" asp-for="CertifiedIdPath" />
+                                        <small class="form-text text-muted">Must be certified within the last 3 months</small>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label class="control-label">2. Proof of Residential Address <span class="text-danger">*</span></label>
+                                        <div class="file-upload-area" id="proofOfAddressUpload">
+                                            <div class="upload-placeholder">
+                                                <i class="fas fa-cloud-upload-alt fa-3x text-muted"></i>
+                                                <p class="mt-2">Upload utility bill, bank statement, or municipal account</p>
+                                                <p class="text-muted">PDF, JPG, PNG (Max 5MB)</p>
+                                            </div>
+                                            <input type="file" id="proofOfAddressFile" name="proofOfAddressFile" accept=".pdf,.jpg,.jpeg,.png" style="display: none;" />
+                                        </div>
+                                        <div id="proofOfAddressPreview" class="mt-2" style="display: none;">
+                                            <div class="alert alert-success">
+                                                <i class="fas fa-check-circle mr-2"></i>
+                                                <span id="proofOfAddressFileName"></span>
+                                                <button type="button" class="btn btn-sm btn-outline-danger ml-2" onclick="removeFile('proofOfAddress')">Remove</button>
+                                            </div>
+                                        </div>
+                                        <input type="hidden" asp-for="ProofOfAddressPath" />
+                                        <small class="form-text text-muted">Must be dated within the last 3 months</small>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label class="control-label">3. Certified Qualification Certificates <span class="text-danger">*</span></label>
+                                        <div class="file-upload-area" id="qualificationCertificatesUpload">
+                                            <div class="upload-placeholder">
+                                                <i class="fas fa-cloud-upload-alt fa-3x text-muted"></i>
+                                                <p class="mt-2">Upload all relevant qualifications</p>
+                                                <p class="text-muted">PDF only (Max 5MB each, up to 10 files)</p>
+                                            </div>
+                                            <input type="file" id="qualificationCertificatesFile" name="qualificationCertificatesFile" accept=".pdf" multiple style="display: none;" />
+                                        </div>
+                                        <div id="qualificationCertificatesPreview" class="mt-2" style="display: none;">
+                                            <div class="alert alert-success">
+                                                <i class="fas fa-check-circle mr-2"></i>
+                                                <span id="qualificationCertificatesFileNames"></span>
+                                                <button type="button" class="btn btn-sm btn-outline-danger ml-2" onclick="removeFile('qualificationCertificates')">Remove All</button>
+                                            </div>
+                                        </div>
+                                        <input type="hidden" asp-for="QualificationCertificatesPath" />
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label class="control-label">4. Driver's License (if applicable for role)</label>
+                                        <div class="file-upload-area" id="driversLicenseUpload">
+                                            <div class="upload-placeholder">
+                                                <i class="fas fa-cloud-upload-alt fa-3x text-muted"></i>
+                                                <p class="mt-2">Upload both sides of driver's license</p>
+                                                <p class="text-muted">PDF, JPG, PNG (Max 5MB)</p>
+                                            </div>
+                                            <input type="file" id="driversLicenseFile" name="driversLicenseFile" accept=".pdf,.jpg,.jpeg,.png" style="display: none;" />
+                                        </div>
+                                        <div id="driversLicensePreview" class="mt-2" style="display: none;">
+                                            <div class="alert alert-success">
+                                                <i class="fas fa-check-circle mr-2"></i>
+                                                <span id="driversLicenseFileName"></span>
+                                                <button type="button" class="btn btn-sm btn-outline-danger ml-2" onclick="removeFile('driversLicense')">Remove</button>
+                                            </div>
+                                        </div>
+                                        <input type="hidden" asp-for="DriversLicensePath" />
+                                    </div>
+                                    
+                                    <h6 class="mt-4">Optional Documents</h6>
+                                    <div class="form-group">
+                                        <label class="control-label">Professional Certifications, Reference Letters, Portfolio/Work Samples</label>
+                                        <div class="file-upload-area" id="optionalDocumentsUpload">
+                                            <div class="upload-placeholder">
+                                                <i class="fas fa-cloud-upload-alt fa-3x text-muted"></i>
+                                                <p class="mt-2">Upload optional documents</p>
+                                                <p class="text-muted">PDF, JPG, PNG (Max 5MB each)</p>
+                                            </div>
+                                            <input type="file" id="optionalDocumentsFile" name="optionalDocumentsFile" accept=".pdf,.jpg,.jpeg,.png" multiple style="display: none;" />
+                                        </div>
+                                        <div id="optionalDocumentsPreview" class="mt-2" style="display: none;">
+                                            <div class="alert alert-success">
+                                                <i class="fas fa-check-circle mr-2"></i>
+                                                <span id="optionalDocumentsFileNames"></span>
+                                                <button type="button" class="btn btn-sm btn-outline-danger ml-2" onclick="removeFile('optionalDocuments')">Remove All</button>
+                                            </div>
+                                        </div>
+                                        <input type="hidden" asp-for="OptionalDocumentsPath" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 8: Declarations & Digital Signature -->
+                        <div class="form-section" id="section8" style="display: none;">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-gavel mr-2"></i>
+                                        Section 8: Declarations & Digital Signature
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="alert alert-warning">
+                                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                                        <strong>Important:</strong> Please read all declarations carefully. You must check all boxes and provide your digital signature to complete the process.
+                                    </div>
+                                    
+                                    <h6>Legal Declarations</h6>
+                                    
+                                    <div class="form-group">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="hasCriminalRecord" asp-for="HasCriminalRecord">
+                                            <label class="form-check-label" for="hasCriminalRecord">
+                                                <strong>Criminal Record Declaration</strong>
+                                            </label>
+                                        </div>
+                                        <p class="ml-4 text-muted">Do you have any criminal convictions?</p>
+                                        <div id="criminalRecordDetails" style="display: none;" class="ml-4">
+                                            <div class="form-group">
+                                                <label asp-for="CriminalRecordDetails" class="control-label">Please provide details</label>
+                                                <textarea asp-for="CriminalRecordDetails" class="form-control" rows="3" maxlength="1000"></textarea>
+                                                <span asp-validation-for="CriminalRecordDetails" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="declareAccurate" asp-for="DeclareAccurate" required>
+                                            <label class="form-check-label" for="declareAccurate">
+                                                <strong>Accuracy Declaration</strong>
+                                            </label>
+                                        </div>
+                                        <p class="ml-4 text-muted">I declare that all information provided is true and accurate to the best of my knowledge</p>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="consentBackgroundCheck" asp-for="ConsentBackgroundCheck" required>
+                                            <label class="form-check-label" for="consentBackgroundCheck">
+                                                <strong>Background Check Consent</strong>
+                                            </label>
+                                        </div>
+                                        <p class="ml-4 text-muted">I consent to AutoEdge conducting background verification checks including criminal, credit, and qualification verification</p>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="consentDataProcessing" asp-for="ConsentDataProcessing" required>
+                                            <label class="form-check-label" for="consentDataProcessing">
+                                                <strong>Data Processing Consent</strong>
+                                            </label>
+                                        </div>
+                                        <p class="ml-4 text-muted">I consent to AutoEdge processing my personal information in accordance with POPIA (Protection of Personal Information Act)</p>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="documentAuthenticity" asp-for="DocumentAuthenticity" required>
+                                            <label class="form-check-label" for="documentAuthenticity">
+                                                <strong>Document Authenticity</strong>
+                                            </label>
+                                        </div>
+                                        <p class="ml-4 text-muted">I confirm that all uploaded documents are authentic and not forged</p>
+                                    </div>
+                                    
+                                    <h6 class="mt-4">Digital Signature</h6>
+                                    <div class="form-group">
+                                        <label for="digitalSignature" class="control-label">Please sign below <span class="text-danger">*</span></label>
+                                        <div class="signature-pad-container">
+                                            <canvas id="digitalSignaturePad" width="500" height="200" style="border: 1px solid #ddd; border-radius: 4px;"></canvas>
+                                            <div class="mt-2">
+                                                <button type="button" id="clearDigitalSignature" class="btn btn-secondary btn-sm">
+                                                    <i class="fas fa-eraser mr-1"></i>
+                                                    Clear Signature
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <input type="hidden" asp-for="DigitalSignature" required />
+                                        <small class="form-text text-muted">Please sign above to complete your documentation</small>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="allDeclarationsAccepted" required>
+                                            <label class="form-check-label" for="allDeclarationsAccepted">
+                                                <strong>I have read and agree to all declarations above</strong>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-calendar mr-2"></i>
+                                        <strong>Date:</strong> @DateTime.Now.ToString("dd MMMM yyyy")
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Navigation Buttons -->
+                        <div class="form-navigation mt-4">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <button type="button" class="btn btn-secondary" id="prevBtn" onclick="changeSection(-1)" style="display: none;">
+                                        <i class="fas fa-arrow-left mr-2"></i>
+                                        Previous
+                                    </button>
+                                </div>
+                                <div class="col-md-6 text-right">
+                                    <button type="button" class="btn btn-primary" id="nextBtn" onclick="changeSection(1)">
+                                        Next
+                                        <i class="fas fa-arrow-right ml-2"></i>
+                                    </button>
+                                    <button type="submit" class="btn btn-success" id="saveBtn" style="display: none;">
+                                        <i class="fas fa-save mr-2"></i>
+                                        Save Draft
+                                    </button>
+                                    <button type="button" class="btn btn-success btn-lg" id="submitBtn" style="display: none;" onclick="submitDocumentation()">
+                                        <i class="fas fa-check mr-2"></i>
+                                        Submit Documentation
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+    
+    <script>
+        let currentSection = 1;
+        const totalSections = 8;
+
+        function updateProgress() {
+            const progress = (currentSection / totalSections) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('progressText').textContent = `Step ${currentSection} of ${totalSections}`;
+        }
+
+        function changeSection(direction) {
+            const sections = document.querySelectorAll('.form-section');
+            
+            if (direction > 0 && currentSection < totalSections) {
+                // Validate current section before moving forward
+                if (validateCurrentSection()) {
+                    sections[currentSection - 1].style.display = 'none';
+                    currentSection++;
+                    sections[currentSection - 1].style.display = 'block';
+                    updateProgress();
+                    updateNavigationButtons();
+                }
+            } else if (direction < 0 && currentSection > 1) {
+                sections[currentSection - 1].style.display = 'none';
+                currentSection--;
+                sections[currentSection - 1].style.display = 'block';
+                updateProgress();
+                updateNavigationButtons();
+            }
+        }
+
+        function validateCurrentSection() {
+            const currentSectionElement = document.getElementById(`section${currentSection}`);
+            const requiredFields = currentSectionElement.querySelectorAll('[required]');
+            let isValid = true;
+
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    field.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    field.classList.remove('is-invalid');
+                }
+            });
+
+            if (!isValid) {
+                alert('Please fill in all required fields before proceeding.');
+            }
+
+            return isValid;
+        }
+
+        function updateNavigationButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const saveBtn = document.getElementById('saveBtn');
+            const submitBtn = document.getElementById('submitBtn');
+
+            prevBtn.style.display = currentSection > 1 ? 'block' : 'none';
+            
+            if (currentSection < totalSections) {
+                nextBtn.style.display = 'block';
+                saveBtn.style.display = 'none';
+                submitBtn.style.display = 'none';
+            } else {
+                nextBtn.style.display = 'none';
+                saveBtn.style.display = 'block';
+                submitBtn.style.display = 'block';
+            }
+        }
+
+        // File upload handling
+        function setupFileUpload(uploadAreaId, fileInputId, previewId, fileNameId, hiddenInputId) {
+            const uploadArea = document.getElementById(uploadAreaId);
+            const fileInput = document.getElementById(fileInputId);
+            const preview = document.getElementById(previewId);
+            const fileName = document.getElementById(fileNameId);
+            const hiddenInput = document.getElementById(hiddenInputId);
+
+            uploadArea.addEventListener('click', () => fileInput.click());
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('drag-over');
+            });
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('drag-over');
+            });
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('drag-over');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    if (fileInput.multiple) {
+                        handleMultipleFileUpload(files, fileInput, preview, fileName, hiddenInput);
+                    } else {
+                        handleFileUpload(files[0], fileInput, preview, fileName, hiddenInput);
+                    }
+                }
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    if (fileInput.multiple) {
+                        handleMultipleFileUpload(e.target.files, fileInput, preview, fileName, hiddenInput);
+                    } else {
+                        handleFileUpload(e.target.files[0], fileInput, preview, fileName, hiddenInput);
+                    }
+                }
+            });
+        }
+
+        function handleFileUpload(file, fileInput, preview, fileName, hiddenInput) {
+            if (file.size > 5 * 1024 * 1024) {
+                alert('File size cannot exceed 5MB.');
+                return;
+            }
+
+            const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+            if (!allowedTypes.includes(file.type)) {
+                alert('Only PDF, JPG, and PNG files are allowed.');
+                return;
+            }
+
+            fileName.textContent = file.name;
+            preview.style.display = 'block';
+            hiddenInput.value = file.name; // In a real implementation, you'd upload the file and get the path
+        }
+
+        function handleMultipleFileUpload(files, fileInput, preview, fileName, hiddenInput) {
+            const maxFiles = 10;
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            
+            if (files.length > maxFiles) {
+                alert(`Maximum ${maxFiles} files allowed.`);
+                return;
+            }
+
+            // Check each file
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                
+                if (file.size > maxSize) {
+                    alert(`File "${file.name}" exceeds 5MB limit.`);
+                    return;
+                }
+
+                // For qualification certificates, only allow PDF
+                if (fileInput.id === 'qualificationCertificatesFile') {
+                    if (file.type !== 'application/pdf') {
+                        alert(`File "${file.name}" must be a PDF file.`);
+                        return;
+                    }
+                } else {
+                    // For other multiple file uploads, allow PDF, JPG, PNG
+                    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+                    if (!allowedTypes.includes(file.type)) {
+                        alert(`File "${file.name}" must be PDF, JPG, or PNG.`);
+                        return;
+                    }
+                }
+            }
+
+            // Display file names
+            const fileNames = Array.from(files).map(f => f.name).join(', ');
+            fileName.textContent = `${files.length} file(s): ${fileNames}`;
+            preview.style.display = 'block';
+            hiddenInput.value = fileNames; // In a real implementation, you'd upload the files and get the paths
+        }
+
+        function removeFile(type) {
+            const fileInput = document.getElementById(`${type}File`);
+            const preview = document.getElementById(`${type}Preview`);
+            const hiddenInput = document.getElementById(`${type}Path`);
+
+            fileInput.value = '';
+            preview.style.display = 'none';
+            hiddenInput.value = '';
+        }
+
+        // Additional functions for form functionality
+        function toggleDependentsSection() {
+            const numberOfDependents = document.getElementById('NumberOfDependents').value;
+            const dependentsSection = document.getElementById('dependentsSection');
+            
+            if (numberOfDependents > 0) {
+                dependentsSection.style.display = 'block';
+                generateDependentsFields(parseInt(numberOfDependents));
+            } else {
+                dependentsSection.style.display = 'none';
+            }
+        }
+
+        function generateDependentsFields(count) {
+            const dependentsList = document.getElementById('dependentsList');
+            dependentsList.innerHTML = '';
+            
+            for (let i = 0; i < count; i++) {
+                const dependentDiv = document.createElement('div');
+                dependentDiv.className = 'card mb-3';
+                dependentDiv.innerHTML = `
+                    <div class="card-body">
+                        <h6>Dependent ${i + 1}</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="control-label">Full Name</label>
+                                    <input type="text" class="form-control" name="DependentName_${i}" required />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="control-label">Relationship</label>
+                                    <select class="form-control" name="DependentRelationship_${i}" required>
+                                        <option value="">Select Relationship</option>
+                                        <option value="Child">Child</option>
+                                        <option value="Spouse">Spouse</option>
+                                        <option value="Parent">Parent</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="control-label">Date of Birth</label>
+                                    <input type="date" class="form-control" name="DependentDateOfBirth_${i}" required />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="control-label">ID Number (Optional)</label>
+                                    <input type="text" class="form-control" name="DependentIdNumber_${i}" maxlength="13" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                dependentsList.appendChild(dependentDiv);
+            }
+        }
+
+        function addDependent() {
+            const currentCount = document.querySelectorAll('#dependentsList .card').length;
+            generateDependentsFields(currentCount + 1);
+            document.getElementById('NumberOfDependents').value = currentCount + 1;
+        }
+
+        function submitDocumentation() {
+            // Debug logging
+            console.log('=== submitDocumentation called ===');
+            
+            // Validate all required fields (excluding hidden inputs)
+            const requiredCheckboxes = document.querySelectorAll('#section8 input[required]:not([type="hidden"])');
+            const allDeclarationsAccepted = document.getElementById('allDeclarationsAccepted');
+            const signature = document.getElementById('DigitalSignature').value;
+            
+            console.log('Required checkboxes found:', requiredCheckboxes.length);
+            console.log('All declarations accepted checked:', allDeclarationsAccepted.checked);
+            console.log('Signature length:', signature ? signature.length : 0);
+            console.log('Digital signature pad empty:', digitalSignaturePad ? digitalSignaturePad.isEmpty() : 'undefined');
+            
+            let allValid = true;
+            
+            // Check required checkboxes
+            requiredCheckboxes.forEach((checkbox, index) => {
+                console.log(`Checkbox ${index} (${checkbox.id}):`, checkbox.checked);
+                if (!checkbox.checked) {
+                    checkbox.classList.add('is-invalid');
+                    allValid = false;
+                } else {
+                    checkbox.classList.remove('is-invalid');
+                }
+            });
+            
+            // Check final agreement checkbox
+            if (!allDeclarationsAccepted.checked) {
+                allDeclarationsAccepted.classList.add('is-invalid');
+                allValid = false;
+            } else {
+                allDeclarationsAccepted.classList.remove('is-invalid');
+            }
+            
+            // Ensure signature is captured before validation
+            if (digitalSignaturePad && !digitalSignaturePad.isEmpty() && !signature) {
+                document.getElementById('DigitalSignature').value = digitalSignaturePad.toDataURL();
+                signature = document.getElementById('DigitalSignature').value;
+            }
+            
+            if (!signature || (digitalSignaturePad && digitalSignaturePad.isEmpty())) {
+                alert('Please provide your digital signature.');
+                allValid = false;
+            }
+            
+            console.log('All valid:', allValid);
+            
+            if (!allValid) {
+                console.log('Validation failed - showing alert');
+                alert('Please complete all required fields and provide your signature.');
+                return;
+            }
+            
+            console.log('Validation passed - proceeding with submission');
+            
+            // Show confirmation dialog
+            if (confirm('Are you sure you want to submit your documentation? You cannot edit after submission.')) {
+                // Create a form to submit the final documentation
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '@Url.Action("SubmitDocumentation", "EmployeeOnboarding")';
+                
+                const tokenInput = document.createElement('input');
+                tokenInput.type = 'hidden';
+                tokenInput.name = 'token';
+                tokenInput.value = '@ViewContext.HttpContext.Request.Query["token"]';
+                form.appendChild(tokenInput);
+                
+                const signatureInput = document.createElement('input');
+                signatureInput.type = 'hidden';
+                signatureInput.name = 'signature';
+                signatureInput.value = signature;
+                form.appendChild(signatureInput);
+                
+                const declarationsInput = document.createElement('input');
+                declarationsInput.type = 'hidden';
+                declarationsInput.name = 'allDeclarationsAccepted';
+                declarationsInput.value = 'true';
+                form.appendChild(declarationsInput);
+                
+                // Add anti-forgery token
+                const antiForgeryToken = document.querySelector('input[name="__RequestVerificationToken"]');
+                if (antiForgeryToken) {
+                    const tokenInput = document.createElement('input');
+                    tokenInput.type = 'hidden';
+                    tokenInput.name = '__RequestVerificationToken';
+                    tokenInput.value = antiForgeryToken.value;
+                    form.appendChild(tokenInput);
+                }
+                
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        // Initialize signature pad for documentation
+        let digitalSignaturePad;
+        
+        // Initialize
+        $(document).ready(function() {
+            updateProgress();
+            updateNavigationButtons();
+            
+            // Setup file uploads
+            setupFileUpload('bankStatementUpload', 'bankStatementFile', 'bankStatementPreview', 'bankStatementFileName', 'BankStatementPath');
+            setupFileUpload('taxClearanceUpload', 'taxClearanceFile', 'taxClearancePreview', 'taxClearanceFileName', 'TaxClearancePath');
+            setupFileUpload('certifiedIdUpload', 'certifiedIdFile', 'certifiedIdPreview', 'certifiedIdFileName', 'CertifiedIdPath');
+            setupFileUpload('proofOfAddressUpload', 'proofOfAddressFile', 'proofOfAddressPreview', 'proofOfAddressFileName', 'ProofOfAddressPath');
+            setupFileUpload('driversLicenseUpload', 'driversLicenseFile', 'driversLicensePreview', 'driversLicenseFileName', 'DriversLicensePath');
+            setupFileUpload('qualificationCertificatesUpload', 'qualificationCertificatesFile', 'qualificationCertificatesPreview', 'qualificationCertificatesFileNames', 'QualificationCertificatesPath');
+            setupFileUpload('optionalDocumentsUpload', 'optionalDocumentsFile', 'optionalDocumentsPreview', 'optionalDocumentsFileNames', 'OptionalDocumentsPath');
+            
+            // Initialize digital signature pad
+            const canvas = document.getElementById('digitalSignaturePad');
+            if (canvas && typeof SignaturePad !== 'undefined') {
+                digitalSignaturePad = new SignaturePad(canvas, {
+                    backgroundColor: 'rgba(255, 255, 255, 0)',
+                    penColor: 'rgb(0, 0, 0)'
+                });
+                
+                document.getElementById('clearDigitalSignature').addEventListener('click', function() {
+                    digitalSignaturePad.clear();
+                    document.getElementById('DigitalSignature').value = '';
+                });
+                
+                digitalSignaturePad.addEventListener('endStroke', function() {
+                    if (!digitalSignaturePad.isEmpty()) {
+                        document.getElementById('DigitalSignature').value = digitalSignaturePad.toDataURL();
+                    } else {
+                        document.getElementById('DigitalSignature').value = '';
+                    }
+                });
+            } else {
+                console.error('SignaturePad library not loaded or canvas not found');
+            }
+            
+            // Toggle sections based on radio button selections
+            $('input[name="HasMedicalAid"]').change(function() {
+                if ($(this).val() === 'true') {
+                    $('#medicalAidDetails').show();
+                } else {
+                    $('#medicalAidDetails').hide();
+                }
+            });
+            
+            $('input[name="HasChronicConditions"]').change(function() {
+                if ($(this).val() === 'true') {
+                    $('#chronicConditionsDetails').show();
+                } else {
+                    $('#chronicConditionsDetails').hide();
+                }
+            });
+            
+            $('input[name="HasDisabilities"]').change(function() {
+                if ($(this).val() === 'true') {
+                    $('#disabilitiesDetails').show();
+                } else {
+                    $('#disabilitiesDetails').hide();
+                }
+            });
+            
+            $('#hasCriminalRecord').change(function() {
+                if ($(this).is(':checked')) {
+                    $('#criminalRecordDetails').show();
+                } else {
+                    $('#criminalRecordDetails').hide();
+                }
+            });
+        });
+    </script>
+    
+    <style>
+        .file-upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .file-upload-area:hover,
+        .file-upload-area.drag-over {
+            border-color: #007bff;
+            background-color: #f8f9fa;
+        }
+        
+        .upload-placeholder {
+            color: #6c757d;
+        }
+        
+        .form-section {
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        @@keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+}

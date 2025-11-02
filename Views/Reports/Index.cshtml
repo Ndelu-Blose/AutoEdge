@@ -1,0 +1,340 @@
+@{
+    ViewData["Title"] = "Reports Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2><i class="fas fa-chart-bar me-2"></i>Reports Dashboard</h2>
+                    <p class="text-muted mb-0">Comprehensive business analytics and insights</p>
+                </div>
+                <div>
+                    <a href="@Url.Action("Index", "Admin")" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Admin
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Key Performance Indicators -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">@ViewBag.TotalSales</h4>
+                            <p class="mb-0">Total Sales</p>
+                            <small class="text-light">@ViewBag.MonthlySales this month</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-shopping-cart fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">@ViewBag.TotalRevenue.ToString("C")</h4>
+                            <p class="mb-0">Total Revenue</p>
+                            <small class="text-light">@ViewBag.MonthlyRevenue.ToString("C") this month</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-dollar-sign fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-info text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">@ViewBag.TotalUsers</h4>
+                            <p class="mb-0">Total Users</p>
+                            <small class="text-light">@ViewBag.NewUsersThisMonth new this month</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-warning text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">@ViewBag.TotalVehicles</h4>
+                            <p class="mb-0">Total Vehicles</p>
+                            <small class="text-light">@ViewBag.AvailableVehicles available</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-car fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Detailed Reports</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <a href="@Url.Action("Sales")" class="btn btn-outline-primary w-100 h-100 d-flex flex-column justify-content-center">
+                                <i class="fas fa-chart-area fa-2x mb-2"></i>
+                                <span>Sales Report</span>
+                                <small class="text-muted">Detailed sales analysis</small>
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <a href="@Url.Action("Users")" class="btn btn-outline-info w-100 h-100 d-flex flex-column justify-content-center">
+                                <i class="fas fa-user-chart fa-2x mb-2"></i>
+                                <span>User Analytics</span>
+                                <small class="text-muted">User activity & trends</small>
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <a href="@Url.Action("Deliveries")" class="btn btn-outline-warning w-100 h-100 d-flex flex-column justify-content-center">
+                                <i class="fas fa-truck fa-2x mb-2"></i>
+                                <span>Delivery Report</span>
+                                <small class="text-muted">Logistics & performance</small>
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <a href="@Url.Action("Vehicles")" class="btn btn-outline-success w-100 h-100 d-flex flex-column justify-content-center">
+                                <i class="fas fa-car-side fa-2x mb-2"></i>
+                                <span>Vehicle Analytics</span>
+                                <small class="text-muted">Inventory & performance</small>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Overview -->
+    <div class="row mb-4">
+        <div class="col-lg-6 mb-3">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Business Overview</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="text-center p-3 border rounded mb-3">
+                                <h4 class="text-primary">@ViewBag.SoldVehicles</h4>
+                                <p class="mb-0">Vehicles Sold</p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-3 border rounded mb-3">
+                                <h4 class="text-success">@ViewBag.ActiveUsers</h4>
+                                <p class="mb-0">Active Users</p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-3 border rounded mb-3">
+                                <h4 class="text-info">@ViewBag.CompletedDeliveries</h4>
+                                <p class="mb-0">Completed Deliveries</p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-3 border rounded mb-3">
+                                <h4 class="text-warning">@ViewBag.PendingDeliveries</h4>
+                                <p class="mb-0">Pending Deliveries</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 mb-3">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-question-circle me-2"></i>Customer Inquiries</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-4">
+                            <div class="text-center p-3 border rounded mb-3">
+                                <h4 class="text-primary">@ViewBag.TotalInquiries</h4>
+                                <p class="mb-0">Total</p>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-center p-3 border rounded mb-3">
+                                <h4 class="text-warning">@ViewBag.PendingInquiries</h4>
+                                <p class="mb-0">Pending</p>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-center p-3 border rounded mb-3">
+                                <h4 class="text-success">@ViewBag.RespondedInquiries</h4>
+                                <p class="mb-0">Responded</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <div class="progress">
+                            @{
+                                var responseRate = ViewBag.TotalInquiries > 0 ? (double)ViewBag.RespondedInquiries / ViewBag.TotalInquiries * 100 : 0;
+                            }
+                            <div class="progress-bar bg-success" role="progressbar" style="width: @responseRate%" aria-valuenow="@responseRate" aria-valuemin="0" aria-valuemax="100">
+                                @Math.Round((double)responseRate, 1)% Response Rate
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Performing Vehicles -->
+    @if (ViewBag.TopVehicles != null)
+    {
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-trophy me-2"></i>Top Performing Vehicles</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Vehicle</th>
+                                        <th>Units Sold</th>
+                                        <th>Revenue</th>
+                                        <th>Performance</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var vehicle in ViewBag.TopVehicles)
+                                    {
+                                        <tr>
+                                            <td><strong>@vehicle.Vehicle</strong></td>
+                                            <td>
+                                                <span class="badge bg-primary">@vehicle.Count</span>
+                                            </td>
+                                            <td>
+                                                <span class="text-success fw-bold">@vehicle.Revenue.ToString("C")</span>
+                                            </td>
+                                            <td>
+                                                <div class="progress" style="height: 20px;">
+                                                    @{
+                                                        var topVehicles = ViewBag.TopVehicles as IEnumerable<dynamic>;
+                                                        var maxCount = topVehicles?.Any() == true ? topVehicles.Max(v => (int)v.Count) : 0;
+                                                        var percentage = maxCount > 0 ? (double)vehicle.Count / maxCount * 100 : 0;
+                                                    }
+                                                    <div class="progress-bar bg-success" role="progressbar" style="width: @percentage%" aria-valuenow="@percentage" aria-valuemin="0" aria-valuemax="100">
+                                                        @Math.Round((double)percentage, 1)%
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Recent Sales Chart Data (for future JavaScript implementation) -->
+    @if (ViewBag.RecentSales != null)
+    {
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Sales Trend (Last 30 Days)</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Sales Count</th>
+                                        <th>Revenue</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var sale in ViewBag.RecentSales)
+                                    {
+                                        <tr>
+                                            <td>@sale.Date.ToString("MMM dd, yyyy")</td>
+                                            <td><span class="badge bg-info">@sale.Count</span></td>
+                                            <td><span class="text-success">@sale.Revenue.ToString("C")</span></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-center mt-3">
+                            <small class="text-muted">Chart visualization can be added with Chart.js or similar library</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    transition: transform 0.2s;
+}
+
+.progress {
+    height: 8px;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #495057;
+}
+</style>

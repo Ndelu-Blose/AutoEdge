@@ -1,0 +1,238 @@
+@model AutoEdge.Models.Entities.Assessment
+@{
+    ViewData["Title"] = "Assessment Details";
+    var answers = ViewBag.AssessmentAnswers as List<AutoEdge.Models.Entities.AssessmentAnswer> ?? new List<AutoEdge.Models.Entities.AssessmentAnswer>();
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-clipboard-check"></i> Assessment Details - @Model.AssessmentTitle
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <!-- Assessment Overview -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-user"></i> Candidate Information</h6>
+                            <p><strong>Name:</strong> @Model.Application?.FirstName @Model.Application?.LastName</p>
+                            <p><strong>Email:</strong> @Model.Application?.Email</p>
+                            <p><strong>Position:</strong> @Model.Application?.JobPosting?.JobTitle</p>
+                            <p><strong>Department:</strong> @Model.Application?.JobPosting?.Department</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-clipboard-list"></i> Assessment Information</h6>
+                            <p><strong>Assessment:</strong> @Model.AssessmentTitle</p>
+                            <p><strong>Type:</strong> @Model.AssessmentType</p>
+                            <p><strong>Sent Date:</strong> @Model.SentDate.ToString("MMM dd, yyyy HH:mm")</p>
+                            <p><strong>Due Date:</strong> @Model.DueDate.ToString("MMM dd, yyyy HH:mm")</p>
+                            @if (Model.IsCompleted)
+                            {
+                                <p><strong>Completed Date:</strong> @Model.CompletedDate?.ToString("MMM dd, yyyy HH:mm")</p>
+                                <p><strong>Score:</strong> 
+                                    <span class="badge @(Model.IsPassed ? "bg-success" : "bg-danger")" style="padding: 0.35rem 0.75rem;">
+                                        @Model.Score.ToString("F1")%
+                                    </span>
+                                </p>
+                                <p><strong>Result:</strong> 
+                                    <span class="badge @(Model.IsPassed ? "bg-success" : "bg-danger")" style="padding: 0.35rem 0.75rem;">
+                                        @(Model.IsPassed ? "PASSED" : "FAILED")
+                                    </span>
+                                </p>
+                            }
+                            else
+                            {
+                                <p><strong>Status:</strong> <span class="badge bg-warning text-dark" style="padding: 0.35rem 0.75rem;">PENDING</span></p>
+                            }
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.Instructions))
+                    {
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6><i class="fas fa-info-circle"></i> Instructions</h6>
+                                <div class="alert alert-info">
+                                    @Model.Instructions
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    @if (Model.IsCompleted && answers.Any())
+                    {
+                        <!-- Questions and Answers -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6><i class="fas fa-question-circle"></i> Questions and Answers</h6>
+                                <div class="accordion" id="questionsAccordion">
+                                    @foreach (var answer in answers.OrderBy(a => a.AssessmentQuestion.Order))
+                                    {
+                                        <div class="card">
+                                            <div class="card-header" id="heading@(answer.AssessmentAnswerId)">
+                                                <h6 class="mb-0">
+                                                    <button class="btn btn-link collapsed" type="button" data-toggle="collapse" 
+                                                            data-target="#collapse@(answer.AssessmentAnswerId)" aria-expanded="false" 
+                                                            aria-controls="collapse@(answer.AssessmentAnswerId)">
+                                                        <strong>Q@(answer.AssessmentQuestion.Order):</strong> 
+                                                        @answer.AssessmentQuestion.Question.QuestionText
+                                                        @if (answer.Score.HasValue)
+                                                        {
+                                                            <span class="badge @(answer.Score >= 70 ? "bg-success" : "bg-warning text-dark") ml-2" style="padding: 0.35rem 0.75rem;">
+                                                                @answer.Score.Value.ToString("F1")%
+                                                            </span>
+                                                        }
+                                                    </button>
+                                                </h6>
+                                            </div>
+                                            <div id="collapse@(answer.AssessmentAnswerId)" class="collapse" 
+                                                 aria-labelledby="heading@(answer.AssessmentAnswerId)" data-parent="#questionsAccordion">
+                                                <div class="card-body">
+                                                    <p><strong>Answer:</strong></p>
+                                                    <div class="answer-text">
+                                                        @answer.AnswerText
+                                                    </div>
+                                                    
+                                                    @if (answer.Score.HasValue)
+                                                    {
+                                                        <div class="mt-3">
+                                                            <p><strong>Score:</strong> 
+                                                                <span class="badge @(answer.Score >= 70 ? "bg-success" : "bg-warning text-dark")" style="padding: 0.35rem 0.75rem;">
+                                                                    @answer.Score.Value.ToString("F1")%
+                                                                </span>
+                                                            </p>
+                                                        </div>
+                                                    }
+                                                    
+                                                    @if (!string.IsNullOrEmpty(answer.GradingNotes))
+                                                    {
+                                                        <div class="mt-3">
+                                                            <p><strong>Grading Notes:</strong></p>
+                                                            <div class="alert alert-light">
+                                                                @answer.GradingNotes
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                    
+                                                    <div class="mt-3">
+                                                        <small class="text-muted">
+                                                            <i class="fas fa-clock"></i> 
+                                                            Submitted: @answer.SubmittedDate.ToString("MMM dd, yyyy HH:mm")
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else if (Model.IsCompleted)
+                    {
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <strong>No answers found for this assessment.</strong>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle"></i>
+                                    <strong>Assessment not completed yet.</strong> Answers will be displayed once the candidate completes the assessment.
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(Model.GradingNotes))
+                    {
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6><i class="fas fa-sticky-note"></i> Overall Grading Notes</h6>
+                                <div class="alert alert-light">
+                                    @Model.GradingNotes
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Action Buttons -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="btn-group" role="group">
+                                <a asp-action="AssessmentResults" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left"></i> Back to Assessment Results
+                                </a>
+                                @if (Model.IsCompleted)
+                                {
+                                    <a asp-action="DownloadAssessmentReport" asp-route-id="@Model.AssessmentId" class="btn btn-primary">
+                                        <i class="fas fa-download"></i> Download Report
+                                    </a>
+                                }
+                                <a asp-action="ViewApplication" asp-route-id="@Model.ApplicationId" class="btn btn-info">
+                                    <i class="fas fa-user"></i> View Application
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.answer-text {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    padding: 1rem;
+    white-space: pre-wrap;
+    font-family: inherit;
+}
+
+.card-header .btn-link {
+    text-decoration: none;
+    color: #495057;
+    font-weight: 500;
+}
+
+.card-header .btn-link:hover {
+    color: #007bff;
+}
+
+.card-header .btn-link:focus {
+    box-shadow: none;
+}
+
+.accordion .card {
+    border: 1px solid #dee2e6;
+    margin-bottom: 0.5rem;
+}
+
+.accordion .card:last-child {
+    margin-bottom: 0;
+}
+</style>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Auto-expand first question if only one question
+            if ($('#questionsAccordion .card').length === 1) {
+                $('#questionsAccordion .collapse').first().addClass('show');
+                $('#questionsAccordion .btn-link').first().removeClass('collapsed').attr('aria-expanded', 'true');
+            }
+        });
+    </script>
+}

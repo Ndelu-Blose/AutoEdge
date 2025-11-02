@@ -1,0 +1,195 @@
+@{
+    ViewData["Title"] = "Create Role";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2>Create New Role</h2>
+                <a asp-action="Roles" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Roles
+                </a>
+            </div>
+            <hr />
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            @if (ViewBag.ErrorMessage != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    @ViewBag.ErrorMessage
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            <div class="card">
+                <div class="card-header">
+                    <h5>Role Information</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="CreateRole" method="post">
+                        @Html.AntiForgeryToken()
+                        
+                        <div class="mb-3">
+                            <label for="roleName" class="form-label">Role Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="roleName" name="roleName" required 
+                                   placeholder="Enter role name (e.g., Manager, Supervisor, Analyst)">
+                            <div class="form-text">
+                                Role names should be descriptive and unique. Use PascalCase (e.g., SalesManager, CustomerSupport).
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="roleDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="roleDescription" name="roleDescription" rows="4" 
+                                      placeholder="Describe the role's responsibilities, permissions, and purpose within the system"></textarea>
+                            <div class="form-text">
+                                Provide a clear description of what this role can do and its intended use.
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <h6>Role Guidelines</h6>
+                            <div class="alert alert-info">
+                                <ul class="mb-0">
+                                    <li><strong>Administrator:</strong> Reserved for system administrators with full access</li>
+                                    <li><strong>Customer:</strong> Default role for regular customers</li>
+                                    <li><strong>SalesRepresentative:</strong> For sales team members</li>
+                                    <li><strong>SupportStaff:</strong> For customer support team</li>
+                                    <li><strong>Driver:</strong> For delivery drivers and logistics staff</li>
+                                    <li>Custom roles can be created for specific business needs</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <a asp-action="Roles" class="btn btn-secondary me-md-2">
+                                    <i class="fas fa-times"></i> Cancel
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-plus"></i> Create Role
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Existing Roles</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="text-danger">System Roles</h6>
+                        <div class="mb-2">
+                            <span class="badge bg-danger">Administrator</span>
+                            <small class="text-muted d-block">Full system access</small>
+                        </div>
+                        <div class="mb-2">
+                            <span class="badge bg-primary">Customer</span>
+                            <small class="text-muted d-block">Default user role</small>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6 class="text-success">Staff Roles</h6>
+                        <div class="mb-2">
+                            <span class="badge bg-success">SalesRepresentative</span>
+                            <small class="text-muted d-block">Sales team access</small>
+                        </div>
+                        <div class="mb-2">
+                            <span class="badge bg-info">SupportStaff</span>
+                            <small class="text-muted d-block">Support team access</small>
+                        </div>
+                        <div class="mb-2">
+                            <span class="badge bg-warning">Driver</span>
+                            <small class="text-muted d-block">Vehicle delivery and logistics</small>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <small>
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Note:</strong> System roles (Administrator, Customer) cannot be deleted and have predefined permissions.
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5>Role Best Practices</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="small">
+                        <li>Use descriptive names that clearly indicate the role's purpose</li>
+                        <li>Follow PascalCase naming convention</li>
+                        <li>Avoid spaces and special characters</li>
+                        <li>Consider the principle of least privilege</li>
+                        <li>Document role responsibilities clearly</li>
+                        <li>Review and audit roles regularly</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Role name validation
+        document.getElementById('roleName').addEventListener('input', function(e) {
+            const value = e.target.value;
+            const isValid = /^[A-Za-z][A-Za-z0-9]*$/.test(value);
+            
+            if (value && !isValid) {
+                e.target.classList.add('is-invalid');
+                if (!document.getElementById('roleNameError')) {
+                    const errorDiv = document.createElement('div');
+                    errorDiv.id = 'roleNameError';
+                    errorDiv.className = 'invalid-feedback';
+                    errorDiv.textContent = 'Role name must start with a letter and contain only letters and numbers.';
+                    e.target.parentNode.appendChild(errorDiv);
+                }
+            } else {
+                e.target.classList.remove('is-invalid');
+                const errorDiv = document.getElementById('roleNameError');
+                if (errorDiv) {
+                    errorDiv.remove();
+                }
+            }
+        });
+
+        // Form validation
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const roleName = document.getElementById('roleName').value.trim();
+            
+            if (!roleName) {
+                e.preventDefault();
+                alert('Please enter a role name.');
+                return false;
+            }
+            
+            if (!/^[A-Za-z][A-Za-z0-9]*$/.test(roleName)) {
+                e.preventDefault();
+                alert('Role name must start with a letter and contain only letters and numbers.');
+                return false;
+            }
+            
+            // Check for reserved names
+            const reservedNames = ['Administrator', 'Customer', 'SalesRepresentative', 'SupportStaff'];
+            if (reservedNames.includes(roleName)) {
+                e.preventDefault();
+                alert('This role name is reserved. Please choose a different name.');
+                return false;
+            }
+        });
+    </script>
+}

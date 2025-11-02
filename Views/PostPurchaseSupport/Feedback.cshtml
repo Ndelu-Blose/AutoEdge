@@ -1,0 +1,284 @@
+@model AutoEdge.Models.ViewModels.CustomerFeedbackViewModel
+@{
+    ViewData["Title"] = Model.IsUpdate ? "Update Feedback" : "Submit Feedback";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-star"></i> @(Model.IsUpdate ? "Update Your Feedback" : "Submit Feedback")</h2>
+        <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Support
+        </a>
+    </div>
+
+    <!-- Vehicle Information Card -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-car"></i> Vehicle Information</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Vehicle:</strong> @Model.VehicleInfo</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Purchase Date:</strong> @Model.PurchaseDate.ToString("MMMM dd, yyyy")</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Existing Feedback Display -->
+    @if (Model.IsUpdate && Model.ExistingFeedback != null)
+    {
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-history"></i> Your Previous Feedback</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <p><strong>Overall Rating:</strong></p>
+                        <div class="star-rating-display">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                <i class="fas fa-star @(i <= Model.ExistingFeedback.Rating ? "text-warning" : "text-muted")"></i>
+                            }
+                            <span class="ms-2">(@Model.ExistingFeedback.Rating/5)</span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <p><strong>Service Rating:</strong></p>
+                        <div class="star-rating-display">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                <i class="fas fa-star @(i <= Model.ExistingFeedback.ServiceRating ? "text-warning" : "text-muted")"></i>
+                            }
+                            <span class="ms-2">(@Model.ExistingFeedback.ServiceRating/5)</span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <p><strong>Vehicle Rating:</strong></p>
+                        <div class="star-rating-display">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                <i class="fas fa-star @(i <= Model.ExistingFeedback.VehicleRating ? "text-warning" : "text-muted")"></i>
+                            }
+                            <span class="ms-2">(@Model.ExistingFeedback.VehicleRating/5)</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <p><strong>Comments:</strong></p>
+                    <p class="text-muted">@Model.ExistingFeedback.Comments</p>
+                </div>
+                <p><strong>Submitted:</strong> @Model.ExistingFeedback.SubmittedDate.ToString("MMMM dd, yyyy")</p>
+            </div>
+        </div>
+    }
+
+    <!-- Feedback Form -->
+    <div class="card">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0"><i class="fas fa-edit"></i> @(Model.IsUpdate ? "Update Your" : "Share Your") Experience</h5>
+        </div>
+        <div class="card-body">
+            <form asp-action="Feedback" method="post">
+                <input asp-for="ContractId" type="hidden" />
+                <input asp-for="VehicleInfo" type="hidden" />
+                <input asp-for="PurchaseDate" type="hidden" />
+
+                <!-- Rating Section -->
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <label asp-for="Rating" class="form-label">Overall Experience</label>
+                        <div class="star-rating" data-rating="@(Model.ExistingFeedback?.Rating ?? 0)" data-field="Rating">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                <i class="fas fa-star star" data-value="@i"></i>
+                            }
+                        </div>
+                        <input asp-for="Rating" type="hidden" value="@(Model.ExistingFeedback?.Rating ?? 0)" />
+                        <span asp-validation-for="Rating" class="text-danger"></span>
+                        <div class="form-text">Rate your overall experience with AutoEdge</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="ServiceRating" class="form-label">Service Quality</label>
+                        <div class="star-rating" data-rating="@(Model.ExistingFeedback?.ServiceRating ?? 0)" data-field="ServiceRating">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                <i class="fas fa-star star" data-value="@i"></i>
+                            }
+                        </div>
+                        <input asp-for="ServiceRating" type="hidden" value="@(Model.ExistingFeedback?.ServiceRating ?? 0)" />
+                        <span asp-validation-for="ServiceRating" class="text-danger"></span>
+                        <div class="form-text">Rate the quality of our service</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="VehicleRating" class="form-label">Vehicle Quality</label>
+                        <div class="star-rating" data-rating="@(Model.ExistingFeedback?.VehicleRating ?? 0)" data-field="VehicleRating">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                <i class="fas fa-star star" data-value="@i"></i>
+                            }
+                        </div>
+                        <input asp-for="VehicleRating" type="hidden" value="@(Model.ExistingFeedback?.VehicleRating ?? 0)" />
+                        <span asp-validation-for="VehicleRating" class="text-danger"></span>
+                        <div class="form-text">Rate the quality of your vehicle</div>
+                    </div>
+                </div>
+
+                <!-- Comments Section -->
+                <div class="mb-3">
+                    <label asp-for="Comments" class="form-label">Your Comments</label>
+                    <textarea asp-for="Comments" class="form-control" rows="5" 
+                              placeholder="Please share your detailed experience with us. What did you like? What could we improve?" 
+                              value="@(Model.ExistingFeedback?.Comments ?? "")" required></textarea>
+                    <span asp-validation-for="Comments" class="text-danger"></span>
+                    <div class="form-text">Help us improve by sharing your honest feedback (minimum 10 characters)</div>
+                </div>
+
+                <!-- Improvement Suggestions -->
+                <div class="mb-3">
+                    <label asp-for="ImprovementSuggestions" class="form-label">Suggestions for Improvement</label>
+                    <textarea asp-for="ImprovementSuggestions" class="form-control" rows="3" 
+                              placeholder="Any specific suggestions on how we can improve our service?"></textarea>
+                    <span asp-validation-for="ImprovementSuggestions" class="text-danger"></span>
+                    <div class="form-text">Optional: Share specific ideas for how we can serve you better</div>
+                </div>
+
+                <!-- Additional Options -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="form-check">
+                            <input asp-for="RecommendToOthers" class="form-check-input" type="checkbox">
+                            <label asp-for="RecommendToOthers" class="form-check-label">
+                                I would recommend AutoEdge to others
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-check">
+                            <input asp-for="AllowFollowUp" class="form-check-input" type="checkbox">
+                            <label asp-for="AllowFollowUp" class="form-check-label">
+                                Allow AutoEdge to contact me for follow-up
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feedback Guidelines -->
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-info-circle"></i> Feedback Guidelines</h6>
+                    <ul class="mb-0">
+                        <li>Your feedback helps us improve our services for all customers</li>
+                        <li>Please be honest and constructive in your comments</li>
+                        <li>Feedback is reviewed by our management team</li>
+                        <li>We may contact you for clarification if you allow follow-up</li>
+                        <li>Your feedback may be used in testimonials (with your permission)</li>
+                    </ul>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a href="@Url.Action("Index")" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-paper-plane"></i> @(Model.IsUpdate ? "Update Feedback" : "Submit Feedback")
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.star-rating {
+    font-size: 1.5rem;
+    margin: 0.5rem 0;
+}
+
+.star-rating .star {
+    color: #ddd;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.star-rating .star:hover,
+.star-rating .star.active {
+    color: #ffc107;
+}
+
+.star-rating-display .fa-star {
+    font-size: 1.2rem;
+}
+</style>
+
+<script>
+// Star rating functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const starRatings = document.querySelectorAll('.star-rating');
+    
+    starRatings.forEach(rating => {
+        const stars = rating.querySelectorAll('.star');
+        const field = rating.dataset.field;
+        const hiddenInput = document.querySelector(`input[name="${field}"]`);
+        const currentRating = parseInt(rating.dataset.rating) || 0;
+        
+        // Set initial rating
+        updateStars(stars, currentRating);
+        
+        stars.forEach(star => {
+            star.addEventListener('click', function() {
+                const value = parseInt(this.dataset.value);
+                hiddenInput.value = value;
+                updateStars(stars, value);
+            });
+            
+            star.addEventListener('mouseover', function() {
+                const value = parseInt(this.dataset.value);
+                updateStars(stars, value);
+            });
+        });
+        
+        rating.addEventListener('mouseleave', function() {
+            const currentValue = parseInt(hiddenInput.value) || 0;
+            updateStars(stars, currentValue);
+        });
+    });
+    
+    function updateStars(stars, rating) {
+        stars.forEach((star, index) => {
+            if (index < rating) {
+                star.classList.add('active');
+            } else {
+                star.classList.remove('active');
+            }
+        });
+    }
+});
+
+// Form validation
+document.querySelector('form').addEventListener('submit', function(e) {
+    const ratings = ['Rating', 'ServiceRating', 'VehicleRating'];
+    let isValid = true;
+    
+    ratings.forEach(field => {
+        const input = document.querySelector(`input[name="${field}"]`);
+        const value = parseInt(input.value);
+        
+        if (!value || value < 1 || value > 5) {
+            isValid = false;
+            alert(`Please provide a rating for ${field.replace('Rating', '').replace(/([A-Z])/g, ' $1').trim()}`);
+        }
+    });
+    
+    if (!isValid) {
+        e.preventDefault();
+    }
+});
+</script>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

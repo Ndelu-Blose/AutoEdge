@@ -1,0 +1,135 @@
+@model AutoEdge.Models.Entities.ServicePayment
+@{
+    ViewData["Title"] = "Payment Successful";
+}
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-success text-white text-center">
+                    <h3 class="mb-0">
+                        <i class="fas fa-check-circle"></i> Payment Successful!
+                    </h3>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-4">
+                        <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+                    </div>
+                    
+                    <h4 class="text-success mb-3">Thank you for your payment!</h4>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h5 class="card-title">Payment Details</h5>
+                                    <table class="table table-sm">
+                                        <tr>
+                                            <td><strong>Transaction ID:</strong></td>
+                                            <td>@Model.TransactionId</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Amount Paid:</strong></td>
+                                            <td><strong class="text-success">R @Model.Amount.ToString("F2")</strong></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Payment Method:</strong></td>
+                                            <td>@Model.PaymentMethod</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Payment Date:</strong></td>
+                                            <td>@Model.PaymentDate.ToString("MMMM dd, yyyy 'at' h:mm tt")</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h5 class="card-title">Service Information</h5>
+                                    @if (Model.ServiceInvoice?.ServiceBooking != null)
+                                    {
+                                        var booking = Model.ServiceInvoice.ServiceBooking;
+                                        <table class="table table-sm">
+                                            <tr>
+                                                <td><strong>Service Reference:</strong></td>
+                                                <td>@booking.Reference</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Vehicle:</strong></td>
+                                                <td>@booking.Make @booking.Model (@booking.Year)</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Service Type:</strong></td>
+                                                <td>@booking.ServiceType</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Invoice:</strong></td>
+                                                <td>@Model.ServiceInvoice.InvoiceNumber</td>
+                                            </tr>
+                                        </table>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info mt-4">
+                        <h5><i class="fas fa-info-circle"></i> What's Next?</h5>
+                        <ul class="list-unstyled mb-0">
+                            <li><i class="fas fa-check text-success"></i> Your payment has been processed successfully</li>
+                            <li><i class="fas fa-envelope text-primary"></i> A confirmation email has been sent to your email address</li>
+                            <li><i class="fas fa-truck text-warning"></i> Your vehicle will be ready for pickup during business hours</li>
+                            <li><i class="fas fa-phone text-info"></i> We'll contact you if there are any updates</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h5>Pickup Information</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6><i class="fas fa-map-marker-alt"></i> Pickup Location</h6>
+                                        <p class="mb-0">AutoEdge Service Center<br>
+                                        123 Service Street<br>
+                                        City, State 12345</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6><i class="fas fa-clock"></i> Business Hours</h6>
+                                        <p class="mb-0">
+                                            <strong>Monday - Friday:</strong> 8:00 AM - 6:00 PM<br>
+                                            <strong>Saturday:</strong> 9:00 AM - 4:00 PM<br>
+                                            <strong>Sunday:</strong> Closed
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <div class="btn-group" role="group">
+                            <a asp-action="DownloadReceipt" asp-route-id="@Model.Id" class="btn btn-primary">
+                                <i class="fas fa-download"></i> Download Receipt
+                            </a>
+                            <a asp-action="MyServices" class="btn btn-outline-primary">
+                                <i class="fas fa-wrench"></i> View My Services
+                            </a>
+                            <a asp-controller="ServiceInvoice" asp-action="CustomerView" asp-route-id="@Model.ServiceInvoiceId" class="btn btn-outline-info">
+                                <i class="fas fa-file-invoice"></i> View Invoice
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

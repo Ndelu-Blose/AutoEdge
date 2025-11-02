@@ -1,0 +1,339 @@
+@model IEnumerable<AutoEdge.Models.Entities.Application>
+
+@{
+    ViewData["Title"] = "Applications Management";
+    var jobPostings = ViewBag.JobPostings as List<AutoEdge.Models.Entities.JobPosting>;
+    var selectedJobId = ViewBag.SelectedJobId as int?;
+}
+
+<style>
+    .modern-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    .modern-table thead th {
+        background: linear-gradient(135deg, var(--primary-color) 0%, #34495e 100%);
+        color: white;
+        font-weight: 600;
+        padding: 1rem;
+        border: none;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .modern-table tbody tr {
+        background: white;
+        transition: all 0.2s ease;
+        border-bottom: 1px solid var(--border-color);
+    }
+    .modern-table tbody tr:hover {
+        background: #f8f9fa;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .modern-table tbody td {
+        padding: 1.25rem 1rem;
+        vertical-align: middle;
+        color: #333 !important;
+        font-size: 0.95rem;
+    }
+    .status-badge-admin {
+        display: inline-block;
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        white-space: nowrap;
+        position: relative;
+        vertical-align: middle;
+    }
+    .status-submitted { background: rgba(108, 117, 125, 0.15); color: #6c757d; }
+    .status-review { background: rgba(243, 156, 18, 0.15); color: #f39c12; }
+    .status-shortlisted { background: rgba(39, 174, 96, 0.15); color: #27ae60; }
+    .status-interview { background: rgba(52, 152, 219, 0.15); color: #3498db; }
+    .status-assessment { background: rgba(142, 68, 173, 0.15); color: #8e44ad; }
+    .status-decision { background: rgba(44, 62, 80, 0.15); color: #2c3e50; }
+    .status-rejected { background: rgba(231, 76, 60, 0.15); color: #e74c3c; }
+</style>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-file-alt mr-2"></i>
+                        Applications Management
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <!-- Filter Section -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <form method="get" class="form-inline">
+                                <div class="form-group mr-2">
+                                    <label for="jobId" class="mr-2">Filter by Job:</label>
+                                    <select name="jobId" id="jobId" class="form-control" onchange="this.form.submit()">
+                                        <option value="">All Jobs</option>
+                                        @foreach (var job in jobPostings)
+                                        {
+                                            <option value="@job.JobId" selected="@(selectedJobId == job.JobId)">
+                                                @job.JobTitle - @job.Department
+                                            </option>
+                                        }
+                                    </select>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="col-md-6 text-right">
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-outline-primary" onclick="exportApplications()">
+                                    <i class="fas fa-download mr-1"></i>Export
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" onclick="refreshApplications()">
+                                    <i class="fas fa-sync mr-1"></i>Refresh
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (Model.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="modern-table">
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            <input type="checkbox" id="selectAllApplications" />
+                                        </th>
+                                        <th><i class="fas fa-user mr-2"></i>Name</th>
+                                        <th><i class="fas fa-envelope mr-2"></i>Email</th>
+                                        <th><i class="fas fa-briefcase mr-2"></i>Position</th>
+                                        <th><i class="fas fa-building mr-2"></i>Department</th>
+                                        <th><i class="fas fa-clock mr-2"></i>Experience</th>
+                                        <th><i class="fas fa-chart-line mr-2"></i>Match Score</th>
+                                        <th><i class="fas fa-info-circle mr-2"></i>Status</th>
+                                        <th><i class="fas fa-calendar mr-2"></i>Applied Date</th>
+                                        <th><i class="fas fa-cogs mr-2"></i>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var application in Model)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <input type="checkbox" class="application-checkbox" value="@application.ApplicationId" />
+                                            </td>
+                                            <td>
+                                                <div class="font-weight-bold">@application.FirstName @application.LastName</div>
+                                            </td>
+                                            <td>@application.Email</td>
+                                            <td style="font-weight: 500;">@application.JobPosting?.JobTitle</td>
+                                            <td>
+                                                <span class="badge bg-info" style="padding: 0.35rem 0.75rem;">
+                                                    <i class="fas fa-building mr-1"></i>@application.JobPosting?.Department
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <i class="fas fa-clock text-muted mr-1"></i>@application.YearsOfExperience years
+                                            </td>
+                                            <td>
+                                                @if (application.MatchScore > 0)
+                                                {
+                                                    var scoreColor = application.MatchScore >= 70 ? "text-success" : application.MatchScore >= 50 ? "text-warning" : "text-danger";
+                                                    <div class="@scoreColor font-weight-bold">
+                                                        <i class="fas fa-chart-line mr-1"></i>@application.MatchScore.ToString("F1")%
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">Pending</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @switch (application.Status)
+                                                {
+                                                    case "Submitted":
+                                                        <span class="status-badge-admin status-submitted">
+                                                            <i class="fas fa-paper-plane mr-1"></i>@application.Status
+                                                        </span>
+                                                        break;
+                                                    case "Under Review":
+                                                        <span class="status-badge-admin status-review">
+                                                            <i class="fas fa-search mr-1"></i>Review
+                                                        </span>
+                                                        break;
+                                                    case "Shortlisted":
+                                                        <span class="status-badge-admin status-shortlisted">
+                                                            <i class="fas fa-check-circle mr-1"></i>@application.Status
+                                                        </span>
+                                                        break;
+                                                    case "Interview Scheduled":
+                                                        <span class="status-badge-admin status-interview">
+                                                            <i class="fas fa-video mr-1"></i>Interview
+                                                        </span>
+                                                        break;
+                                                    case "Assessment Sent":
+                                                        <span class="status-badge-admin status-assessment">
+                                                            <i class="fas fa-clipboard-check mr-1"></i>Assessment
+                                                        </span>
+                                                        break;
+                                                    case "Final Decision":
+                                                        <span class="status-badge-admin status-decision">
+                                                            <i class="fas fa-gavel mr-1"></i>Decision
+                                                        </span>
+                                                        break;
+                                                    case "Rejected":
+                                                        <span class="status-badge-admin status-rejected">
+                                                            <i class="fas fa-times-circle mr-1"></i>@application.Status
+                                                        </span>
+                                                        break;
+                                                    default:
+                                                        <span class="status-badge-admin status-submitted">
+                                                            @application.Status
+                                                        </span>
+                                                        break;
+                                                }
+                                            </td>
+                                            <td>
+                                                <i class="fas fa-calendar-alt text-muted mr-1"></i>
+                                                @application.SubmittedDate.ToString("MMM dd, yyyy")
+                                            </td>
+                                            <td>
+                                                <div class="d-flex gap-2">
+                                                    <a href="@Url.Action("ViewApplication", new { id = application.ApplicationId })" class="btn btn-outline-primary btn-sm">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Bulk Actions -->
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5>Bulk Actions</h5>
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-outline-success" onclick="bulkShortlist()">
+                                                <i class="fas fa-check-circle mr-1"></i>Shortlist Selected
+                                            </button>
+                                            <button type="button" class="btn btn-outline-danger" onclick="bulkReject()">
+                                                <i class="fas fa-times-circle mr-1"></i>Reject Selected
+                                            </button>
+                                            <button type="button" class="btn btn-outline-info" onclick="bulkExport()">
+                                                <i class="fas fa-download mr-1"></i>Export Selected
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+                            <h4 class="text-muted">No Applications Found</h4>
+                            <p class="text-muted">
+                                @if (selectedJobId.HasValue)
+                                {
+                                    <text>No applications found for the selected job posting.</text>
+                                }
+                                else
+                                {
+                                    <text>No applications have been submitted yet.</text>
+                                }
+                            </p>
+                            @if (selectedJobId.HasValue)
+                            {
+                                <a href="@Url.Action("Applications")" class="btn btn-primary">
+                                    <i class="fas fa-list mr-2"></i>View All Applications
+                                </a>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Select all functionality
+            $('#selectAllApplications').change(function() {
+                $('.application-checkbox').prop('checked', this.checked);
+            });
+
+            // Individual checkbox change
+            $('.application-checkbox').change(function() {
+                var totalCheckboxes = $('.application-checkbox').length;
+                var checkedCheckboxes = $('.application-checkbox:checked').length;
+                $('#selectAllApplications').prop('checked', totalCheckboxes === checkedCheckboxes);
+            });
+        });
+
+        function exportApplications() {
+            // Implement export functionality
+            alert('Export functionality will be implemented');
+        }
+
+        function refreshApplications() {
+            location.reload();
+        }
+
+        function bulkShortlist() {
+            var selectedIds = $('.application-checkbox:checked').map(function() {
+                return this.value;
+            }).get();
+
+            if (selectedIds.length === 0) {
+                alert('Please select applications to shortlist');
+                return;
+            }
+
+            if (confirm('Are you sure you want to shortlist ' + selectedIds.length + ' applications?')) {
+                // Implement bulk shortlist functionality
+                alert('Bulk shortlist functionality will be implemented');
+            }
+        }
+
+        function bulkReject() {
+            var selectedIds = $('.application-checkbox:checked').map(function() {
+                return this.value;
+            }).get();
+
+            if (selectedIds.length === 0) {
+                alert('Please select applications to reject');
+                return;
+            }
+
+            if (confirm('Are you sure you want to reject ' + selectedIds.length + ' applications?')) {
+                // Implement bulk reject functionality
+                alert('Bulk reject functionality will be implemented');
+            }
+        }
+
+        function bulkExport() {
+            var selectedIds = $('.application-checkbox:checked').map(function() {
+                return this.value;
+            }).get();
+
+            if (selectedIds.length === 0) {
+                alert('Please select applications to export');
+                return;
+            }
+
+            // Implement bulk export functionality
+            alert('Bulk export functionality will be implemented');
+        }
+    </script>
+}

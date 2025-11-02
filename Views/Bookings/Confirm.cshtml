@@ -1,0 +1,147 @@
+@model AutoEdge.Models.Entities.ServiceBooking
+@using AutoEdge.Models.Entities
+@{
+    ViewData["Title"] = "Booking Confirmed";
+}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-success">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0"><i class="fas fa-check-circle me-2"></i>Booking Confirmed!</h3>
+                </div>
+    <div class="card-body">
+                    <div class="alert alert-success">
+                        <h5><i class="fas fa-calendar-check me-2"></i>Your service booking has been successfully created and confirmed!</h5>
+                        <p class="mb-0">You will receive a confirmation email shortly with all the details.</p>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Booking Details</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>Reference Number:</strong> @Model.Reference</li>
+                                <li><strong>Service Type:</strong> @Model.ServiceType</li>
+                                <li><strong>Delivery Method:</strong> @Model.DeliveryMethod</li>
+                                <li><strong>Status:</strong> <span class="badge bg-success">@Model.Status</span></li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Vehicle Information</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>Vehicle:</strong> @Model.Make @Model.Model (@Model.Year)</li>
+                                @if (!string.IsNullOrEmpty(Model.VIN))
+                                {
+                                    <li><strong>VIN:</strong> @Model.VIN</li>
+                                }
+                                @if (Model.Mileage.HasValue)
+                                {
+                                    <li><strong>Mileage:</strong> @Model.Mileage.Value.ToString("N0") miles</li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Scheduled Service</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>Date:</strong> @Model.PreferredDate.ToString("dddd, MMMM dd, yyyy")</li>
+                                <li><strong>Time:</strong> @Model.PreferredStart.ToString("h:mm tt")</li>
+                                <li><strong>Duration:</strong> @Model.EstimatedDurationMin minutes</li>
+                                <li><strong>Estimated Cost:</strong> $@Model.EstimatedCost.ToString("N2")</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Contact Information</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>Name:</strong> @Model.CustomerName</li>
+                                <li><strong>Email:</strong> @Model.CustomerEmail</li>
+                                @if (!string.IsNullOrEmpty(Model.CustomerPhone))
+                                {
+                                    <li><strong>Phone:</strong> @Model.CustomerPhone</li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.Notes))
+                    {
+                        <hr>
+                        <h6 class="text-muted">Special Instructions</h6>
+                        <p class="text-muted">@Model.Notes</p>
+                    }
+
+                    @if (Model.ServiceJob?.Mechanic != null)
+                    {
+                        <hr>
+                        <h6 class="text-muted">Assigned Technician</h6>
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h6 class="mb-1">@Model.ServiceJob.Mechanic.Name</h6>
+                                <p class="text-muted mb-1">Rating: @Model.ServiceJob.Mechanic.Rating.ToString("F1") ⭐</p>
+                                <p class="text-muted mb-0">Skills: @string.Join(", ", Model.ServiceJob.Mechanic.Skills)</p>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="alert alert-info mt-3">
+                        <h6><i class="fas fa-info-circle me-2"></i>What happens next?</h6>
+                        <ul class="mb-0">
+                            @if (Model.ServiceJob?.Mechanic != null)
+                            {
+                                <li>Your service has been assigned to <strong>@Model.ServiceJob.Mechanic.Name</strong>, a qualified technician with @Model.ServiceJob.Mechanic.Rating.ToString("F1") star rating</li>
+                            }
+                            else
+                            {
+                                <li>A qualified technician will be assigned to your booking shortly</li>
+                            }
+                            <li>You will receive email updates about your service appointment</li>
+                            @if (Model.DeliveryMethod == ServiceDeliveryMethod.Pickup && Model.VehiclePickups.Any())
+                            {
+                                var pickup = Model.VehiclePickups.First();
+                                <li>🚚 <strong>Pickup scheduled</strong>: We will collect your vehicle from <strong>@pickup.PickupLocation</strong> on @pickup.PickupDate.ToString("MMMM dd, yyyy") at @pickup.PickupTime.ToString(@"hh\:mm")</li>
+                            }
+                            else if (Model.DeliveryMethod == ServiceDeliveryMethod.Pickup)
+                            {
+                                <li>🚚 <strong>Pickup service requested</strong>: Our team will contact you to arrange vehicle collection</li>
+                            }
+                            else
+                            {
+                                <li>If you chose <strong>Dropoff</strong>, please bring your vehicle to our service center at the scheduled time</li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-footer bg-light">
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a asp-controller="Customer" asp-action="Dashboard" class="btn btn-primary">
+                            <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+                        </a>
+                        <a asp-controller="Bookings" asp-action="Create" class="btn btn-outline-secondary">
+                            <i class="fas fa-plus me-2"></i>Make Another Booking
+                        </a>
+                        <button onclick="window.print()" class="btn btn-outline-info">
+                            <i class="fas fa-print me-2"></i>Print Confirmation
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @@media print {
+        .card-footer, .btn { display: none !important; }
+        .card { border: 1px solid #000 !important; }
+        .card-header { background: #000 !important; color: #fff !important; }
+    }
+</style>

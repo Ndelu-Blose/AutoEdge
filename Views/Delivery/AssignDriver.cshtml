@@ -1,0 +1,137 @@
+@{
+    ViewData["Title"] = "Assign Driver";
+    var delivery = ViewBag.Delivery as AutoEdge.Models.Entities.Delivery;
+    var drivers = ViewBag.Drivers as IEnumerable<dynamic>;
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-truck"></i> Assign Driver to Delivery</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Delivery Information -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5>Delivery Details</h5>
+                            <p><strong>Tracking Number:</strong> @delivery.TrackingNumber</p>
+                            <p><strong>Vehicle:</strong> @delivery.Contract.Purchase.Vehicle.Make @delivery.Contract.Purchase.Vehicle.Model (@delivery.Contract.Purchase.Vehicle.Year)</p>
+                            <p><strong>Customer:</strong> @delivery.Contract.Customer.User.FirstName @delivery.Contract.Customer.User.LastName</p>
+                            <p><strong>Scheduled Date:</strong> @delivery.ScheduledDate.ToString("MMM dd, yyyy")</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Delivery Address</h5>
+                            <p>
+                                @delivery.DeliveryAddress<br>
+                                @delivery.City, @delivery.State @delivery.ZipCode<br>
+                                @delivery.Country
+                            </p>
+                            <p><strong>Contact:</strong> @delivery.ContactPersonName</p>
+                            <p><strong>Phone:</strong> @delivery.ContactPersonPhone</p>
+                        </div>
+                    </div>
+
+                    <!-- Driver Assignment Form -->
+                    <form asp-action="AssignDriver" method="post">
+                        <input type="hidden" name="deliveryId" value="@delivery.Id" />
+                        
+                        <div class="form-group mb-3">
+                            <label for="driverUserId" class="form-label">Select Driver</label>
+                            <select name="driverUserId" id="driverUserId" class="form-select" required onchange="updateDriverInfo()">
+                                <option value="">-- Select a Driver --</option>
+                                @if (drivers != null)
+                                {
+                                    @foreach (var driver in drivers)
+                                    {
+                                        @if (delivery.DriverUserId == driver.Id)
+                                        {
+                                            <option value="@driver.Id" 
+                                                    data-name="@driver.FirstName @driver.LastName" 
+                                                    data-phone="@driver.PhoneNumber"
+                                                    selected>
+                                                @driver.FirstName @driver.LastName
+                                            </option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@driver.Id" 
+                                                    data-name="@driver.FirstName @driver.LastName" 
+                                                    data-phone="@driver.PhoneNumber">
+                                                @driver.FirstName @driver.LastName
+                                            </option>
+                                        }
+                                    }
+                                }
+                            </select>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="driverName" class="form-label">Driver Name</label>
+                            <input type="text" name="driverName" id="driverName" class="form-control" 
+                                   value="@delivery.DriverName" readonly />
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="driverPhone" class="form-label">Driver Phone</label>
+                            <input type="text" name="driverPhone" id="driverPhone" class="form-control" 
+                                   value="@delivery.DriverPhone" readonly />
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Assign Driver
+                            </button>
+                            <a asp-action="Track" asp-route-id="@delivery.Id" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to Tracking
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Current Status</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Status:</strong> 
+                        <span class="badge bg-info">@delivery.Status</span>
+                    </p>
+                    @if (!string.IsNullOrEmpty(delivery.DriverName))
+                    {
+                        <p><strong>Current Driver:</strong> @delivery.DriverName</p>
+                        <p><strong>Driver Phone:</strong> @delivery.DriverPhone</p>
+                    }
+                    else
+                    {
+                        <p class="text-muted">No driver assigned yet</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateDriverInfo() {
+    const select = document.getElementById('driverUserId');
+    const selectedOption = select.options[select.selectedIndex];
+    
+    if (selectedOption.value) {
+        document.getElementById('driverName').value = selectedOption.getAttribute('data-name');
+        document.getElementById('driverPhone').value = selectedOption.getAttribute('data-phone') || '';
+    } else {
+        document.getElementById('driverName').value = '';
+        document.getElementById('driverPhone').value = '';
+    }
+}
+
+// Initialize driver info on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateDriverInfo();
+});
+</script>
