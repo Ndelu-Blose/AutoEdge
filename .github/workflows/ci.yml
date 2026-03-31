@@ -1,0 +1,77 @@
+name: AutoEdge CI
+
+on:
+  push:
+    branches: [ main, develop, "**/feature/**", "**/hotfix/**" ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 9 SDK
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 9.0.x
+          cache: true
+          cache-dependency-path: |
+            **/*.csproj
+            **/packages.lock.json
+            global.json
+
+      - name: Show .NET info
+        run: dotnet --info
+
+      - name: Restore solution
+        run: dotnet restore "AutoEdge.sln"
+
+      - name: Build solution
+        run: dotnet build "AutoEdge.sln" --configuration Release --no-restore
+
+      - name: Run tests
+        run: dotnet test "AutoEdge.sln" --configuration Release --no-build --collect "XPlat Code Coverage" --logger "trx;LogFileName=test-results.trx"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: "**/TestResults/*.trx"
+
+      - name: Upload coverage results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-coverage
+          path: "**/TestResults/**/coverage.cobertura.xml"
+
+      - name: Coverage threshold check (informational)
+        if: always()
+        run: |
+          python - <<'PY'
+          import glob
+          import xml.etree.ElementTree as ET
+
+          files = glob.glob("**/TestResults/**/coverage.cobertura.xml", recursive=True)
+          if not files:
+              print("::warning::No coverage.cobertura.xml files found.")
+              raise SystemExit(0)
+
+          rates = []
+          for path in files:
+              root = ET.parse(path).getroot()
+              rate = float(root.attrib.get("line-rate", "0"))
+              rates.append(rate)
+
+          average = sum(rates) / len(rates)
+          threshold = 0.30
+          print(f"Average line coverage: {average:.2%}")
+          if average < threshold:
+              print(f"::warning::Coverage {average:.2%} is below informational threshold {threshold:.0%}.")
+          PY
