@@ -1,6 +1,7 @@
-﻿
+
 using AutoEdge.Data;
 using AutoEdge.Models.Entities;
+using Microsoft.Data.SqlClient;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
@@ -178,6 +179,7 @@ app.MapControllerRoute(
 // Assessment routes are now handled through authenticated controller actions
 
 app.MapRazorPages();
+app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
 
 // Ensure database is created and seeded
 using (var scope = app.Services.CreateScope())
@@ -193,9 +195,23 @@ using (var scope = app.Services.CreateScope())
         var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
 
-        // Ensure database is created and migrations are applied
+        // Ensure database is created and migrations are applied.
+        // In container/dev startup, SQL Server can accept connections a bit later than app boot.
+        if (ShouldUseDatabaseStartupRetries(app.Environment))
+        {
+            await WaitForDatabaseReadyAsync(
+                context,
+                logger,
+                maxAttempts: 24,
+                delay: TimeSpan.FromSeconds(5));
+        }
+
         logger.LogInformation("Applying database migrations...");
-        context.Database.Migrate();
+        await ApplyMigrationsWithRetryAsync(
+            context,
+            logger,
+            maxAttempts: 5,
+            delay: TimeSpan.FromSeconds(5));
         logger.LogInformation("Database migrations completed successfully.");
 
         // Seed document types
@@ -301,6 +317,103 @@ async Task SeedDefaultAdminUser(UserManager<ApplicationUser> userManager, RoleMa
         if (result.Succeeded)
         {
             await userManager.AddToRoleAsync(adminUser, "Administrator");
+        }
+    }
+}
+
+static bool ShouldUseDatabaseStartupRetries(IHostEnvironment environment)
+{
+    var runningInContainer = string.Equals(
+        Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER"),
+        "true",
+        StringComparison.OrdinalIgnoreCase);
+
+    return environment.IsDevelopment() || runningInContainer;
+}
+
+static async Task WaitForDatabaseReadyAsync(
+    ApplicationDbContext context,
+    ILogger logger,
+    int maxAttempts,
+    TimeSpan delay)
+{
+    var masterConnectionString = BuildMasterDatabaseConnectionString(context.Database.GetConnectionString());
+
+    for (var attempt = 1; attempt <= maxAttempts; attempt++)
+    {
+        try
+        {
+            await using var connection = new SqlConnection(masterConnectionString);
+            await connection.OpenAsync();
+            await connection.CloseAsync();
+            if (connection.State == System.Data.ConnectionState.Closed)
+            {
+                logger.LogInformation("SQL Server connection is ready on attempt {Attempt}.", attempt);
+                return;
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Database not ready on attempt {Attempt}.", attempt);
+        }
+
+        if (attempt < maxAttempts)
+        {
+            logger.LogInformation(
+                "Waiting {DelaySeconds}s before retrying database readiness (attempt {NextAttempt}/{MaxAttempts}).",
+                delay.TotalSeconds,
+                attempt + 1,
+                maxAttempts);
+            await Task.Delay(delay);
+        }
+    }
+
+    logger.LogWarning(
+        "Database readiness check did not succeed after {MaxAttempts} attempts; migration retry will still run.",
+        maxAttempts);
+}
+
+static string BuildMasterDatabaseConnectionString(string? connectionString)
+{
+    if (string.IsNullOrWhiteSpace(connectionString))
+    {
+        throw new InvalidOperationException("Default database connection string is missing.");
+    }
+
+    var builder = new SqlConnectionStringBuilder(connectionString)
+    {
+        InitialCatalog = "master"
+    };
+
+    return builder.ConnectionString;
+}
+
+static async Task ApplyMigrationsWithRetryAsync(
+    ApplicationDbContext context,
+    ILogger logger,
+    int maxAttempts,
+    TimeSpan delay)
+{
+    for (var attempt = 1; attempt <= maxAttempts; attempt++)
+    {
+        try
+        {
+            await context.Database.MigrateAsync();
+            return;
+        }
+        catch (Exception ex)
+        {
+            if (attempt == maxAttempts)
+            {
+                throw;
+            }
+
+            logger.LogWarning(
+                ex,
+                "Migration attempt {Attempt} failed. Retrying in {DelaySeconds}s.",
+                attempt,
+                delay.TotalSeconds);
+            await Task.Delay(delay);
         }
     }
 }
